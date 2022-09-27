@@ -6,19 +6,21 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/27 16:22:53 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/09/27 18:52:06 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # <!-- pre='./' path='srcs/' match='*.cpp' exclude='srcs/main.cpp' pos='1' template='		{0} \' -->
 SRC   = srcs/main.cpp \
+		srcs/Listener.cpp \
 		srcs/webserv.cpp \
 
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/webserv.hpp' pos='1' template='		{0} \' -->
 HDEP  = srcs/webserv.hpp \
+		srcs/Listener.hpp \
 
-#.SUFFIXES:
+TOML_PARSER = lib/toml_parser
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -28,7 +30,14 @@ CXX  = g++
 
 CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
-all: $(NAME)
+all: libs $(NAME)
+
+libs: toml_parser
+
+$(TOML_PARSER):
+	git submodule update --init $(TOML_PARSER)
+
+toml_parser: $(TOML_PARSER)
 
 %.o: %.cpp $(HDEP)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -56,16 +65,15 @@ debug: $(NAME)_debug
 sanitize: $(NAME)_sanitize
 
 clean:
-	rm -f $(OBJ_STD)
-	rm -f $(OBJ_FT)
+	rm -f $(OBJ)
 
 fclean: clean
-	rm -f $(NAME)_std $(NAME)_ft
-	rm -f $(NAME)_std_bonus $(NAME)_ft_bonus
+	rm -f $(NAME)
+	rm -f $(NAME)_bonus
 	rm -f *.out test/*.out
 	rm -f *.log
 	find . -iname "*.o" -exec rm -i {} ";"
 
 re: fclean all
 
-.PHONY: all run debug sanitize clean fclean re
+.PHONY: all libs toml_parser run debug sanitize clean fclean re

@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "webserv.hpp"
+#include "Listener.hpp"
 
 int	webserv(int argc, char *argv[])  
 {
@@ -22,6 +23,9 @@ int	webserv(int argc, char *argv[])
 		return (1);
 	}
 	(void) argv;
+
+	Listener			listener;
+
 	std::cout << "Bonjour!" << std::endl;
 
 	return (0);
