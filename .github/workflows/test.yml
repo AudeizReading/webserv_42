@@ -1,0 +1,29 @@
+# ########################################################################## #
+#                                                                            #
+#                                                        :::      ::::::::   #
+#   test.yml                                           :+:      :+:    :+:   #
+#                                                    +:+ +:+         +:+     #
+#   By: gphilipp <github.com/gphilipp>             +#+  +:+       +#+        #
+#                                                +#+#+#+#+#+   +#+           #
+#   Created: 2022/10/11 14:10:04 by gphilipp          #+#    #+#             #
+#   Updated: 2022/10/11 14:10:51 by gphilipp         ###   ########.fr       #
+#                                                                            #
+# ########################################################################## #
+
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: test
+      run: sh test/test.sh
