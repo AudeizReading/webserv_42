@@ -1,5 +1,7 @@
 #!/bin/sh
 
+cd "$(dirname "$0")"
+
 make -C ..
 if [[ $? == 0 ]]; then
 	echo "se compile :)"
