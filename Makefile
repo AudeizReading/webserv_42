@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/27 18:52:06 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/09/27 23:00:59 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,6 +67,9 @@ sanitize: $(NAME)_sanitize
 clean:
 	rm -f $(OBJ)
 
+test:
+	@./test/test.sh
+
 fclean: clean
 	rm -f $(NAME)
 	rm -f $(NAME)_bonus
@@ -76,4 +79,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all libs toml_parser run debug sanitize clean fclean re
+.PHONY: all libs toml_parser run debug sanitize clean fclean re test
