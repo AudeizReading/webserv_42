@@ -33,9 +33,16 @@ Listener::Listener()
 
 	/*
 	* SOL_SOCKET: La doc indique directement SOL_SOCKET.
+	* SO_REUSEADDR: Allows the socket to be bound to an address that is already in use.
+	*
+	* doc: https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
 	*/
-	//if (setsockopt(fd, SOL_SOCKET, int optname, const void *optval, socklen_t optlen) < 0)
-	//	throw strerror(errno);
+	/*
+	// TODO: Est-ce que c'est ça que le sujet nous demande de faire ???
+	unsigned re_use_addr = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
+		throw strerror(errno);
+	*/
 }
 
 Listener::Listener(Listener const &src)
