@@ -32,10 +32,10 @@ CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
 all: libs $(NAME)
 
-libs: # Can't have the parser as a target: you don't edit it
+libs: toml
 
 toml:
-	git submodule update --remote $(TOML_PARSER)
+	git submodule update --init $(TOML_PARSER)
 
 %.o: %.cpp $(HDEP)
 	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -c $< -o $@
