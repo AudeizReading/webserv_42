@@ -6,7 +6,7 @@
 #    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/28 12:53:59 by pbremond         ###   ########.fr        #
+#    Updated: 2022/09/28 14:47:55 by pbremond         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,23 +20,25 @@ SRC   = srcs/main.cpp \
 HDEP  = srcs/webserv.hpp \
 		srcs/Listener.hpp \
 
+TOML_PARSER = lib/toml_parser
+
 OBJ = $(SRC:.cpp=.o)
 
 NAME = webserv
 
-CXX  = g++
+CXX  = clang++
 
 CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
-all: $(NAME)
+all: libs $(NAME)
 
-$(TOML_PARSER):
-	git submodule update --init $(TOML_PARSER)
+libs: # Can't have the parser as a target: you don't edit it
 
-toml_parser: $(TOML_PARSER)
+toml:
+	git submodule update --remote $(TOML_PARSER)
 
 %.o: %.cpp $(HDEP)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -c $< -o $@
 
 $(NAME): $(OBJ) $(HDEP)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
@@ -76,4 +78,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all libs toml_parser run debug sanitize clean fclean re test
+.PHONY: all libs toml run debug sanitize clean fclean re test
