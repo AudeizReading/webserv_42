@@ -14,12 +14,14 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
 #include <unistd.h>
 #include <errno.h>
 
 #include "Listener.hpp"
 
-Listener::Listener()
+Listener::Listener(int port): port(port)
 {
 	/*
 	* PF_INET: Internet version 4 protocols
@@ -43,6 +45,30 @@ Listener::Listener()
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
 		throw strerror(errno);
 	*/
+
+	/*
+	* En fonction du premier argument de socket, la doc nous guide vers sockaddr_in
+	* doc: https://man7.org/linux/man-pages/man7/ip.7.html
+	* 
+	* struct sockaddr_in {
+	* 	sa_family_t			sin_family;	// address family: AF_INET
+	* 	in_port_t			sin_port;	// port in network byte order
+	* 	struct in_addr		sin_addr;	// internet address
+	* };
+	* 
+	*/
+	struct sockaddr_in			address;
+	bzero(reinterpret_cast<char *>(&address), sizeof(address));
+
+	address.sin_family = AF_INET;
+	address.sin_port = port;
+	address.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(struct sockaddr_in)) < 0)
+		throw strerror(errno);
+
+    /*if (listen(sfd, LISTEN_BACKLOG) == -1)
+        handle_error("listen");*/
 }
 
 Listener::Listener(Listener const &src)
@@ -59,7 +85,8 @@ Listener::~Listener()
 
 Listener	&Listener::operator=(Listener const &src)
 {
-	(void) src;
+	this->fd = src.fd;
+	this->port = src.port;
 
 	return (*this);
 }
