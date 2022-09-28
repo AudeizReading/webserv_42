@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
+#    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/28 10:15:29 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/09/28 12:53:59 by pbremond         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,8 +20,6 @@ SRC   = srcs/main.cpp \
 HDEP  = srcs/webserv.hpp \
 		srcs/Listener.hpp \
 
-TOML_PARSER = lib/toml_parser
-
 OBJ = $(SRC:.cpp=.o)
 
 NAME = webserv
@@ -30,9 +28,7 @@ CXX  = g++
 
 CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
-all: libs $(NAME)
-
-libs: toml_parser
+all: $(NAME)
 
 $(TOML_PARSER):
 	git submodule update --init $(TOML_PARSER)
