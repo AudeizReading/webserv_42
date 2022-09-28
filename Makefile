@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/27 23:00:59 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/09/28 10:15:29 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,11 +54,11 @@ run: all
 	./$(NAME)
 
 # Usage: make debug && lldb minishell_debug -o run
-$(NAME)_debug: $(SRCS) $(HDEPS)
-	$(CXX) $(CXXFLAGS) -g -o $(NAME)_debug $(SRCS)
+$(NAME)_debug: $(SRC) $(HDEP)
+	$(CXX) $(CXXFLAGS) -g -o $(NAME)_debug $(SRC)
 
-$(NAME)_sanitize: $(SRCS) $(HDEPS)
-	$(CXX) $(CXXFLAGS) -fsanitize=address -g -o $(NAME)_sanitize $(SRCS)
+$(NAME)_sanitize: $(SRC) $(HDEP)
+	$(CXX) $(CXXFLAGS) -fsanitize=address -g -o $(NAME)_sanitize $(SRC)
 
 debug: $(NAME)_debug
 
@@ -72,9 +72,10 @@ test:
 
 fclean: clean
 	rm -f $(NAME)
-	rm -f $(NAME)_bonus
+	rm -f $(NAME)_bonus $(NAME)_debug $(NAME)_sanitize
 	rm -f *.out test/*.out
 	rm -f *.log
+	rm -rf *.dSYM
 	find . -iname "*.o" -exec rm -i {} ";"
 
 re: fclean all
