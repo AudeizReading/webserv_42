@@ -120,8 +120,10 @@ Listener::Listener(int port): port(port)
 
 	plaintext = response.str();
 
+	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
 	send(new_socket, plaintext.c_str(), strlen(plaintext.c_str()), 0);
 
+	std::cout << "[listener] close new socket#" << new_socket << std::endl;
 	close(new_socket);
 
 	shutdown(fd, SHUT_RDWR);
@@ -134,7 +136,7 @@ Listener::Listener(Listener const &src)
 
 Listener::~Listener()
 {
-	std::cout << "[listener] close socket#" << fd << std::endl;
+	std::cout << "[listener] shutdown and close socket#" << fd << std::endl;
 	if (close(fd) < 0)
 		throw std::runtime_error(strerror(errno));
 }
