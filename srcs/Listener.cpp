@@ -68,8 +68,18 @@ Listener::Listener(int port): port(port)
 	if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(struct sockaddr_in)) < 0)
 		throw strerror(errno);
 
-    /*if (listen(sfd, LISTEN_BACKLOG) == -1)
-        handle_error("listen");*/
+	std::cout << "[listener] listen socket#" << fd << " (max " << LISTEN_BACKLOG << ")" << std::endl;
+	if (listen(fd, LISTEN_BACKLOG) == -1)
+	{
+		/*
+		 * If a connection request arrives with the queue full, the client may receive an error
+		 * with an indication of ECONNREFUSED. Alternatively, if the underlying protocol supports
+		 * retransmission, the request may be ignored so that retries may succeed.
+		 */
+		// TODO: No throw?
+		std::cout << "pas obligé de throw ici :/ " << std::endl;
+		throw strerror(errno);
+	}
 }
 
 Listener::Listener(Listener const &src)
