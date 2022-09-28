@@ -11,6 +11,7 @@
 /*  */
 
 #include <iostream>
+#include <sstream>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -58,14 +59,16 @@ Listener::Listener(int port): port(port)
 	* 
 	*/
 	struct sockaddr_in			address;
-	bzero(reinterpret_cast<char *>(&address), sizeof(address));
+	int							sockaddr_in_size = sizeof(address);
+
+	bzero(reinterpret_cast<char *>(&address), sockaddr_in_size);
 
 	address.sin_family = AF_INET;
 	address.sin_port = port;
 	address.sin_addr.s_addr = INADDR_ANY;
 
 	std::cout << "[listener] bind socket#" << fd << " to port " << port << std::endl;
-	if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(struct sockaddr_in)) < 0)
+	if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sockaddr_in_size) < 0)
 		throw strerror(errno);
 
 	std::cout << "[listener] listen socket#" << fd << " (max " << LISTEN_BACKLOG << ")" << std::endl;
@@ -80,6 +83,48 @@ Listener::Listener(int port): port(port)
 		std::cout << "pas obligé de throw ici :/ " << std::endl;
 		throw strerror(errno);
 	}
+
+	// TODO: kqueue
+
+	int							new_socket;
+
+	std::cout << "[listener] accept socket#" << fd << std::endl;
+	if ((new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
+			reinterpret_cast<socklen_t *>(&sockaddr_in_size))) < 0)
+		throw strerror(errno);
+
+	std::cout << "[listener] new socket#" << new_socket << std::endl;
+	int							size;
+	char						buffer[1024] = {0};
+	std::stringstream			response;
+	std::string					plaintext;
+
+	size = read(new_socket, buffer, 1024);
+	if (size < 0)
+		throw strerror(errno);
+
+	std::cout << buffer << std::endl;
+
+	response << "HTTP/2 200 OK\r\n";
+	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
+	response << "server: Apache\r\n";
+	response << "Cache-Control: no-cache\r\n";
+	response << "content-length: 205\r\n";
+	response << "content-type: text/html\r\n";
+	response << "\r\n";
+	response << "<html><head><title>Vous Etes Perdu ?</title></head>";
+	response << "<body><h1>Perdu sur l'Internet ?</h1>";
+	response << "<h2>Pas de panique, on va vous aider</h2>";
+	response << "<strong><pre>    * <----- votre iceberg est ici</pre></strong>";
+	response << "</body></html>\r\n";
+
+	plaintext = response.str();
+
+	send(new_socket, plaintext.c_str(), strlen(plaintext.c_str()), 0);
+
+	close(new_socket);
+
+	shutdown(fd, SHUT_RDWR);
 }
 
 Listener::Listener(Listener const &src)
