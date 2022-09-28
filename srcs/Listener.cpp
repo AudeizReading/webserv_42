@@ -32,7 +32,7 @@ Listener::Listener(int port): port(port)
 	fd = socket(PF_INET, SOCK_STREAM, 0); 
 	std::cout << "[listener] create socket#" << fd << std::endl;
 	if (fd < 0)
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 
 	/*
 	* SOL_SOCKET: La doc indique directement SOL_SOCKET.
@@ -44,7 +44,7 @@ Listener::Listener(int port): port(port)
 	// TODO: Est-ce que c'est ça que le sujet nous demande de faire ???
 	unsigned re_use_addr = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 	*/
 
 	/*
@@ -69,7 +69,7 @@ Listener::Listener(int port): port(port)
 
 	std::cout << "[listener] bind socket#" << fd << " to port " << port << std::endl;
 	if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sockaddr_in_size) < 0)
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 
 	std::cout << "[listener] listen socket#" << fd << " (max " << LISTEN_BACKLOG << ")" << std::endl;
 	if (listen(fd, LISTEN_BACKLOG) == -1)
@@ -81,7 +81,7 @@ Listener::Listener(int port): port(port)
 		 */
 		// TODO: No throw?
 		std::cout << "pas obligé de throw ici :/ " << std::endl;
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 	}
 
 	// TODO: kqueue
@@ -91,7 +91,7 @@ Listener::Listener(int port): port(port)
 	std::cout << "[listener] accept socket#" << fd << std::endl;
 	if ((new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
 			reinterpret_cast<socklen_t *>(&sockaddr_in_size))) < 0)
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 
 	std::cout << "[listener] new socket#" << new_socket << std::endl;
 	int							size;
@@ -101,7 +101,7 @@ Listener::Listener(int port): port(port)
 
 	size = read(new_socket, buffer, 1024);
 	if (size < 0)
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 
 	std::cout << buffer << std::endl;
 
@@ -136,7 +136,7 @@ Listener::~Listener()
 {
 	std::cout << "[listener] close socket#" << fd << std::endl;
 	if (close(fd) < 0)
-		throw strerror(errno);
+		throw std::runtime_error(strerror(errno));
 }
 
 Listener	&Listener::operator=(Listener const &src)

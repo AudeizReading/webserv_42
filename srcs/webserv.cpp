@@ -24,9 +24,17 @@ int	webserv(int argc, char *argv[])
 	}
 	(void) argv;
 
-	Listener			listener;
+	try
+	{
+		Listener			listener;
 
-	std::cout << "Bonjour!" << std::endl;
+		std::cout << "Bonjour!" << std::endl;
+	}
+	catch (const std::exception& e)
+	{
+	    std::cout << "webserv failed because: " << e.what() << std::endl;
+		return (1);
+	}
 
 	return (0);
 }
