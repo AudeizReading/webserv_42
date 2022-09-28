@@ -64,7 +64,7 @@ Listener::Listener(int port): port(port)
 	bzero(reinterpret_cast<char *>(&address), sockaddr_in_size);
 
 	address.sin_family = AF_INET;
-	address.sin_port = port;
+	address.sin_port = htons(port);
 	address.sin_addr.s_addr = INADDR_ANY;
 
 	std::cout << "[listener] bind socket#" << fd << " to port " << port << std::endl;
