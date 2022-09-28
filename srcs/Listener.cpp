@@ -29,7 +29,7 @@ Listener::Listener(int port): port(port)
 	* protocol toujours 0
 	*/
 	fd = socket(PF_INET, SOCK_STREAM, 0); 
-	std::cout << "create socket#" << fd << std::endl;
+	std::cout << "[listener] create socket#" << fd << std::endl;
 	if (fd < 0)
 		throw strerror(errno);
 
@@ -64,7 +64,8 @@ Listener::Listener(int port): port(port)
 	address.sin_port = port;
 	address.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(struct sockaddr_in)) < 0)
+	std::cout << "[listener] bind socket#" << fd << " to port " << port << std::endl;
+	if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(struct sockaddr_in)) < 0)
 		throw strerror(errno);
 
     /*if (listen(sfd, LISTEN_BACKLOG) == -1)
@@ -78,7 +79,7 @@ Listener::Listener(Listener const &src)
 
 Listener::~Listener()
 {
-	std::cout << "close socket#" << fd << std::endl;
+	std::cout << "[listener] close socket#" << fd << std::endl;
 	if (close(fd) < 0)
 		throw strerror(errno);
 }
