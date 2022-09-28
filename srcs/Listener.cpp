@@ -40,12 +40,9 @@ Listener::Listener(int port): port(port)
 	*
 	* doc: https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
 	*/
-	/*
-	// TODO: Est-ce que c'est ça que le sujet nous demande de faire ???
 	unsigned re_use_addr = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
 		throw std::runtime_error(strerror(errno));
-	*/
 
 	/*
 	* En fonction du premier argument de socket, la doc nous guide vers sockaddr_in
@@ -126,7 +123,6 @@ Listener::Listener(int port): port(port)
 	std::cout << "[listener] close new socket#" << new_socket << std::endl;
 	close(new_socket);
 
-	shutdown(fd, SHUT_RDWR);
 }
 
 Listener::Listener(Listener const &src)
@@ -137,6 +133,7 @@ Listener::Listener(Listener const &src)
 Listener::~Listener()
 {
 	std::cout << "[listener] shutdown and close socket#" << fd << std::endl;
+	shutdown(fd, SHUT_RDWR);
 	if (close(fd) < 0)
 		throw std::runtime_error(strerror(errno));
 }
