@@ -253,6 +253,7 @@ Listener	&Listener::operator=(Listener const &src)
 {
 	this->_fd = src._fd;
 	this->_port = src._port;
+	this->_listen_backlog = src._listen_backlog;
 
 	return (*this);
 }
