@@ -15,26 +15,23 @@
 #include "webserv.hpp"
 #include "Listener.hpp"
 
-int	webserv(int argc, char *argv[])  
+// NOTE: argc and argv are offset by -1. argv[0] is the first argument,
+// and argc == 0 means no arguments.
+int	webserv(int argc, char *argv[])
 {
-	if (argc < 0)
+	if (argc == 0)
 	{
-		std::cout << "Aucun argument" << std::endl;
-		return (1);
-	}
-	(void) argv;
-
-	try
-	{
-		Listener			listener;
+		Listener	listener;
 
 		std::cout << "Bonjour!" << std::endl;
 	}
-	catch (const std::exception& e)
+	else if (argc == 1)
 	{
-	    std::cout << "webserv failed because: " << e.what() << std::endl;
-		return (1);
+		std::cout << argv[0] << std::endl;
+		TOML::Document	config(argv[0]);
+		config.parse();
+		Listener	listener(config);
+		std::cout << "Bonjour!" << std::endl;
 	}
-
 	return (0);
 }

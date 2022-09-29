@@ -35,7 +35,7 @@ all: libs $(NAME)
 libs: toml
 
 toml:
-	git submodule update --init $(TOML_PARSER)
+	git submodule update --init --remote $(TOML_PARSER)
 
 %.o: %.cpp $(HDEP)
 	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -c $< -o $@

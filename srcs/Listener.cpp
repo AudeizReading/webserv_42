@@ -22,16 +22,36 @@
 
 #include "Listener.hpp"
 
-Listener::Listener(int port): port(port)
+Listener::Listener(int port): _port(port), _listen_backlog(LISTEN_BACKLOG)
+{
+	this->test_start();
+}
+
+Listener::Listener(TOML::Document const& config)
+{
+	try
+	{
+		_port			= config.at("server").at("port")		  .Int();
+		_listen_backlog	= config.at("server").at("listen_backlog").Int();
+	}
+	catch (std::exception const& e)
+	{
+		std::cerr << "FATAL: Caught exception while getting config info: " << e.what() << std::endl;
+		throw;
+	}
+	this->test_start();
+}
+
+void	Listener::test_start()
 {
 	/*
 	* PF_INET: Internet version 4 protocols
 	* SOCK_STREAM: TCP
 	* protocol toujours 0
 	*/
-	fd = socket(PF_INET, SOCK_STREAM, 0); 
-	std::cout << "[listener] create socket#" << fd << std::endl;
-	if (fd < 0)
+	_fd = socket(PF_INET, SOCK_STREAM, 0); 
+	std::cout << "[listener] create socket#" << _fd << std::endl;
+	if (_fd < 0)
 		throw std::runtime_error(strerror(errno));
 
 	/*
@@ -41,7 +61,7 @@ Listener::Listener(int port): port(port)
 	* doc: https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
 	*/
 	unsigned re_use_addr = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
+	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
 		throw std::runtime_error(strerror(errno));
 
 	/*
@@ -61,15 +81,15 @@ Listener::Listener(int port): port(port)
 	bzero(reinterpret_cast<char *>(&address), sockaddr_in_size);
 
 	address.sin_family = AF_INET;
-	address.sin_port = htons(port);
+	address.sin_port = htons(_port);
 	address.sin_addr.s_addr = INADDR_ANY;
 
-	std::cout << "[listener] bind socket#" << fd << " to port " << port << std::endl;
-	if (bind(fd, reinterpret_cast<struct sockaddr *>(&address), sockaddr_in_size) < 0)
+	std::cout << "[listener] bind socket#" << _fd << " to port " << _port << std::endl;
+	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sockaddr_in_size) < 0)
 		throw std::runtime_error(strerror(errno));
 
-	std::cout << "[listener] listen socket#" << fd << " (max " << LISTEN_BACKLOG << ")" << std::endl;
-	if (listen(fd, LISTEN_BACKLOG) == -1)
+	std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
+	if (listen(_fd, _listen_backlog) == -1)
 	{
 		/*
 		 * If a connection request arrives with the queue full, the client may receive an error
@@ -85,8 +105,8 @@ Listener::Listener(int port): port(port)
 
 	int							new_socket;
 
-	std::cout << "[listener] accept socket#" << fd << std::endl;
-	if ((new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
+	std::cout << "[listener] accept socket#" << _fd << std::endl;
+	if ((new_socket = accept(_fd, reinterpret_cast<struct sockaddr *>(&address),
 			reinterpret_cast<socklen_t *>(&sockaddr_in_size))) < 0)
 		throw std::runtime_error(strerror(errno));
 
@@ -125,6 +145,7 @@ Listener::Listener(int port): port(port)
 
 }
 
+
 Listener::Listener(Listener const &src)
 {
 	(*this) = src;
@@ -132,16 +153,16 @@ Listener::Listener(Listener const &src)
 
 Listener::~Listener()
 {
-	std::cout << "[listener] shutdown and close socket#" << fd << std::endl;
-	shutdown(fd, SHUT_RDWR);
-	if (close(fd) < 0)
+	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
+	shutdown(_fd, SHUT_RDWR);
+	if (close(_fd) < 0)
 		throw std::runtime_error(strerror(errno));
 }
 
 Listener	&Listener::operator=(Listener const &src)
 {
-	this->fd = src.fd;
-	this->port = src.port;
+	this->_fd = src._fd;
+	this->_port = src._port;
 
 	return (*this);
 }
