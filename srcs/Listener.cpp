@@ -31,18 +31,21 @@ Listener::Listener(TOML::Document const& config)
 {
 	try
 	{
-		_port			= config.at("server").at("port")		  .Int();
-		_listen_backlog	= config.at("server").at("listen_backlog").Int();
+		_port				= config.at("server").at("port").Int();
+		_listen_backlog		= config.at("server").at("listen_backlog").Int();
+		std::string path	= config.at("demo").at("www").at("path").Str();
+		if (path.back() == '/')
+			path.erase(path.end() - 1);
+		this->test_start(path.c_str());	
 	}
 	catch (std::exception const& e)
 	{
 		std::cerr << "FATAL: Caught exception while getting config info: " << e.what() << std::endl;
 		throw;
 	}
-	this->test_start();
 }
 
-void	Listener::test_start()
+void	Listener::test_start(const char *demo_path)
 {
 	/*
 	* PF_INET: Internet version 4 protocols
@@ -122,27 +125,25 @@ void	Listener::test_start()
 
 	std::cout << buffer << std::endl;
 
+	std::ifstream	demo(std::string(demo_path) + "/index.html");
+
 	response << "HTTP/2 200 OK\r\n";
 	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
-	response << "server: Apache\r\n";
+	response << "server: 42webserv\r\n";
 	response << "Cache-Control: no-cache\r\n";
 	response << "content-length: 205\r\n";
 	response << "content-type: text/html\r\n";
 	response << "\r\n";
-	response << "<html><head><title>Vous Etes Perdu ?</title></head>";
-	response << "<body><h1>Perdu sur l'Internet ?</h1>";
-	response << "<h2>Pas de panique, on va vous aider</h2>";
-	response << "<strong><pre>    * <----- votre iceberg est ici</pre></strong>";
-	response << "</body></html>\r\n";
+	response << demo.rdbuf();
+	demo.close();
 
 	plaintext = response.str();
 
 	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
-	send(new_socket, plaintext.c_str(), strlen(plaintext.c_str()), 0);
+	send(new_socket, plaintext.c_str(), plaintext.length(), 0);
 
 	std::cout << "[listener] close new socket#" << new_socket << std::endl;
 	close(new_socket);
-
 }
 
 

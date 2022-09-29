@@ -14,9 +14,9 @@
 
 #include <toml_parser.hpp>
 
-#define DEFAULT_PORT 5000
-
-#define LISTEN_BACKLOG 512 // The maximum length for the queue of pending connections.
+#define DEFAULT_PORT	5000
+#define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
+#define DEMO_WWW_PATH	"./demo/www"
 
 #pragma once
 
@@ -32,7 +32,7 @@ public:
 	Listener(TOML::Document const& config);
 	Listener(Listener const &src);
 
-	void	test_start();
+	void	test_start(const char *demo_path = DEMO_WWW_PATH);
 
 	~Listener();
 
