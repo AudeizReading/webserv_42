@@ -1,5 +1,14 @@
 [server]
+name = "42 webserv"
 port = 4242
 listen_backlog = 512
+	[server.log] # TODO: server logging
+	enable = false
+	file = "logs/webserv.log"
+	# NGINX has a log_format field, that's pretty cool
+
 [demo.www]
-root = "demo/www" # Path to demo html directory
+root = "./demo/www/" # Path to demo html
+
+[http] # I don't know what this is, I'm just copying NGINX
+index = "index.html" # Default index
