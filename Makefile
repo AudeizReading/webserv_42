@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/29 12:20:13 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/09/29 14:47:35 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,16 +30,21 @@ CXX  = clang++
 
 CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
-all: libs $(NAME)
-
 ifeq ($(shell ./hooks/submodules > /dev/null; echo $$?), 1)
-libs: toml
-else
-libs:
+LIBS = toml
 endif
 
+ifdef TR
+SMFLAGS = --remote
+LIBS = toml
+endif
+
+all: libs $(NAME)
+
+libs: $(LIBS)
+
 toml:
-	git submodule update --init --remote $(TOML_PARSER)
+	git submodule update --init $(SMFLAGS) $(TOML_PARSER)
 
 %.o: %.cpp $(HDEP)
 	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -c $< -o $@
