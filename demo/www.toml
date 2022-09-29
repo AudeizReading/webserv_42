@@ -1,0 +1,5 @@
+[server]
+port = 4242
+listen_backlog = 512
+[demo.www]
+path = "demo/www" # Path to demo html directory

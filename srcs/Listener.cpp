@@ -27,11 +27,6 @@
 
 #define I_LOVE_ICEBERG 1
 
-Listener::Listener(int port): _port(port), _listen_backlog(LISTEN_BACKLOG)
-{
-	this->test_start();
-}
-
 Listener::Listener(TOML::Document const& config)
 {
 	try
@@ -50,8 +45,69 @@ Listener::Listener(TOML::Document const& config)
 	}
 }
 
-// pour éviter de faire trop de conflit git: je n'ai pas bougé, ni réindenté le code
-static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in &address, int sockaddr_in_size);
+// @gphilipp Git devrait être largement assez intelligent pour ça ^^
+static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in &address, int sockaddr_in_size)
+{
+	int							new_socket;
+
+	std::cout << "[listener] accept socket#" << fd << std::endl;
+	new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
+					reinterpret_cast<socklen_t *>(&sockaddr_in_size));
+
+	if (new_socket < 0)
+	{
+		// TODO: ERROR?
+		std::cout << "[listener] accept socket error for event#" << fd << std::endl;
+		perror("[listener] -- accept socket error");
+		return (-1);
+	}
+
+	std::cout << "[listener] new socket#" << new_socket << std::endl;
+	int							size;
+	std::stringstream			request;
+	std::stringstream			response;
+
+	do {
+		char buffer[READ_BUFFER_SIZE] = {0};
+		size = read(new_socket, buffer, READ_BUFFER_SIZE - 1);
+		if (size < 0)
+			throw std::runtime_error(strerror(errno));
+		request << buffer;
+	} while(size == READ_BUFFER_SIZE - 1);
+	
+	std::cout << request.str() << std::endl;
+
+	std::stringstream			content;
+
+	content << std::ifstream(demo_path + "/index.html").rdbuf();
+
+	response << "HTTP/1.1 200 OK\r\n";
+	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
+	response << "server: 42webserv\r\n";
+	response << "Cache-Control: no-cache\r\n";
+	response << "content-length: " << content.str().length() << "\r\n";
+	response << "content-type: text/html\r\n";
+	response << "\r\n";
+	response << content.str();
+	response << "\r\n";
+
+	std::string					plaintext = response.str();
+
+	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
+	send(new_socket, plaintext.c_str(), plaintext.length(), 0);
+
+	// Redirect STDERR to file to get primitive log
+	// Leave as it for log in console
+	std::cerr << "\e[30;48;5;245m\n" << plaintext << RESET << std::endl;
+
+	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
+	{
+		std::cout << "[listener] close new socket#" << new_socket << std::endl;
+		close(new_socket);
+		return (-1);
+	}
+	return (new_socket);
+}
 
 void	Listener::test_start(std::string const& demo_path)
 {
@@ -170,69 +226,6 @@ void	Listener::test_start(std::string const& demo_path)
 			}
 		}
 	}
-}
-
-static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in &address, int sockaddr_in_size)
-{
-	int							new_socket;
-
-	std::cout << "[listener] accept socket#" << fd << std::endl;
-	new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
-					reinterpret_cast<socklen_t *>(&sockaddr_in_size));
-
-	if (new_socket < 0)
-	{
-		// TODO: ERROR?
-		std::cout << "[listener] accept socket error for event#" << fd << std::endl;
-		perror("[listener] -- accept socket error");
-		return (-1);
-	}
-
-	std::cout << "[listener] new socket#" << new_socket << std::endl;
-	int							size;
-	std::stringstream			request;
-	std::stringstream			response;
-
-	do {
-		char buffer[READ_BUFFER_SIZE] = {0};
-		size = read(new_socket, buffer, READ_BUFFER_SIZE - 1);
-		if (size < 0)
-			throw std::runtime_error(strerror(errno));
-		request << buffer;
-	} while(size == READ_BUFFER_SIZE - 1);
-	
-	std::cout << request.str() << std::endl;
-
-	std::stringstream			content;
-
-	content << std::ifstream(demo_path + "/index.html").rdbuf();
-
-	response << "HTTP/1.1 200 OK\r\n";
-	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
-	response << "server: 42webserv\r\n";
-	response << "Cache-Control: no-cache\r\n";
-	response << "content-length: " << content.str().length() << "\r\n";
-	response << "content-type: text/html\r\n";
-	response << "\r\n";
-	response << content.str();
-	response << "\r\n";
-
-	std::string					plaintext = response.str();
-
-	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
-	send(new_socket, plaintext.c_str(), plaintext.length(), 0);
-
-	// Redirect STDERR to file to get primitive log
-	// Leave as it for log in console
-	std::cerr << "\e[30;48;5;245m\n" << plaintext << RESET << std::endl;
-
-	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
-	{
-		std::cout << "[listener] close new socket#" << new_socket << std::endl;
-		close(new_socket);
-		return (-1);
-	}
-	return (new_socket);
 }
 
 

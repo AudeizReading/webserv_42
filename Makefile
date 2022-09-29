@@ -30,6 +30,8 @@ CXX  = clang++
 
 CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
+CONF_FILE = demo/www.toml
+
 ifeq ($(shell ./hooks/submodules > /dev/null; echo $$?), 1)
 LIBS = toml
 endif
@@ -58,7 +60,7 @@ $(NAME)_bonus: $(NAME)
 	cp $(NAME) $(NAME)_bonus
 
 run: all
-	./$(NAME)
+	./$(NAME) $(CONF_FILE)
 
 # Usage: make debug && lldb minishell_debug -o run
 $(NAME)_debug: $(SRC) $(HDEP)

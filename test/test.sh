@@ -25,13 +25,13 @@ fi
 
 sleep 1
 
-echo ">> req GET http://127.0.0.1:5000/"
-curl -s http://127.0.0.1:5000/ > output.log
+echo ">> req GET http://127.0.0.1:4242/"
+curl -s http://127.0.0.1:4242/ > output.log
 cat output.log
 
 echo ""
 echo "default_request_homepage"
-diff output.log diff/default_request_homepage.txt
+diff output.log ../demo/www/index.html
 if [[ $? == 0 ]]; then
 	echo "output ok"
 else

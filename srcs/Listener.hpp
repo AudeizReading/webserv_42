@@ -26,7 +26,6 @@ private:
 	int		_listen_backlog; // Mais faut différencier les membres private/protected des publics.
 
 public:
-	Listener(int port = DEFAULT_PORT);
 	Listener(TOML::Document const& config);
 	Listener(Listener const &src);
 
