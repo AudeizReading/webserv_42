@@ -18,8 +18,6 @@
 #define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
 #define DEMO_WWW_PATH	"./demo/www"
 
-#pragma once
-
 class Listener
 {
 private:

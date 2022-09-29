@@ -3,6 +3,10 @@
 cd "$(dirname "$0")"
 
 pkill webserv
+if [[ $? == 0 ]]; then
+	echo "webserv was killed."
+fi
+
 make re -C ..
 if [[ $? == 0 ]]; then
 	echo "se compile :)"
@@ -34,5 +38,5 @@ else
 	echo "error output different :("
 	exit 1
 fi
-pkill webserv
+
 exit 0

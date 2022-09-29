@@ -15,12 +15,17 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/event.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <unistd.h>
 #include <errno.h>
 
+#include "webserv.hpp"
 #include "Listener.hpp"
+
+#define I_LOVE_ICEBERG 1
 
 Listener::Listener(int port): _port(port), _listen_backlog(LISTEN_BACKLOG)
 {
@@ -44,6 +49,9 @@ Listener::Listener(TOML::Document const& config)
 		throw;
 	}
 }
+
+// pour éviter de faire trop de conflit git: je n'ai pas bougé, ni réindenté le code
+static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in &address, int sockaddr_in_size);
 
 void	Listener::test_start(std::string const& demo_path)
 {
@@ -104,45 +112,112 @@ void	Listener::test_start(std::string const& demo_path)
 		throw std::runtime_error(strerror(errno));
 	}
 
-	// TODO: kqueue
+	// src: https://dev.to/frevib/a-tcp-server-with-kqueue-527
+	int							kq = kqueue();
+	struct kevent				change_event[4], event[4];
 
+	EV_SET(change_event, _fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+
+	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
+	if (kevent(kq, change_event, 1, NULL, 0, NULL) == -1)
+		throw std::runtime_error(strerror(errno));
+
+	while (I_LOVE_ICEBERG)
+	{
+		int							new_events;
+
+		std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
+		new_events = kevent(kq, NULL, 0, event, 1, NULL);
+		if (new_events == -1)
+			throw std::runtime_error(strerror(errno));
+
+		for (int i = 0, event_fd; new_events > i; i++)
+		{
+			event_fd = event[i].ident;
+
+			if (event[i].flags & EV_EOF)
+			{
+				// TODO: ERROR?
+				std::cout << "[listener] client has disconnected for event#" << event_fd << std::endl;
+				close(event_fd);
+			}
+			else if (event_fd == _fd) // = Socket connection
+			{
+				int					new_socket;
+
+				std::cout << "[listener] client disconnection for socket#" << event_fd << std::endl;
+
+				new_socket = accept_http(event_fd, demo_path, address, sockaddr_in_size);
+
+				if (new_socket < 0)
+					continue;
+
+				EV_SET(change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+				if (kevent(kq, change_event, 1, NULL, 0, NULL) < 0)
+				{
+					// TODO: ERROR?
+					std::cout << "[listener] kevent error for event#" << event_fd << std::endl;
+					perror("[listener] -- kevent error");
+				}
+			}
+			else if (event[i].filter & EVFILT_READ)
+			{
+				std::cout << "[listener] read bytes for event#" << event_fd << std::endl;
+				char buf[1024];
+				size_t bytes_read = recv(event_fd, buf, sizeof(buf), 0);
+				std::cout << "[listener] -- " << bytes_read << "for event#" << event_fd << std::endl;
+				printf("read %zu bytes\n", bytes_read);
+			}
+		}
+	}
+}
+
+static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in &address, int sockaddr_in_size)
+{
 	int							new_socket;
 
-	std::cout << "[listener] accept socket#" << _fd << std::endl;
-	if ((new_socket = accept(_fd, reinterpret_cast<struct sockaddr *>(&address),
-			reinterpret_cast<socklen_t *>(&sockaddr_in_size))) < 0)
-		throw std::runtime_error(strerror(errno));
+	std::cout << "[listener] accept socket#" << fd << std::endl;
+	new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
+					reinterpret_cast<socklen_t *>(&sockaddr_in_size));
+
+	if (new_socket < 0)
+	{
+		// TODO: ERROR?
+		std::cout << "[listener] accept socket error for event#" << fd << std::endl;
+		perror("[listener] -- accept socket error");
+		return (-1);
+	}
 
 	std::cout << "[listener] new socket#" << new_socket << std::endl;
 	int							size;
-	char						buffer[1024] = {0};
+	std::stringstream			request;
 	std::stringstream			response;
-	std::string					plaintext;
 
-	size = read(new_socket, buffer, 1024);
-	if (size < 0)
-		throw std::runtime_error(strerror(errno));
+	do {
+		char buffer[READ_BUFFER_SIZE] = {0};
+		size = read(new_socket, buffer, READ_BUFFER_SIZE - 1);
+		if (size < 0)
+			throw std::runtime_error(strerror(errno));
+		request << buffer;
+	} while(size == READ_BUFFER_SIZE - 1);
+	
+	std::cout << request.str() << std::endl;
 
-	std::cout << buffer << std::endl;
-
-	std::ifstream				demo(std::string(demo_path) + "/index.html");
 	std::stringstream			content;
 
-	content << demo.rdbuf();
-	plaintext = content.str();
-	demo.close();
+	content << std::ifstream(demo_path + "/index.html").rdbuf();
 
-	response << "HTTP/2 200 OK\r\n";
+	response << "HTTP/1.1 200 OK\r\n";
 	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
 	response << "server: 42webserv\r\n";
 	response << "Cache-Control: no-cache\r\n";
-	response << "content-length: " << plaintext.length() << "\r\n";
+	response << "content-length: " << content.str().length() << "\r\n";
 	response << "content-type: text/html\r\n";
 	response << "\r\n";
-	response << plaintext;
+	response << content.str();
 	response << "\r\n";
 
-	plaintext = response.str();
+	std::string					plaintext = response.str();
 
 	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
 	send(new_socket, plaintext.c_str(), plaintext.length(), 0);
@@ -151,8 +226,13 @@ void	Listener::test_start(std::string const& demo_path)
 	// Leave as it for log in console
 	std::cerr << "\e[30;48;5;245m\n" << plaintext << RESET << std::endl;
 
-	std::cout << "[listener] close new socket#" << new_socket << std::endl;
-	close(new_socket);
+	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
+	{
+		std::cout << "[listener] close new socket#" << new_socket << std::endl;
+		close(new_socket);
+		return (-1);
+	}
+	return (new_socket);
 }
 
 
