@@ -1,10 +1,25 @@
+# Local garbage
+.vscode
+.DS_Store
 *.dSYM
 *.swp
+
+# Object files
 *.o
-*.out
-*.log
+
+# Libraries
+*.a
+*.so
+*.dylib
+
+# Binaries
 webserv
 webserv_bonus
 webserv_debug
 webserv_sanitize
-.vscode
+*.out
+*.debug
+
+# Misc
+*.txt
+*.log

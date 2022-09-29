@@ -32,7 +32,7 @@ public:
 	Listener(TOML::Document const& config);
 	Listener(Listener const &src);
 
-	void	test_start(const char *demo_path = DEMO_WWW_PATH);
+	void	test_start(std::string const& str = DEMO_WWW_PATH);
 
 	~Listener();
 

@@ -45,7 +45,7 @@ Listener::Listener(TOML::Document const& config)
 	}
 }
 
-void	Listener::test_start(const char *demo_path)
+void	Listener::test_start(std::string const& demo_path)
 {
 	/*
 	* PF_INET: Internet version 4 protocols
@@ -117,7 +117,6 @@ void	Listener::test_start(const char *demo_path)
 	int							size;
 	char						buffer[1024] = {0};
 	std::stringstream			response;
-	std::string					plaintext;
 
 	size = read(new_socket, buffer, 1024);
 	if (size < 0)
@@ -125,22 +124,26 @@ void	Listener::test_start(const char *demo_path)
 
 	std::cout << buffer << std::endl;
 
-	std::ifstream	demo(std::string(demo_path) + "/index.html");
+	std::stringstream		html_ss;
+	html_ss << std::ifstream( demo_path + "/index.html" ).rdbuf();
 
 	response << "HTTP/2 200 OK\r\n";
 	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
 	response << "server: 42webserv\r\n";
 	response << "Cache-Control: no-cache\r\n";
-	response << "content-length: 205\r\n";
+	response << "content-length: " << html_ss.str().length() << "\r\n";
 	response << "content-type: text/html\r\n";
 	response << "\r\n";
-	response << demo.rdbuf();
-	demo.close();
+	response << html_ss.str();
 
-	plaintext = response.str();
+	std::string plaintext = response.str();
 
 	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
 	send(new_socket, plaintext.c_str(), plaintext.length(), 0);
+
+	// Redirect STDERR to file to get primitive log
+	// Leave as it for log in console
+	std::cerr << "\e[30;48;5;245m\n" << plaintext << RESET << std::endl;
 
 	std::cout << "[listener] close new socket#" << new_socket << std::endl;
 	close(new_socket);
