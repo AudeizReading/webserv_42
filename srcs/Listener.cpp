@@ -117,6 +117,7 @@ void	Listener::test_start(std::string const& demo_path)
 	int							size;
 	char						buffer[1024] = {0};
 	std::stringstream			response;
+	std::string					plaintext;
 
 	size = read(new_socket, buffer, 1024);
 	if (size < 0)
@@ -124,19 +125,24 @@ void	Listener::test_start(std::string const& demo_path)
 
 	std::cout << buffer << std::endl;
 
-	std::stringstream		html_ss;
-	html_ss << std::ifstream( demo_path + "/index.html" ).rdbuf();
+	std::ifstream				demo(std::string(demo_path) + "/index.html");
+	std::stringstream			content;
+
+	content << demo.rdbuf();
+	plaintext = content.str();
+	demo.close();
 
 	response << "HTTP/2 200 OK\r\n";
 	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
 	response << "server: 42webserv\r\n";
 	response << "Cache-Control: no-cache\r\n";
-	response << "content-length: " << html_ss.str().length() << "\r\n";
+	response << "content-length: " << plaintext.length() << "\r\n";
 	response << "content-type: text/html\r\n";
 	response << "\r\n";
-	response << html_ss.str();
+	response << plaintext;
+	response << "\r\n";
 
-	std::string plaintext = response.str();
+	plaintext = response.str();
 
 	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
 	send(new_socket, plaintext.c_str(), plaintext.length(), 0);

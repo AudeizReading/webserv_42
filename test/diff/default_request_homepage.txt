@@ -1,1 +1,10 @@
-<html><head><title>Vous Etes Perdu ?</title></head><body><h1>Perdu sur l'Internet ?</h1><h2>Pas de panique, on va vous aider</h2><strong><pre>    * <----- votre iceberg est ici</pre></strong></body></html>
+<html>
+<head>
+	<title>Vous Etes Perdu ?</title>
+</head>
+<body style="background-color: magenta;">
+	<h1>Perdu sur l'Internet ?</h1>
+	<h2>Pas de panique, on va vous aider</h2>
+	<strong><pre>    * <----- votre iceberg est ici</pre></strong>
+</body>
+</html>
