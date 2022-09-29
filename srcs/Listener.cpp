@@ -24,6 +24,8 @@
 
 #include "webserv.hpp"
 #include "Listener.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 #define I_LOVE_ICEBERG 1
 
@@ -33,10 +35,14 @@ Listener::Listener(TOML::Document const& config)
 	{
 		_port				= config.at("server").at("port").Int();
 		_listen_backlog		= config.at("server").at("listen_backlog").Int();
-		std::string path	= config.at("demo").at("www").at("path").Str();
-		if (path.back() == '/')
-			path.erase(path.end() - 1);
-		this->test_start(path.c_str());	
+		std::string root	= config.at("demo").at("www").at("root").Str();
+
+		// TODO: Array of servers
+		_server = new Server(root.c_str());
+
+		if (root.back() == '/')
+			root.erase(root.end() - 1);
+		this->start_listener();	
 	}
 	catch (std::exception const& e)
 	{
@@ -45,8 +51,7 @@ Listener::Listener(TOML::Document const& config)
 	}
 }
 
-// @gphilipp Git devrait être largement assez intelligent pour ça ^^
-static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in &address, int sockaddr_in_size)
+int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 {
 	int							new_socket;
 
@@ -63,42 +68,16 @@ static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in 
 	}
 
 	std::cout << "[listener] new socket#" << new_socket << std::endl;
-	int							size;
-	std::stringstream			request;
-	std::stringstream			response;
-
-	do {
-		char buffer[READ_BUFFER_SIZE] = {0};
-		size = read(new_socket, buffer, READ_BUFFER_SIZE - 1);
-		if (size < 0)
-			throw std::runtime_error(strerror(errno));
-		request << buffer;
-	} while(size == READ_BUFFER_SIZE - 1);
-	
-	std::cout << request.str() << std::endl;
-
-	std::stringstream			content;
-
-	content << std::ifstream(demo_path + "/index.html").rdbuf();
-
-	response << "HTTP/1.1 200 OK\r\n";
-	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
-	response << "server: 42webserv\r\n";
-	response << "Cache-Control: no-cache\r\n";
-	response << "content-length: " << content.str().length() << "\r\n";
-	response << "content-type: text/html\r\n";
-	response << "\r\n";
-	response << content.str();
-	response << "\r\n";
-
-	std::string					plaintext = response.str();
+	Request						request(new_socket);
+	// TODO: Servers dispatch
+	Response					response(request, *_server);
 
 	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
-	send(new_socket, plaintext.c_str(), plaintext.length(), 0);
+	send(new_socket, response.c_str(), response.length(), 0);
 
 	// Redirect STDERR to file to get primitive log
 	// Leave as it for log in console
-	std::cerr << "\e[30;48;5;245m\n" << plaintext << RESET << std::endl;
+	std::cerr << "\e[30;48;5;245m\n" << response << RESET << std::endl;
 
 	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
 	{
@@ -109,7 +88,7 @@ static int	accept_http(int fd, std::string const& demo_path, struct sockaddr_in 
 	return (new_socket);
 }
 
-void	Listener::test_start(std::string const& demo_path)
+void	Listener::start_listener()
 {
 	/*
 	* PF_INET: Internet version 4 protocols
@@ -203,7 +182,7 @@ void	Listener::test_start(std::string const& demo_path)
 
 				std::cout << "[listener] client disconnection for socket#" << event_fd << std::endl;
 
-				new_socket = accept_http(event_fd, demo_path, address, sockaddr_in_size);
+				new_socket = _accept(event_fd, address, sockaddr_in_size);
 
 				if (new_socket < 0)
 					continue;
@@ -228,25 +207,10 @@ void	Listener::test_start(std::string const& demo_path)
 	}
 }
 
-
-Listener::Listener(Listener const &src)
-{
-	(*this) = src;
-}
-
 Listener::~Listener()
 {
 	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
 	if (close(_fd) < 0)
 		throw std::runtime_error(strerror(errno));
-}
-
-Listener	&Listener::operator=(Listener const &src)
-{
-	this->_fd = src._fd;
-	this->_port = src._port;
-	this->_listen_backlog = src._listen_backlog;
-
-	return (*this);
 }
