@@ -1,0 +1,12 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+cd ..
+
+git diff --exit-code lib/toml_parser
+exit_code=$?
+
+echo "diff $exit_code"
+
+exit $exit_code

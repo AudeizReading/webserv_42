@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
+#    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/28 14:47:55 by pbremond         ###   ########.fr        #
+#    Updated: 2022/09/29 12:20:13 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,7 +32,11 @@ CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
 all: libs $(NAME)
 
+ifeq ($(shell ./hooks/submodules > /dev/null; echo $$?), 1)
 libs: toml
+else
+libs:
+endif
 
 toml:
 	git submodule update --init --remote $(TOML_PARSER)
