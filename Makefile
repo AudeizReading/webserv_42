@@ -6,25 +6,29 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/29 18:41:05 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/09/30 15:21:31 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # <!-- pre='./' path='srcs/' match='*.cpp' exclude='srcs/main.cpp' pos='1' template='		{0} \' -->
 SRC   = srcs/main.cpp \
-		srcs/Request.cpp \
-		srcs/webserv.cpp \
-		srcs/Response.cpp \
+		srcs/Response/Response_4XX.cpp \
+		srcs/Response/Response_Ok.cpp \
 		srcs/Listener.cpp \
+		srcs/Request.cpp \
+		srcs/Response.cpp \
 		srcs/Server.cpp \
+		srcs/webserv.cpp \
 
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/webserv.hpp' pos='1' template='		{0} \' -->
 HDEP  = srcs/webserv.hpp \
-		srcs/Server.hpp \
-		srcs/Response.hpp \
+		srcs/Response/Response_4XX.hpp \
+		srcs/Response/Response_Ok.hpp \
 		srcs/Listener.hpp \
 		srcs/Request.hpp \
+		srcs/Response.hpp \
+		srcs/Server.hpp \
 
 
 TOML_PARSER = lib/toml_parser

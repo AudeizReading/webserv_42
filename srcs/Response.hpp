@@ -18,8 +18,14 @@
 class Response
 {
 private:
-	Server&			_server;
-	std::string		_plaintext;
+	std::string			_plaintext;
+
+protected:
+	Server&				_server;
+	std::string			_status;
+	std::string			_content;
+
+	virtual void _init() = 0;
 
 public:
 	Response(Request &request, Server &server);
@@ -30,6 +36,8 @@ public:
 
 	const char*	c_str() const;
 	int			length() const;
+
+	void		create();
 };
 
 std::ostream& operator<<(std::ostream& os, const Response& response);

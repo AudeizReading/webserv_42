@@ -26,6 +26,8 @@
 #include "Listener.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Response/Response_Ok.hpp"
+#include "Response/Response_4XX.hpp"
 
 #define I_LOVE_ICEBERG 1
 
@@ -69,15 +71,29 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 
 	std::cout << "[listener] new socket#" << new_socket << std::endl;
 	Request						request(new_socket);
-	// TODO: Servers dispatch
-	Response					response(request, *_server);
+	Response					*response;
 
+	if (!request.is_complete())
+	{
+		std::cout << "[listener] send error 400 Bad Request for socket#" << new_socket << std::endl;
+
+		response = new Response_Bad_Request(request, *_server);
+
+		send(new_socket, response->c_str(), response->length(), 0);
+		close(new_socket);
+		return (-1);
+	}
+
+	// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
 	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
-	send(new_socket, response.c_str(), response.length(), 0);
+
+	response = new Response_Ok(request, *_server);
+
+	send(new_socket, response->c_str(), response->length(), 0);
 
 	// Redirect STDERR to file to get primitive log
 	// Leave as it for log in console
-	std::cerr << "\e[30;48;5;245m\n" << response << RESET << std::endl;
+	std::cerr << "\e[30;48;5;245m\n" << *response << RESET << std::endl;
 
 	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
 	{
