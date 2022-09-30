@@ -41,10 +41,41 @@ void Request::_read_buffer()
 	std::cout << _plaintext << std::endl;
 }
 
+void Request::_read_firstline(std::string str)
+{
+	std::string::iterator it = str.begin();
+	std::string::iterator end = str.begin();
+
+	while(end < str.end() && *end != '\r')
+		end++;
+
+	if (*(end + 1) != '\n')
+		throw std::runtime_error("Bad Request");
+
+	while(it < end && *it != ' ')
+		_firstline.method += *it++;
+	it++;
+	while(it < end && *it != ' ')
+		_firstline.uri += *it++;
+	it++;
+	while(it < end && *it != ' ' && *it != '\r')
+		_firstline.http_version += *it++;
+
+	if (*it != '\r')
+		throw std::runtime_error("Bad Request");
+
+	// TODO: check http_version and throw ?
+
+	std::cout << "--> '" << _firstline.method << "' '" << _firstline.uri
+			<< "' '" << _firstline.http_version << "'\n";
+}
+
 void Request::_parse()
 {
 	try
 	{
+		_read_firstline(_plaintext);
+
 		// if you want test 400:
 		// throw std::runtime_error("Bad Request");
 

@@ -19,9 +19,17 @@ private:
 	int				_complete;
 	std::string		_plaintext;
 
+	struct _Firstline {
+		std::string method;
+		std::string uri;
+		std::string http_version;
+	};
+	_Firstline		_firstline;
 
-	void _read_buffer();
-	void _parse();
+	void		_read_buffer();
+	void		_parse();
+
+	void	_read_firstline(std::string str);
 
 public:
 	Request(int fd);
