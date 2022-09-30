@@ -26,7 +26,7 @@ void Response::create()
 
 	_init();
 
-	response << "HTTP/1.1" << _status << "\r\n";
+	response << "HTTP/1.1 " << _status << "\r\n";
 	response << "date: Wed, 28 Sep 2022 07:25:41 GMT\r\n";
 	response << "server: 42webserv\r\n";
 	response << "Cache-Control: no-cache\r\n";
