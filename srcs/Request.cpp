@@ -41,10 +41,10 @@ void Request::_read_buffer()
 	std::cout << _plaintext << std::endl;
 }
 
-void Request::_read_firstline(std::string str)
+void Request::_read_firstline(const std::string &str)
 {
-	std::string::iterator it = str.begin();
-	std::string::iterator end = str.begin();
+	std::string::const_iterator		it = str.begin();
+	std::string::const_iterator		end = str.begin();
 
 	while(end < str.end() && *end != '\r')
 		end++;

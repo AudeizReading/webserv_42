@@ -29,7 +29,7 @@ private:
 	void		_read_buffer();
 	void		_parse();
 
-	void	_read_firstline(std::string str);
+	void	_read_firstline(const std::string &str);
 
 public:
 	Request(int fd);
