@@ -23,20 +23,34 @@ else
 fi
 
 sleep 0.1
+echo "=============================="
+echo "============ TEST ============"
+echo "=============================="
 
-echo ">> req GET http://127.0.0.1:4242/"
-curl -s http://127.0.0.1:4242/ > output.log
-cat output.log
+test_diff () {
+	sleep 0.1
+	echo ">> req GET $1"
+	curl -s "$1" > "$2.log"
+	# cat "$2.log"
 
-echo ""
-echo "default_request_homepage"
-diff output.log ../demo/www/index.html
-if [[ $? == 0 ]]; then
-	echo "output ok"
-else
-	echo "error output different :("
-	exit 1
-fi
+	sleep 0.1
+	echo ""
+	echo "$2"
+	diff "$2.log" $3
+	if [[ $? == 0 ]]; then
+		echo "output ok"
+	else
+		echo "error output different :("
+		exit 1
+	fi
+	echo "=============================="
+}
+
+test_diff "http://127.0.0.1:4242/?je_suis_inutile=1&mais=je_debug&bien=1" \
+	"default_request_homepage" "../demo/www/index.html"
+
+test_diff "http://127.0.0.1:4242/.password" "forbidden_access_on_hidden_files" \
+	"./diff/forbidden_access_on_hidden_files.diff"
 
 pkill -2 webserv
 

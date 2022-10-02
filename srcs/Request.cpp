@@ -15,6 +15,8 @@
 
 #include <unistd.h>
 
+#include <toml_parser.hpp>
+
 #include "webserv.hpp"
 #include "Request.hpp"
 
@@ -38,13 +40,14 @@ void Request::_read_buffer()
 		_plaintext += buffer;
 	} while(size == READ_BUFFER_SIZE - 1);
 
-	std::cout << _plaintext << std::endl;
+	// std::cerr << "\e[48;5;19m\n" << _plaintext << RESET << std::endl;
 }
 
-void Request::_read_firstline(const std::string &str)
+void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)
 {
-	std::string::const_iterator		it = str.begin();
 	std::string::const_iterator		end = str.begin();
+
+	_Firstline						firstline;
 
 	while(end < str.end() && *end != '\r')
 		end++;
@@ -52,37 +55,94 @@ void Request::_read_firstline(const std::string &str)
 	if (*(end + 1) != '\n')
 		throw std::runtime_error("Bad Request");
 
-	while(it < end && *it != ' ')
-		_firstline.method += *it++;
+	for (; it < end && *it != ' '; it++)
+		firstline.method += toupper(*it);
 	it++;
-	while(it < end && *it != ' ')
-		_firstline.uri += *it++;
+	for (; it < end && *it != ' '; it++)
+		firstline.uri += *it;
 	it++;
-	while(it < end && *it != ' ' && *it != '\r')
-		_firstline.http_version += *it++;
+	for (; it < end && *it != ' ' && *it != '\r'; it++)
+		firstline.http_version += *it;
 
 	if (*it != '\r')
 		throw std::runtime_error("Bad Request");
+	it += 2;
 
 	// TODO: check http_version and throw ?
+	if (firstline.http_version.rfind("HTTP/", 0) != 0) 
+		throw std::runtime_error("Bad Request");
 
-	std::cout << "--> '" << _firstline.method << "' '" << _firstline.uri
-			<< "' '" << _firstline.http_version << "'\n";
+	std::string::size_type			pos = firstline.uri.find("?");
+
+	_method = firstline.method;
+	if (pos != std::string::npos)
+	{
+		_location = firstline.uri.substr(0, pos);
+		_query = firstline.uri.substr(pos, firstline.uri.length());
+	}
+	else
+		_location = firstline.uri;
+
+	if (_location.find("/../", 0) != std::string::npos) 
+		throw std::runtime_error("Bad Request");
+}
+
+void Request::_parse_otherline(const std::string &str, std::string::const_iterator &it)
+{
+	std::string::const_iterator		end = str.end();
+
+	std::string			key;
+	std::string			val;
+
+	_header.clear();
+	for (std::string key, val; it < end && *it != '\r'; it += 2, key = "", val = "")
+	{
+		for (int i = 0; it < end && *it != ':'; it++, i++)
+			key += (i == 0 || *(it - 1) == '-') ? toupper(*it) : tolower(*it);
+		if (*(++it) == ' ') it++;
+		for (int i = 0; it < end && *it != '\r'; it++, i++)
+			val += *it;
+		_header.insert(Request::pair_ss(key, val));
+		if (*it != '\r' || *(it + 1) != '\n')
+			throw std::runtime_error("Bad Request");
+	}
+	if (*it != '\r' || *(it + 1) != '\n')
+		throw std::runtime_error("Bad Request");
+	it += 2;
+	_content.assign(it, end);
 }
 
 void Request::_parse()
 {
 	try
 	{
-		_read_firstline(_plaintext);
+		std::string::const_iterator		it = _plaintext.begin();
 
-		// if you want test 400:
+		_parse_firstline(_plaintext, it);
+		_parse_otherline(_plaintext, it);
+
+		std::cerr << "\e[30;48;5;245m\n";
+
+		std::cout << "Method: " << _method << " - ";
+		std::cout << "Location: " << _location << std::endl;
+		if (_query != "")
+			std::cout << "Query: " << _query << std::endl;
+		if (_content != "")
+		std::cout << "Content: " << _content << std::endl;
+
+		map_ss::iterator it2;
+		std::cerr << "Headers (" << _header.size() << "):" << std::endl;
+		for (it2 = _header.begin(); it2 != _header.end(); it2++)
+			std::cerr << " - " << it2->first << ": " << it2->second << std::endl;
+
+		std::cerr << RESET << std::endl;
+
+		// if you want test 400, uncomment this line:
 		// throw std::runtime_error("Bad Request");
 
 		_complete = 1;
-		// TODO: Parsing
 	}
-	catch(const std::exception& e)
+	catch(const std::runtime_error& e)
 	{
 		std::cerr << e.what() << '\n';
 		_complete = 0;
@@ -97,4 +157,9 @@ Request::~Request()
 int	Request::is_complete() const
 {
 	return (_complete != 0);
+}
+
+std::string	Request::get_location() const
+{
+	return (_location);
 }

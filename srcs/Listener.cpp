@@ -74,26 +74,23 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 	Response					*response;
 
 	if (!request.is_complete())
-	{
-		std::cout << "[listener] send error 400 Bad Request for socket#" << new_socket << std::endl;
-
 		response = new Response_Bad_Request(request, *_server);
+	else
+	{
+		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
+		response = new Response_Ok(request, *_server);
 
-		send(new_socket, response->c_str(), response->length(), 0);
-		close(new_socket);
-		return (-1);
+		// Redirect STDERR to file to get primitive log
+		// Leave as it for log in console
+		if (response->get_ctype().rfind("text/", 0) == 0)
+			std::cerr << "\e[30;48;5;245m\n" << *response << RESET << std::endl;
+		else
+			std::cerr << "\e[30;48;5;245m\n" << "<response:" << response->get_ctype() << ">" << RESET << std::endl;
 	}
 
-	// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
-	std::cout << "[listener] send response to new socket#" << new_socket << std::endl;
-
-	response = new Response_Ok(request, *_server);
+	std::cout << "[listener] send " << response->get_status() << " to new socket#" << new_socket << std::endl;
 
 	send(new_socket, response->c_str(), response->length(), 0);
-
-	// Redirect STDERR to file to get primitive log
-	// Leave as it for log in console
-	std::cerr << "\e[30;48;5;245m\n" << *response << RESET << std::endl;
 
 	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
 	{
