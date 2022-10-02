@@ -16,6 +16,7 @@
 #include <ctime>
 
 #include "Response.hpp"
+#include "Response/Response_4XX.hpp"
 
 Response::Response(Request &request, Server &server): _request(request), _server(server)
 {
@@ -35,11 +36,8 @@ void Response::create()
 		int						good = file.good();
 
 		if (good && _content_path.find("/.", 0) != std::string::npos)
-		{
-			// TODO: throw ???
-			_content = "Error 403";
-			_status = "403 Forbidden";
-		}
+			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
+			*this = Response_Forbidden(_request, _server);
 		else if (good)
 		{
 			std::stringstream	content;
@@ -59,11 +57,7 @@ void Response::create()
 				_content_type = "text/plain";
 		}
 		else
-		{
-			// TODO: throw ???
-			_content = "Error 404";
-			_status = "404 Not Found";
-		}
+			*this = Response_Not_Found(_request, _server);
 	}
 
 	time_t						ctime = time(NULL);
@@ -85,6 +79,19 @@ void Response::create()
 
 Response::~Response()
 {
+}
+
+Response	&Response::operator=(Response const &src)
+{
+	this->_plaintext = src._plaintext;
+	this->_request = src._request;
+	this->_server = src._server;
+	this->_status = src._status;
+	this->_content_path = src._content_path;
+	this->_content_type = src._content_type;
+	this->_content = src._content;
+
+	return (*this);
 }
 
 Response::operator std::string() const

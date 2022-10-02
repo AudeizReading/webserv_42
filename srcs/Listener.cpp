@@ -92,6 +92,8 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 
 	send(new_socket, response->c_str(), response->length(), 0);
 
+	delete response;
+
 	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
 	{
 		std::cout << "[listener] close new socket#" << new_socket << std::endl;
@@ -222,6 +224,7 @@ void	Listener::start_listener()
 
 Listener::~Listener()
 {
+	delete _server;
 	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
 	if (close(_fd) < 0)

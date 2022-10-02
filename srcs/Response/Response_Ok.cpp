@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "Response_Ok.hpp"
+#include "Response_4XX.hpp"
 
 Response_Ok::Response_Ok(Request &request, Server &server): Response(request, server)
 {
@@ -29,9 +30,8 @@ void Response_Ok::_init()
 
 	if (location[0] != '/')
 	{
-		// TODO: throw ???
-		_content = "Error 404";
-		_status = "404 Not Found";
+		Response				&moi = *this;
+		moi = Response_Not_Found(_request, _server);
 		return ;
 	}
 	if (*(location.end() - 1) == '/')

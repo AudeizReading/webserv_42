@@ -33,7 +33,9 @@ protected:
 public:
 	Response(Request &request, Server &server);
 
-	~Response();
+	virtual ~Response();
+
+	Response	&operator=(Response const &src);
 
 	operator std::string() const;
 

@@ -49,8 +49,8 @@ test_diff () {
 test_diff "http://127.0.0.1:4242/?je_suis_inutile=1&mais=je_debug&bien=1" \
 	"default_request_homepage" "../demo/www/index.html"
 
-test_diff "http://127.0.0.1:4242/.password" "forbidden_access_on_hidden_files" \
-	"./diff/forbidden_access_on_hidden_files.diff"
+test_diff "http://127.0.0.1:4242/.password" \
+	"forbidden_access_on_hidden_files" "../res/error/403.html"
 
 pkill -2 webserv
 
