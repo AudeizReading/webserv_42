@@ -38,19 +38,18 @@ Listener::Listener(TOML::Document const& config)
 		_port				= config.at("server").at("port").Int();
 		_listen_backlog		= config.at("server").at("listen_backlog").Int();
 		std::string root	= config.at("demo").at("www").at("root").Str();
+		if (root.back() != '/')
+			root.push_back('/');
 
 		// TODO: Array of servers
 		_server = new Server(root.c_str());
-
-		if (root.back() == '/')
-			root.erase(root.end() - 1);
-		this->start_listener();	
 	}
 	catch (std::exception const& e)
 	{
-		std::cerr << "FATAL: Caught exception while getting config info: " << e.what() << std::endl;
+		std::cerr << "FATAL: Listener::Listener: Error while getting config info: " << e.what() << std::endl;
 		throw;
 	}
+	this->start_listener();	
 }
 
 int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
