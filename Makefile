@@ -19,6 +19,7 @@ SRC   = srcs/main.cpp \
 		srcs/Response.cpp \
 		srcs/Server.cpp \
 		srcs/webserv.cpp \
+		srcs/CGIManager.cpp \
 
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/webserv.hpp' pos='1' template='		{0} \' -->
@@ -29,6 +30,7 @@ HDEP  = srcs/webserv.hpp \
 		srcs/Request.hpp \
 		srcs/Response.hpp \
 		srcs/Server.hpp \
+		srcs/CGIManager.hpp \
 
 
 TOML_PARSER = lib/toml_parser

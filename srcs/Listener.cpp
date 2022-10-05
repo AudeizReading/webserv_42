@@ -28,6 +28,7 @@
 #include "Response.hpp"
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
+#include "CGIManager.hpp"
 
 #define I_LOVE_ICEBERG 1
 
@@ -78,6 +79,10 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 	{
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
 		response = new Response_Ok(request, *_server);
+
+		// CGI Handling
+		CGIManager cgi(request, new_socket);
+		//
 
 		// Redirect STDERR to file to get primitive log
 		// Leave as it for log in console
