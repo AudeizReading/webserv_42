@@ -21,6 +21,7 @@
 #include <netinet/ip.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "webserv.hpp"
 #include "Listener.hpp"
@@ -90,7 +91,7 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 
 	// TODO: What if send() fails ? Or only sends some of the data ?
 	// Aparently the subject forbids checking errno here...
-	send(new_socket, response->c_str(), response->length(), 0);
+	send(new_socket, response->c_str(), response->length(), MSG_DONTWAIT);
 
 	delete response;
 
@@ -113,6 +114,22 @@ void	Listener::start_listener()
 	_fd = socket(PF_INET, SOCK_STREAM, 0); 
 	std::cout << "[listener] create socket#" << _fd << std::endl;
 	if (_fd < 0)
+		throw std::runtime_error(strerror(errno));
+
+	int flags = fcntl(_fd, F_GETFL, 0);
+	flags |= O_NONBLOCK;
+	std::cout << flags << std::endl;
+	std::cout << "O_RDONLY: " << (flags & O_RDONLY) << std::endl;
+	std::cout << "O_WRONLY: " << (flags & O_WRONLY) << std::endl;
+	std::cout << "O_RDWR: " << (flags & O_RDWR) << std::endl;
+	std::cout << "O_CREAT: " << (flags & O_CREAT) << std::endl;
+	std::cout << "O_EXCL: " << (flags & O_EXCL) << std::endl;
+	std::cout << "O_NOCTTY: " << (flags & O_NOCTTY) << std::endl;
+	std::cout << "O_TRUNC: " << (flags & O_TRUNC) << std::endl;
+	std::cout << "O_APPEND: " << (flags & O_APPEND) << std::endl;
+	std::cout << "O_ASYNC: " << (flags & O_ASYNC) << std::endl;
+	std::cout << "O_NONBLOCK: " << (flags & O_NONBLOCK) << std::endl;
+	if (fcntl(_fd, F_SETFL, flags) < 0)
 		throw std::runtime_error(strerror(errno));
 
 	/*
