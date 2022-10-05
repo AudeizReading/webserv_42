@@ -50,7 +50,6 @@ Listener::Listener(TOML::Document const& config)
 		std::cerr << "FATAL: Listener::Listener: Error while getting config info: " << e.what() << std::endl;
 		throw;
 	}
-	this->start_listener();	
 }
 
 int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
@@ -107,6 +106,8 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 
 	std::cout << "[listener] send " << response->get_status() << " to new socket#" << new_socket << std::endl;
 
+	// TODO: What if send() fails ? Or only sends some of the data ?
+	// Aparently the subject forbids checking errno here...
 	send(new_socket, response->c_str(), response->length(), 0);
 
 	delete response;
@@ -154,17 +155,18 @@ void	Listener::start_listener()
 	* 
 	*/
 	struct sockaddr_in			address;
-	int							sockaddr_in_size = sizeof(address);
 
-	bzero(reinterpret_cast<char *>(&address), sockaddr_in_size);
+	bzero(reinterpret_cast<char *>(&address), sizeof(address));
 
 	address.sin_family = AF_INET;
 	address.sin_port = htons(_port);
 	address.sin_addr.s_addr = INADDR_ANY;
 
 	std::cout << "[listener] bind socket#" << _fd << " to port " << _port << std::endl;
-	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sockaddr_in_size) < 0)
+	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0)
 		throw std::runtime_error(strerror(errno));
+	// NOTE: @gphilipp sizeof() is a compile time macro, there's no need to create a variable
+	// containing its return value
 
 	std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
 	if (listen(_fd, _listen_backlog) == -1)
@@ -214,7 +216,7 @@ void	Listener::start_listener()
 
 				std::cout << "[listener] client disconnection for socket#" << event_fd << std::endl;
 
-				new_socket = _accept(event_fd, address, sockaddr_in_size);
+				new_socket = _accept(event_fd, address, sizeof(address));
 
 				if (new_socket < 0)
 					continue;
