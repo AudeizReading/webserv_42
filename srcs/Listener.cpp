@@ -82,6 +82,7 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 
 		// CGI Handling
 		CGIManager cgi(request, new_socket);
+		cgi.fork();
 		//
 
 		// Redirect STDERR to file to get primitive log
