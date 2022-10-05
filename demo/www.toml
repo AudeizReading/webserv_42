@@ -12,3 +12,4 @@ root = "./demo/www/" # Path to demo html
 
 [http] # I don't know what this is, I'm just copying NGINX
 index = "index.html" # Default index
+include = ["demo/mime_types.toml"] # For testing

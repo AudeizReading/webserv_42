@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-#include "webserv.hpp"
+#include <webserv.hpp>
 #include "Listener.hpp"
 
 #include <csignal>
@@ -36,9 +36,9 @@ int	webserv(int argc, char *argv[])
 	std::signal(SIGINT, signal_handler);
 
 	std::cout << "Config file: " << argv[0] << std::endl;
-	TOML::Document	config(argv[0]);
-	config.parse();
+	TOML::Document	config = parse_config_file(argv[0]);
 	Listener	listener(config);
+	listener.start_listener();
 	std::cout << "Bonjour!" << std::endl;
 	return (0);
 }

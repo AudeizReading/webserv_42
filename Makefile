@@ -3,15 +3,19 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
+#    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/09/30 15:21:31 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/10/05 23:21:10 by pbremond         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
+PARSING_SRC_FILES =	include_directive.cpp		config_parsing.cpp
+
+PARSING_SRC = $(addprefix srcs/config_parsing/, $(PARSING_SRC_FILES))
+
 # <!-- pre='./' path='srcs/' match='*.cpp' exclude='srcs/main.cpp' pos='1' template='		{0} \' -->
-SRC   = srcs/main.cpp \
+SRC =	srcs/main.cpp \
 		srcs/Response/Response_4XX.cpp \
 		srcs/Response/Response_Ok.cpp \
 		srcs/Listener.cpp \
@@ -20,11 +24,10 @@ SRC   = srcs/main.cpp \
 		srcs/Server.cpp \
 		srcs/webserv.cpp \
 		srcs/CGIManager.cpp \
-
+		$(PARSING_SRC)
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/webserv.hpp' pos='1' template='		{0} \' -->
-HDEP  = srcs/webserv.hpp \
-		srcs/Response/Response_4XX.hpp \
+HDEP  = srcs/Response/Response_4XX.hpp \
 		srcs/Response/Response_Ok.hpp \
 		srcs/Listener.hpp \
 		srcs/Request.hpp \
@@ -32,16 +35,17 @@ HDEP  = srcs/webserv.hpp \
 		srcs/Server.hpp \
 		srcs/CGIManager.hpp \
 
-
 TOML_PARSER = lib/toml_parser
 
-OBJ = $(SRC:.cpp=.o)
+INCLUDES = $(TOML_PARSER) includes
+
+OBJ = $(subst srcs/, objs/, $(patsubst %.cpp, %.o, $(SRC)))
 
 NAME = webserv
 
 CXX  = clang++
 
-CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -g -std=c++98
 
 CONF_FILE = demo/www.toml
 
@@ -59,10 +63,11 @@ all: libs $(NAME)
 libs: $(LIBS)
 
 toml:
-	git submodule update --init $(SMFLAGS) $(TOML_PARSER)
+#	git submodule update --init $(SMFLAGS) $(TOML_PARSER)
 
-%.o: %.cpp $(HDEP)
-	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -c $< -o $@
+objs/%.o: srcs/%.cpp $(HDEP)
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -Iincludes -c $< -o $@
 
 $(NAME): $(OBJ) $(HDEP)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)

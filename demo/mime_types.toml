@@ -1,0 +1,53 @@
+# This standard of TOML doesn't support quoted keys.
+# Thus: a sequence of two underscores shall be replaced by a '/'
+# A single underscore shall be replaced by a '.'
+# Example: `image__vnd_wap_wbmp' becomes `image/vnd.wap.wbmp'
+[mime_types]
+text__html = 							["html", "htm", "shtml"]
+text__css = 							["css"]
+text__xml =								["xml", "rss"]
+image__gif =							["gif"]
+image__jpeg =							["jpeg", "jpg"]
+application__x-javascript =				["js"]
+text__plain =							["txt"]
+text__x-component =						["htc"]
+text__mathml =							["mml"]
+image__png =							["png"]
+image__x-icon =							["ico"]
+image__x-jng =							["jng"]
+image__vnd_wap_wbmp =					["wbmp"]
+application__java-archive =				["jar", "war", "ear"]
+application__mac-binhex40 =				["hqx"]
+application__pdf =						["pdf"]
+application__x-cocoa =					["cco"]
+application__x-java-archive-diff =		["jardiff"]
+application__x-java-jnlp-file =			["jnlp"]
+application__x-makeself =				["run"]
+application__x-perl =					["pl", "pm"]
+application__x-pilot =					["prc", "pdb"]
+application__x-rar-compressed =			["rar"]
+application__x-redhat-package-manager =	["rpm"]
+application__x-sea =					["sea"]
+application__x-shockwave-flash =		["swf"]
+application__x-stuffit =				["sit"]
+application__x-tcl =					["tcl", "tk"]
+application__x-x509-ca-cert =			["der", "pem", "crt"]
+application__x-xpinstall =				["xpi"]
+application__zip =						["zip"]
+application__octet-stream =				[
+											"deb",
+											"bin", "exe", "dll",
+											"dmg",
+											"eot",
+											"iso", "img",
+											"msi", "sp", "msm"
+										]
+audio__mpeg =							["mp3"]
+audio__x-realaudio =					["ra"]
+video__mpeg =							["mpeg", "mpg"]
+video__quicktime =						["mov"]
+video__x-flv =							["flv"]
+video__x-msvideo =						["avi"]
+video__x-ms-wmv =						["wmv"]
+video__x-ms-asf =						["asx", "asf"]
+video__x-mng =							["mng"]
