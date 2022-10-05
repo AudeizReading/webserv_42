@@ -81,9 +81,21 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 		response = new Response_Ok(request, *_server);
 
 		// CGI Handling
-		CGIManager cgi(request, new_socket);
-		cgi.fork();
-		//
+		try 
+		{
+			// it would be better to access to the config file than the request because I can reach the location with Request obj,
+			// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ?
+			// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
+			// all infos needed by CGI is setted inside the config file.
+			CGIManager cgi(request, new_socket);
+			cgi.fork();
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+			return (-1);
+		}
+		// End CGI Handling
 
 		// Redirect STDERR to file to get primitive log
 		// Leave as it for log in console
