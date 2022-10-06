@@ -18,6 +18,8 @@ class CGIManager {
 		int&			_socket;
 		int				_fds[2];
 		map_ss			_env;
+		size_t			_content_length;
+
 
 		CGIManager(void);
 		CGIManager(const CGIManager &src);
