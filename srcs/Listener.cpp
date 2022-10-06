@@ -52,24 +52,10 @@ Listener::Listener(TOML::Document const& config)
 	}
 }
 
-int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
+void	Listener::_recv(int fd)
 {
-	int							new_socket;
-
-	std::cout << "[listener] accept socket#" << fd << std::endl;
-	new_socket = accept(fd, reinterpret_cast<struct sockaddr *>(&address),
-					reinterpret_cast<socklen_t *>(&sockaddr_in_size));
-
-	if (new_socket < 0)
-	{
-		// TODO: ERROR?
-		std::cout << "[listener] accept socket error for event#" << fd << std::endl;
-		perror("[listener] -- accept socket error");
-		return (-1);
-	}
-
-	std::cout << "[listener] new socket#" << new_socket << std::endl;
-	Request						request(new_socket);
+	std::cout << "[listener] recv socket#" << fd << std::endl;
+	Request						request(fd);
 	Response					*response;
 
 	if (!request.is_complete())
@@ -87,21 +73,16 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 			std::cerr << "\e[30;48;5;245m\n" << "<response:" << response->get_ctype() << ">" << RESET << std::endl;
 	}
 
-	std::cout << "[listener] send " << response->get_status() << " to new socket#" << new_socket << std::endl;
+	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
 
 	// TODO: What if send() fails ? Or only sends some of the data ?
 	// Aparently the subject forbids checking errno here...
-	send(new_socket, response->c_str(), response->length(), MSG_DONTWAIT);
+	send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
 
 	delete response;
 
-	if (1)  // TODO: Doit-t-on close ici ? --> oui si on send, sinon non
-	{
-		std::cout << "[listener] close new socket#" << new_socket << std::endl;
-		close(new_socket);
-		return (-1);
-	}
-	return (new_socket);
+	std::cout << "[listener] close socket#" << fd << std::endl;
+	close(fd);
 }
 
 void	Listener::start_listener()
@@ -183,12 +164,12 @@ void	Listener::start_listener()
 
 	// src: https://dev.to/frevib/a-tcp-server-with-kqueue-527
 	int							kq = kqueue();
-	struct kevent				change_event[4], event[4];
+	struct kevent				change_event, event;
 
-	EV_SET(change_event, _fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, 0);
 
 	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
-	if (kevent(kq, change_event, 1, NULL, 0, NULL) == -1)
+	if (kevent(kq, &change_event, 1, NULL, 0, NULL) == -1)
 		throw std::runtime_error(strerror(errno));
 
 	while (I_LOVE_ICEBERG)
@@ -196,15 +177,15 @@ void	Listener::start_listener()
 		int							new_events;
 
 		std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
-		new_events = kevent(kq, NULL, 0, event, 1, NULL);
+		new_events = kevent(kq, NULL, 0, &event, 1, NULL);
 		if (new_events == -1)
 			throw std::runtime_error(strerror(errno));
 
 		for (int i = 0, event_fd; new_events > i; i++)
 		{
-			event_fd = event[i].ident;
+			event_fd = event.ident;
 
-			if (event[i].flags & EV_EOF)
+			if (event.flags & EV_EOF)
 			{
 				// TODO: ERROR?
 				std::cout << "[listener] client has disconnected for event#" << event_fd << std::endl;
@@ -213,29 +194,37 @@ void	Listener::start_listener()
 			else if (event_fd == _fd) // = Socket connection
 			{
 				int					new_socket;
+				int					sockaddr_in_size = sizeof(address);
 
-				std::cout << "[listener] client disconnection for socket#" << event_fd << std::endl;
-
-				new_socket = _accept(event_fd, address, sizeof(address));
-
+				
+				new_socket = accept(event_fd, reinterpret_cast<struct sockaddr *>(&address),
+								reinterpret_cast<socklen_t *>(&sockaddr_in_size));
+				std::cout << "[listener] accept connection #" << new_socket
+							<< " for socket#" << event_fd << std::endl;
 				if (new_socket < 0)
+				{
+					// TODO: ERROR?
+					std::cout << "[listener] accept socket error for event#" << event_fd << std::endl;
+					perror("[listener] -- accept socket error");
 					continue;
+				}
 
-				EV_SET(change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
-				if (kevent(kq, change_event, 1, NULL, 0, NULL) < 0)
+				EV_SET(&change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
+				if (kevent(kq, &change_event, 1, NULL, 0, NULL) < 0)
 				{
 					// TODO: ERROR?
 					std::cout << "[listener] kevent error for event#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
 				}
 			}
-			else if (event[i].filter & EVFILT_READ)
+			else if (event.filter & EVFILT_READ)
 			{
 				std::cout << "[listener] read bytes for event#" << event_fd << std::endl;
-				char buf[1024];
-				size_t bytes_read = recv(event_fd, buf, sizeof(buf), 0);
-				std::cout << "[listener] -- " << bytes_read << "for event#" << event_fd << std::endl;
-				printf("read %zu bytes\n", bytes_read);
+				_recv(event_fd);
+			}
+			else
+			{
+				std::cout << "[listener] and else? event#" << event_fd << std::endl;
 			}
 		}
 	}

@@ -27,7 +27,7 @@ private:
 	int		_listen_backlog; // Mais faut différencier les membres private/protected des publics.
 	Server  *_server;
 
-	int	_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size);
+	void	_recv(int fd);
 
 public:
 	Listener(TOML::Document const& config);
