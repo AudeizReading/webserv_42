@@ -217,10 +217,16 @@ void	Listener::start_listener()
 					perror("[listener] -- kevent error");
 				}
 			}
-			else if (event.filter & EVFILT_READ)
+			else if (event.filter == EVFILT_READ)
+			// On utilise `==` https://stackoverflow.com/a/12165298/
 			{
 				std::cout << "[listener] read bytes for event#" << event_fd << std::endl;
 				_recv(event_fd);
+			}
+			else if (event.filter == EVFILT_WRITE)
+			{
+				// TODO: HOW TO DO HERE???
+				std::cout << "[listener] write bytes for event#" << event_fd << std::endl;
 			}
 			else
 			{
