@@ -28,7 +28,6 @@
 #include "Response.hpp"
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
-#include "CGIManager.hpp"
 
 #define I_LOVE_ICEBERG 1
 
@@ -79,26 +78,9 @@ int	Listener::_accept(int fd, struct sockaddr_in &address, int sockaddr_in_size)
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
 		response = new Response_Ok(request, *_server);
 
-		// CGI Handling
-		try 
-		{
-			// it would be better to access to the config file than the request because I can reach the location with Request obj,
-			// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ?
-			// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
-			// all infos needed by CGI is setted inside the config file.
-			CGIManager cgi(request, new_socket);
-			cgi.fork();
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-			return (-1);
-		}
-		// End CGI Handling
-
-		// Redirect STDERR to file to get primitive log
-		// Leave as it for log in console
 		if (response->get_ctype().rfind("text/", 0) == 0)
+			// Redirect STDERR to file to get primitive log
+			// Leave as it for log in console
 			std::cerr << "\e[30;48;5;245m\n" << *response << RESET << std::endl;
 		else
 			std::cerr << "\e[30;48;5;245m\n" << "<response:" << response->get_ctype() << ">" << RESET << std::endl;

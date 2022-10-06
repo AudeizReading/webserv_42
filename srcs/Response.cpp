@@ -17,6 +17,7 @@
 
 #include "Response.hpp"
 #include "Response/Response_4XX.hpp"
+#include "CGIManager.hpp"
 
 Response::Response(Request &request, Server &server): _request(request), _server(server)
 {
@@ -34,17 +35,42 @@ void Response::create()
 	{
 		std::ifstream			file(_content_path);
 		int						good = file.good();
+		std::string				ext = _content_path
+									.substr(_content_path.find_last_of(".") + 1);
 
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
 			*this = Response_Forbidden(_request, _server);
+		else if (ext == "pl") { // TODO: is cgi extension of application
+			// CGI Handling
+			try 
+			{
+				// it would be better to access to the config file than the request because I can reach the location with Request obj,
+				// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ?
+				// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
+				// all infos needed by CGI is setted inside the config file.
+				int a_supprimer = 0; // TODO: @alellouc je te laisse voir si tu as vraiment besoin de new_socket
+				CGIManager cgi(_request, a_supprimer);
+				cgi.fork();
+				response << "content-type: " << _content_type << "\r\n";
+				response << "\r\n";
+				response << "AUDDDE SUPPPRIME MOI !";
+				_plaintext = response.str();
+			}
+			catch(const std::exception& e)
+			{
+				// TODO: Send error 500
+				*this = Response_Bad_Request(_request, _server);
+				std::cerr << "[CGI] " << e.what() << '\n';
+			}
+			return ;
+		}
 		else if (good)
 		{
 			std::stringstream	content;
 			content << file.rdbuf();
 			_content = content.str();
 
-			std::string ext = _content_path.substr(_content_path.find_last_of(".") + 1);
 			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 			// TODO: Support more MIME types
 			if (ext == "ico")
