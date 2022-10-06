@@ -6,7 +6,7 @@
 #    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/05 23:21:10 by pbremond         ###   ########.fr        #
+#    Updated: 2022/10/06 14:50:11 by pbremond         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -63,7 +63,7 @@ all: libs $(NAME)
 libs: $(LIBS)
 
 toml:
-#	git submodule update --init $(SMFLAGS) $(TOML_PARSER)
+	git submodule update --init $(SMFLAGS) $(TOML_PARSER)
 
 objs/%.o: srcs/%.cpp $(HDEP)
 	@mkdir -p $(@D)
