@@ -117,7 +117,8 @@ void	Listener::start_listener()
 		throw std::runtime_error(strerror(errno));
 
 	int flags = fcntl(_fd, F_GETFL, 0);
-	flags |= O_NONBLOCK;
+	//flags |= O_NONBLOCK; //TODO: C'est utile ??
+	// la 404 (page trop grande) ne fonctionne pas si on met ça
 	std::cout << flags << std::endl;
 	std::cout << "O_RDONLY: " << (flags & O_RDONLY) << std::endl;
 	std::cout << "O_WRONLY: " << (flags & O_WRONLY) << std::endl;
