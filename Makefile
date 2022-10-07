@@ -43,7 +43,15 @@ TOML_PARSER = lib/toml_parser
 
 INCLUDES = $(TOML_PARSER) includes
 
+ifeq (,$(wildcard /.guillaume))
+GUILLAUME = 1
+endif
+
+ifdef GUILLAUME
+OBJ = $(SRC:.cpp=.o)
+else
 OBJ = $(subst srcs/, objs/, $(patsubst %.cpp, %.o, $(SRC)))
+endif
 
 NAME = webserv
 
@@ -71,8 +79,12 @@ libs: $(LIBS)
 toml:
 	git submodule update --init $(SMFLAGS) $(TOML_PARSER)
 
+ifdef GUILLAUME
+%.o: %.cpp $(HDEP)
+else
 objs/%.o: srcs/%.cpp $(HDEP)
 	@mkdir -p $(@D)
+endif
 	$(CXX) $(CXXFLAGS) $(LDLIBS) -c $< -o $@
 
 $(NAME): $(OBJ) $(HDEP)

@@ -3,6 +3,7 @@
 .DS_Store
 *.dSYM
 *.swp
+/.guillaume
 
 # Object files
 *.o
