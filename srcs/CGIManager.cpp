@@ -101,7 +101,7 @@ bool				CGIManager::launchExec() const
 {
 	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)
-	if (::execl("/bin/ls", "/bin/ls", "-la", NULL) == -1)
+	if (::execl("./demo/www/cgi-bin/apply-for-iceberg.pl", "./demo/www/cgi-bin/apply-for-iceberg.pl", NULL) == -1)
 	{
 		throw std::runtime_error(strerror(errno));
 		return false;
