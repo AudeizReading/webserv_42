@@ -2,7 +2,7 @@
 #include "CGIManager.hpp"
 
 // - Constr / Destr ------------------------------------------------------------ 
-CGIManager::CGIManager(const Request& req) : _request(req), _env(), _content_length(0) {
+CGIManager::CGIManager(const Request& req) : _request(req), _env(), _content_length(0), _plaintext() {
 	try
 	{
 		// un blabla de commit
@@ -23,7 +23,8 @@ CGIManager::~CGIManager(void) {
 }
 
 // - Accessors ----------------------------------------------------------------- 
-CGIManager::map_ss	CGIManager::getEnv() const { return this->_env; }
+CGIManager::map_ss	CGIManager::getEnv()		const { return this->_env; }
+std::string			CGIManager::getPlainText()	const { return this->_plaintext; }
 
 CGIManager&			CGIManager::_setEnv()
 {
@@ -41,10 +42,37 @@ bool				CGIManager::pipe()
 	return true;
 }
 
-bool				CGIManager::fork() 
+bool				CGIManager::getCGIResponse()
+{
+	char	buffer[PIPE_BUF] = {0};
+	size_t	tmp_sz = 0;
+	size_t	input_sz = 0;
+
+	while ((0 < (tmp_sz = ::read(_fds[0], buffer, PIPE_BUF))))
+	{
+		buffer[tmp_sz] = 0;
+		input_sz += tmp_sz;
+		this->_plaintext += buffer;
+	}
+
+	size_t	p_size = _plaintext.size();
+
+	std::cerr << "_plaintext: " << _plaintext << std::endl;
+	// It is forbidden by subject to check errno after a write, so check it manually
+	// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
+	(input_sz == p_size && (this->_content_length = p_size));
+	if (p_size != input_sz)
+	{
+		throw std::runtime_error(strerror(EIO));
+		return false;
+	}
+	return true;
+}
+
+bool				CGIManager::exec() 
 {
 	pid_t	pid = ::fork();
-	char	buffer[PIPE_BUF] = {0};
+//	char	buffer[PIPE_BUF] = {0};
 
 	switch (pid)
 	{
@@ -56,32 +84,12 @@ bool				CGIManager::fork()
 			::close(STDOUT_FILENO);
 			::dup2(_fds[1], STDOUT_FILENO);
 			::close(_fds[1]);
-			if (!this->exec())
+			if (!this->launchExec())
 				return false;
 			break;
 		default:
 			::close(_fds[1]);
-
-			size_t	tmp_sz = 0;
-			size_t	input_sz = 0;
-			size_t	output_sz = 0;
-
-			// read fd[0], but where ?
-			// write directly in socket or in ostream?
-			while ((0 < (tmp_sz = ::read(_fds[0], buffer, PIPE_BUF))))
-			{
-				input_sz += tmp_sz;
-				output_sz += ::write(STDERR_FILENO, buffer, tmp_sz);
-			}
-
-			// It is forbidden by subject to check errno after a write, so check it manually
-			// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
-			(output_sz == input_sz && (this->_content_length = output_sz));
-			if (output_sz != input_sz)
-			{
-				throw std::runtime_error(strerror(EIO));
-				return false;
-			}
+			this->getCGIResponse();
 			::close(_fds[0]);
 			::waitpid(pid, NULL, 0);
 			break;
@@ -89,7 +97,7 @@ bool				CGIManager::fork()
 	return true;
 }
 
-bool				CGIManager::exec() const
+bool				CGIManager::launchExec() const
 {
 	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)

@@ -18,6 +18,7 @@ class CGIManager {
 		int				_fds[2];
 		map_ss			_env;
 		size_t			_content_length;
+		std::string		_plaintext;
 
 
 		CGIManager(void);
@@ -30,10 +31,12 @@ class CGIManager {
 		CGIManager(const Request& req);
 		~CGIManager(void);
 
-		map_ss	getEnv() const;
+		map_ss		getEnv() const;
+		std::string	getPlainText() const;
 
 		bool	pipe();
-		bool	fork();
-		bool	exec() const;
+		bool	getCGIResponse();
+		bool	exec();
+		bool	launchExec() const;
 		
 };
