@@ -2,7 +2,7 @@
 #include "CGIManager.hpp"
 
 // - Constr / Destr ------------------------------------------------------------ 
-CGIManager::CGIManager(const Request& req, int& sock) : _request(req), _socket(sock), _env(), _content_length(0) {
+CGIManager::CGIManager(const Request& req) : _request(req), _env(), _content_length(0) {
 	try
 	{
 		this->pipe();

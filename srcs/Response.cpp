@@ -46,11 +46,11 @@ void Response::create()
 			try 
 			{
 				// it would be better to access to the config file than the request because I can reach the location with Request obj,
-				// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ?
+				// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ? -> The Server would have one so it will be handled by accesing the Server's ref config's file
 				// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
 				// all infos needed by CGI is setted inside the config file.
 				int a_supprimer = 0; // TODO: @alellouc je te laisse voir si tu as vraiment besoin de new_socket
-				CGIManager cgi(_request, a_supprimer);
+				CGIManager cgi(_request);
 				cgi.fork();
 				response << "content-type: " << _content_type << "\r\n";
 				response << "\r\n";
