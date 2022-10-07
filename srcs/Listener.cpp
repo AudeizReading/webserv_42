@@ -171,7 +171,7 @@ void	Listener::start_listener()
 	int							kq = kqueue();
 	struct kevent				change_event, event;
 
-	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, 0);
+	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
 
 	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
 	if (kevent(kq, &change_event, 1, NULL, 0, NULL) == -1)
@@ -222,16 +222,11 @@ void	Listener::start_listener()
 					perror("[listener] -- kevent error");
 				}
 			}
-			else if (event.filter == EVFILT_READ)
+			else if (event.filter & EVFILT_READ)
 			// On utilise `==` https://stackoverflow.com/a/12165298/
 			{
 				std::cout << "[listener] read bytes for event#" << event_fd << std::endl;
 				_recv(event_fd);
-			}
-			else if (event.filter == EVFILT_WRITE)
-			{
-				// TODO: HOW TO DO HERE???
-				std::cout << "[listener] write bytes for event#" << event_fd << std::endl;
 			}
 			else
 			{
