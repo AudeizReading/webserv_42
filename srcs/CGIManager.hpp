@@ -15,7 +15,6 @@ class CGIManager {
 	private:
 
 		const Request&	_request;
-		int&			_socket;
 		int				_fds[2];
 		map_ss			_env;
 		size_t			_content_length;
@@ -28,7 +27,7 @@ class CGIManager {
 		CGIManager&	_setEnv();
 
 	public:
-		CGIManager(const Request& req, int& sock);
+		CGIManager(const Request& req);
 		~CGIManager(void);
 
 		map_ss	getEnv() const;
