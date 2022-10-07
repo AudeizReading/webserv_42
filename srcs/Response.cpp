@@ -41,7 +41,7 @@ void Response::create()
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
 			*this = Response_Forbidden(_request, _server);
-		else if (good && ext == "pl") { // TODO: is cgi extension of application
+		else if (/*good &&*/ ext == "pl") { // TODO: is cgi extension of application
 			// CGI Handling
 			try 
 			{
@@ -51,8 +51,7 @@ void Response::create()
 				// all infos needed by CGI is setted inside the config file.
 				CGIManager cgi(_request);
 				cgi.exec();
-				response << cgi.getPlainText();
-				_plaintext = response.str();
+				_plaintext = cgi.getPlainText();
 			}
 			catch(const std::exception& e)
 			{

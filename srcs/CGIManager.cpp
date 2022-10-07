@@ -57,7 +57,7 @@ bool				CGIManager::getCGIResponse()
 
 	size_t	p_size = _plaintext.size();
 
-	std::cerr << "_plaintext: " << _plaintext << std::endl;
+//	std::cerr << "_plaintext: " << _plaintext << std::endl;
 	// It is forbidden by subject to check errno after a write, so check it manually
 	// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
 	(input_sz == p_size && (this->_content_length = p_size));
@@ -101,7 +101,7 @@ bool				CGIManager::launchExec() const
 {
 	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)
-	if (::execl("/bin/ls", "/bin/ls", "-la", NULL) == -1)
+	if (::execl("./demo/www/cgi-bin/apply-for-iceberg.pl", "./demo/www/cgi-bin/apply-for-iceberg.pl", NULL) == -1)
 	{
 		throw std::runtime_error(strerror(errno));
 		return false;
