@@ -39,7 +39,7 @@ void Request::_read_buffer()
 		if (size < 0)
 			throw std::runtime_error(strerror(errno));
 		_plaintext += buffer;
-	} while(size == READ_BUFFER_SIZE - 1);
+	} while(size == READ_BUFFER_SIZE - 1); // TODO: On est bloquant en faisant ça ^^"
 
 	// std::cerr << "\e[48;5;19m\n" << _plaintext << RESET << std::endl;
 }

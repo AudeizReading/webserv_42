@@ -65,12 +65,17 @@ void	Listener::_recv(int fd)
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
 		response = new Response_Ok(request, *_server);
 
+		std::cerr << "\e[30;48;5;245m\n";
 		if (response->get_ctype().rfind("text/", 0) == 0)
 			// Redirect STDERR to file to get primitive log
 			// Leave as it for log in console
-			std::cerr << "\e[30;48;5;245m\n" << *response << RESET << std::endl;
+			if (response->length() < 1400)
+				std::cerr << *response;
+			else
+				std::cerr << "<response length: " << response->length() << ">";
 		else
-			std::cerr << "\e[30;48;5;245m\n" << "<response:" << response->get_ctype() << ">" << RESET << std::endl;
+			std::cerr << "<response: " << response->get_ctype() << ">";
+		std::cerr << RESET << std::endl;
 	}
 
 	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
