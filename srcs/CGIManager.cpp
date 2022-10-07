@@ -90,29 +90,6 @@ bool				CGIManager::exec()
 		default:
 			::close(_fds[1]);
 			this->getCGIResponse();
-
-	/*		size_t	tmp_sz = 0;
-			size_t	input_sz = 0;
-
-			// read into the buffer for getting back CGI answer, 
-			// put the answer in a string for giving it to the response
-			while ((0 < (tmp_sz = ::read(_fds[0], buffer, PIPE_BUF))))
-			{
-				buffer[tmp_sz] = 0;
-				input_sz += tmp_sz;
-				_plaintext += buffer;
-			}
-
-			std::cerr << "_plaintext: " << _plaintext << std::endl;
-			// It is forbidden by subject to check errno after a write, so check it manually
-			// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
-			(input_sz == _plaintext.size() && (this->_content_length = _plaintext.size()));
-			if (_plaintext.size() != input_sz)
-			{
-				throw std::runtime_error(strerror(EIO));
-				return false;
-			}*/
-
 			::close(_fds[0]);
 			::waitpid(pid, NULL, 0);
 			break;
