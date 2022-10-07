@@ -50,10 +50,8 @@ void Response::create()
 				// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
 				// all infos needed by CGI is setted inside the config file.
 				CGIManager cgi(_request);
-				cgi.fork();
-				response << "content-type: " << _content_type << "\r\n";
-				response << "\r\n";
-				response << "AUDDDE SUPPPRIME MOI !";
+				cgi.exec();
+				response << cgi.getPlainText();
 				_plaintext = response.str();
 			}
 			catch(const std::exception& e)

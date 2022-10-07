@@ -69,7 +69,7 @@ bool				CGIManager::getCGIResponse()
 	return true;
 }
 
-bool				CGIManager::fork() 
+bool				CGIManager::exec() 
 {
 	pid_t	pid = ::fork();
 //	char	buffer[PIPE_BUF] = {0};
@@ -84,7 +84,7 @@ bool				CGIManager::fork()
 			::close(STDOUT_FILENO);
 			::dup2(_fds[1], STDOUT_FILENO);
 			::close(_fds[1]);
-			if (!this->exec())
+			if (!this->launchExec())
 				return false;
 			break;
 		default:
@@ -120,7 +120,7 @@ bool				CGIManager::fork()
 	return true;
 }
 
-bool				CGIManager::exec() const
+bool				CGIManager::launchExec() const
 {
 	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)

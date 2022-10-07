@@ -36,7 +36,7 @@ class CGIManager {
 
 		bool	pipe();
 		bool	getCGIResponse();
-		bool	fork();
-		bool	exec() const;
+		bool	exec();
+		bool	launchExec() const;
 		
 };
