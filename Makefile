@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+         #
+#    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/06 14:50:11 by pbremond         ###   ########.fr        #
+#    Updated: 2022/10/07 22:37:22 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,14 +26,18 @@ SRC =	srcs/main.cpp \
 		srcs/CGIManager.cpp \
 		$(PARSING_SRC)
 
-# <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/webserv.hpp' pos='1' template='		{0} \' -->
-HDEP  = srcs/Response/Response_4XX.hpp \
+# <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/Response.hpp' pos='1' template='		{0} \' -->
+HDEP1 = srcs/Response.hpp \
+		srcs/Response/Response_4XX.hpp \
 		srcs/Response/Response_Ok.hpp \
+		srcs/Server.hpp \
 		srcs/Listener.hpp \
 		srcs/Request.hpp \
-		srcs/Response.hpp \
-		srcs/Server.hpp \
 		srcs/CGIManager.hpp \
+
+ # <!-- pre='./' path='includes/' match='*.hpp' pos='1' template='		{0} \' -->
+HDEP =	$(HDEP1) \
+		includes/webserv.hpp \
 
 TOML_PARSER = lib/toml_parser
 
@@ -45,7 +49,9 @@ NAME = webserv
 
 CXX  = clang++
 
-CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -g -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
+
+LDLIBS = -I$(TOML_PARSER) -Iincludes
 
 CONF_FILE = demo/www.toml
 
@@ -67,7 +73,7 @@ toml:
 
 objs/%.o: srcs/%.cpp $(HDEP)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -I$(TOML_PARSER) -Iincludes -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(LDLIBS) -c $< -o $@
 
 $(NAME): $(OBJ) $(HDEP)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
@@ -82,10 +88,10 @@ run: all
 
 # Usage: make debug && lldb minishell_debug -o run
 $(NAME)_debug: $(SRC) $(HDEP)
-	$(CXX) $(CXXFLAGS) -g -o $(NAME)_debug $(SRC)
+	$(CXX) $(CXXFLAGS) $(LDLIBS) -g -o $(NAME)_debug $(SRC)
 
 $(NAME)_sanitize: $(SRC) $(HDEP)
-	$(CXX) $(CXXFLAGS) -fsanitize=address -g -o $(NAME)_sanitize $(SRC)
+	$(CXX) $(CXXFLAGS) $(LDLIBS) -fsanitize=address -g -o $(NAME)_sanitize $(SRC)
 
 debug: $(NAME)_debug
 
