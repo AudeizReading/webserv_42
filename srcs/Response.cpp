@@ -33,13 +33,11 @@ void Response::create()
 	_content_type = "text/html";
 	if (_content_path != "" && _content == "")
 	{
-		PRINT(_content_path);
+		std::cerr << "[Response::create()] " << _content_path << std::endl;
 		std::ifstream			file(_content_path);
 		int						good = file.good();
 		std::string				ext = _content_path
 									.substr(_content_path.find_last_of(".") + 1);
-
-		// std::cerr << "[ROOTING] " << good << " '" << ext << "'" << '\n';
 
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
@@ -59,8 +57,8 @@ void Response::create()
 			catch(const std::exception& e)
 			{
 				// TODO: Send error 500
+				std::cerr << "[CGI] " << e.what() << std::endl;
 				*this = Response_Bad_Request(_request, _server);
-				std::cerr << "[CGI] " << e.what() << '\n';
 			}
 			return ;
 		}
