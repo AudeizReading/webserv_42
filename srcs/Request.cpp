@@ -79,7 +79,7 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 	if (pos != std::string::npos)
 	{
 		_location = firstline.uri.substr(0, pos);
-		_query = firstline.uri.substr(pos, firstline.uri.length());
+		_query = firstline.uri.substr(pos + 1, firstline.uri.length());
 	}
 	else
 		_location = firstline.uri;
@@ -169,4 +169,19 @@ int	Request::is_complete() const
 std::string	Request::get_location() const
 {
 	return (_location);
+}
+
+std::string	Request::get_query() const
+{
+	return (_query);
+}
+
+std::string	Request::get_content() const
+{
+	return (_content);
+}
+
+Request::map_ss	Request::get_header() const
+{
+	return (_header);
 }

@@ -52,5 +52,10 @@ public:
 	~Request();
 
 	int			is_complete() const;
+
 	std::string	get_location() const;
+	std::string	get_query() const;
+	std::string	get_content() const;
+
+	map_ss		get_header() const;
 };

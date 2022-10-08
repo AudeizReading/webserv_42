@@ -1,3 +1,14 @@
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
 
 #include "CGIManager.hpp"
 
@@ -33,34 +44,54 @@ void				CGIManager::_putenv(const char *name, const char *value)
 
 CGIManager&			CGIManager::_setEnv()
 {
-//	PRINT(_request.get_location()); // maybe need the query part if GET ?
-	this->_putenv("GATEWAY_INTERFACE", "CGI/1.1"); // to take from config file
-	this->_putenv("SERVER_SOFTWARE", "webserv"); // to take from config file
-	this->_putenv("SERVER_NAME", "Groenland"); // Because it is a big Iceberg to take from config file
-	this->_putenv("SERVER_PROTOCOL", "HTTP/1.1"); // to take from config file
-	this->_putenv("SERVER_PORT", "4242"); // to take from config file
+	std::string query_string_key	= "QUERY_STRING";	// to take from config file
+	std::string request_method_key	= "REQUEST_METHOD";	// to take from config file
+	std::string content_length_key	= "CONTENT_LENGTH";	// to take from config file
+	std::string content_type_key	= "CONTENT_TYPE";	// to take from config file
 
-	this->_putenv("REQUEST_METHOD", "POST -> to take from request");
-	this->_putenv("QUERY_STRING", "?... -> to take from request");
+	this->_putenv("GATEWAY_INTERFACE", "CGI/1.1"); 		// to take from config file
+	this->_putenv("SERVER_SOFTWARE", "webserv");
+	this->_putenv("SERVER_NAME", "Groenland");		// TODO: _server.get_name() => ajouter _server au construstor (comme _request) 
+	this->_putenv("SERVER_PROTOCOL", "HTTP/1.1");	// TODO: va falloir stocker firstline.http_version dans _request._http_version et Je te laisse faire les getters :p 
+	this->_putenv("SERVER_PORT", "4242");				// TODO: from _sever
 
-	this->_putenv("PATH_INFO", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
-	this->_putenv("PATH_TRANSLATED", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
-	this->_putenv("DOCUMENT_ROOT", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
-	this->_putenv("SCRIPT_NAME", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
+	this->_putenv(request_method_key.c_str(), "_request._method"); // TODO: Je te laisse faire les getters :p
+
+	this->_putenv(query_string_key.c_str(), _request.get_query().c_str());
+	this->_putenv(query_string_key.c_str(), _request.get_query().c_str());
+
+	std::string path = "./demo/www" + _request.get_location(); // TODO: utiliser _server.get_name()
+	this->_putenv("PATH_INFO", path.c_str());
+	this->_putenv("PATH_TRANSLATED", path.c_str());
+	this->_putenv("DOCUMENT_ROOT", path.c_str());
+	this->_putenv("SCRIPT_NAME", path.c_str());
 
 	this->_putenv("REMOTE_HOST", "-> to take from request");
 	this->_putenv("REMOTE_ADDR", "-> to take from request");
 	this->_putenv("REMOTE_USER", "-> to take from request");
 	this->_putenv("REMOTE_IDENT", "-> to take from request");
 
-	this->_putenv("AUTH_TYPE", "-> to take from request");
-	this->_putenv("CONTENT_TYPE", "text/html -> to take from the CGI script");
-	this->_putenv("CONTENT_LENGTH", "length of the output -> to take from the CGI script");
+	//Utile celui la?
+	//this->_putenv("AUTH_TYPE", "-> to take from request");
 
-	this->_putenv("HTTP_FROM", "-> to take from request");
-	this->_putenv("HTTP_ACCEPT", "-> to take from request");
-	this->_putenv("HTTP_USER_AGENT", "-> to take from request");
-	this->_putenv("HTTP_REFERER", "the last page client has visited before requested our server -> to take from request");
+	Request::map_ss				header = _request.get_header();
+	Request::map_ss::iterator	it2;
+		
+	for (it2 = header.begin(); it2 != header.end(); it2++)
+	{
+		std::string http_key = it2->first;
+		std::transform(http_key.begin(), http_key.end(),http_key.begin(), toupper);
+		std::replace(http_key.begin(), http_key.end(), '-', '_');
+		std::cerr << " add " << http_key << ": " << it2->second << std::endl;
+		this->_putenv(("HTTP_" + http_key).c_str(), it2->second.c_str());
+	}
+
+	std::string					content = _request.get_content();
+	this->_putenv(content_length_key.c_str(), std::to_string(content.length()).c_str());
+	this->_putenv(content_type_key.c_str(), header["Content-Type"].c_str());
+
+	dprintf(_fds[0], "%s", content.c_str()); // TODO: @alellouc je te laisse voir pour faire marcher cette ligne
+
 	// List of the META expected by CGI rfc:
 	// meta-variable-name = "AUTH_TYPE" | "CONTENT_LENGTH" |
     //                       "CONTENT_TYPE" | "GATEWAY_INTERFACE" |
