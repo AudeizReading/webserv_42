@@ -37,9 +37,9 @@ void Request::_read_buffer()
 		// or read: https://stackoverflow.com/q/1790750/
 		size = recv(_fd, buffer, PIPE_BUF - 1, 0);
 		if (size < 0)
-			throw std::runtime_error(strerror(errno));
+			throw std::runtime_error(strerror(errno)); // TODO: Limit client body size.
 		_plaintext += buffer;
-	} while(size == PIPE_BUF - 1); // TODO: On est bloquant en faisant ça ^^"
+	} while(size == PIPE_BUF - 1); // TODO: Il faut lire dans kqueue :thinking: 
 
 	// std::cerr << "\e[48;5;19m\n" << _plaintext << RESET << std::endl;
 }

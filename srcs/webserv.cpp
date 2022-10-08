@@ -46,7 +46,7 @@ int	webserv(int argc, char *argv[])
 	std::cout << "Config file: " << argv[0] << std::endl;
 	TOML::Document	config = parse_config_file(argv[0]).at("listener");
 
-	Listener	*listeners[10];
+	Listener	*listeners[10]; // TODO: Do better.
 	pthread_t	threads[10];
 
 	int i = 0;
