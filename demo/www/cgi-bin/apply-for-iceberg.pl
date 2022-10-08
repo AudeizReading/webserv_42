@@ -7,6 +7,7 @@ print "content-type: text/html\n\n";
 print "Form : ".$httpform{'form'}."<br>\n";
 print "Goal : ".$httpform{'goal'}."<br>\n";
 print "Submit : ".$httpform{'submit'}."<br>\n";
+print "CGI_TEST : ".$ENV{'CGI_TEST'}."<br>\n";
 
 sub get_query_string
 {

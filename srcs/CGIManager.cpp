@@ -5,8 +5,8 @@
 CGIManager::CGIManager(const Request& req) : _request(req), _env(), _content_length(0), _plaintext() {
 	try
 	{
-		// un blabla de commit
 		this->pipe();
+		this->_setEnv();
 	}
 	catch(const std::exception& e)
 	{
@@ -28,6 +28,22 @@ std::string			CGIManager::getPlainText()	const { return this->_plaintext; }
 
 CGIManager&			CGIManager::_setEnv()
 {
+	PRINT(_request.get_location());
+	// List of the META expected by CGI rfc:
+	// meta-variable-name = "AUTH_TYPE" | "CONTENT_LENGTH" |
+    //                       "CONTENT_TYPE" | "GATEWAY_INTERFACE" |
+    //                       "PATH_INFO" | "PATH_TRANSLATED" |
+    //                       "QUERY_STRING" | "REMOTE_ADDR" |
+    //                       "REMOTE_HOST" | "REMOTE_IDENT" |
+    //                       "REMOTE_USER" | "REQUEST_METHOD" |
+    //                       "SCRIPT_NAME" | "SERVER_NAME" |
+    //                       "SERVER_PORT" | "SERVER_PROTOCOL" |
+    //                       "SERVER_SOFTWARE" | scheme |
+    //                       protocol-var-name | extension-var-name
+    //  protocol-var-name  = ( protocol | scheme ) "_" var-name
+    //  scheme             = alpha *( alpha | digit | "+" | "-" | "." )
+    //  var-name           = token
+    //  extension-var-name = token
 	return *this;
 }
 
@@ -101,6 +117,8 @@ bool				CGIManager::launchExec() const
 {
 	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)
+	char str[] = "CGI_TEST='What's happend here for the now?'";
+	::putenv(str);
 	if (::execl("./demo/www/cgi-bin/apply-for-iceberg.pl", "./demo/www/cgi-bin/apply-for-iceberg.pl", NULL) == -1)
 	{
 		throw std::runtime_error(strerror(errno));
