@@ -33,6 +33,7 @@ void Response::create()
 	_content_type = "text/html";
 	if (_content_path != "" && _content == "")
 	{
+		PRINT(_content_path);
 		std::ifstream			file(_content_path);
 		int						good = file.good();
 		std::string				ext = _content_path
@@ -41,7 +42,7 @@ void Response::create()
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
 			*this = Response_Forbidden(_request, _server);
-		else if (/*good &&*/ ext == "pl") { // TODO: is cgi extension of application
+		else if (good && ext == "pl") { // TODO: is cgi extension of application #aude: just comment here for testing script
 			// CGI Handling
 			try 
 			{
