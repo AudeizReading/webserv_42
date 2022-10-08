@@ -126,10 +126,16 @@ void Request::_parse()
 
 		std::cout << "Method: " << _method << " - ";
 		std::cout << "Location: " << _location << std::endl;
-		if (_query != "")
+		if (_query.length() > 0)
 			std::cout << "Query: " << _query << std::endl;
-		if (_content != "")
-		std::cout << "Content: " << _content << std::endl;
+		if (_content.length() > 0)
+		{
+			if (_content.length() < 1400)
+				std::cout << "Content: " << _content << std::endl;
+			else
+				std::cout << "Content: <_content length: "
+					<< _content.length() << ">" << std::endl;
+		}
 
 		map_ss::iterator it2;
 		std::cerr << "Headers (" << _header.size() << "):" << std::endl;
