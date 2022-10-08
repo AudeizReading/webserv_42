@@ -54,7 +54,7 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		end++;
 
 	if (*(end + 1) != '\n')
-		throw std::runtime_error("Bad Request");
+		throw std::runtime_error("Bad Request: Missparsed end of firstline");
 
 	for (; it < end && *it != ' '; it++)
 		firstline.method += toupper(*it);
@@ -66,12 +66,12 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		firstline.http_version += *it;
 
 	if (*it != '\r')
-		throw std::runtime_error("Bad Request");
+		throw std::runtime_error("Bad Request: Too many element on firstline");
 	it += 2;
 
 	// TODO: check http_version and throw ?
 	if (firstline.http_version.rfind("HTTP/", 0) != 0) 
-		throw std::runtime_error("Bad Request");
+		throw std::runtime_error("Bad Request: Bad HTTP_VERSION");
 
 	std::string::size_type			pos = firstline.uri.find("?");
 
@@ -84,8 +84,17 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 	else
 		_location = firstline.uri;
 
+	for (std::string::iterator it = _location.begin(); it != _location.end(); ++it)
+	{
+		if (!(('a' <= *it && *it <= 'z') || ('A' <= *it && *it <= 'Z') || ('0' <= *it && *it <= '9')
+			|| *it == '-' || *it == '_' || *it == '/' || *it == '.'))
+		{
+			throw std::runtime_error("Bad Request: Forbidden character");
+		}
+	}
+
 	if (_location.find("/../", 0) != std::string::npos) 
-		throw std::runtime_error("Bad Request");
+		throw std::runtime_error("Bad Request: Forbidden previous folder");
 }
 
 void Request::_parse_otherline(const std::string &str, std::string::const_iterator &it)
@@ -105,10 +114,10 @@ void Request::_parse_otherline(const std::string &str, std::string::const_iterat
 			val += *it;
 		_header.insert(Request::pair_ss(key, val));
 		if (*it != '\r' || *(it + 1) != '\n')
-			throw std::runtime_error("Bad Request");
+			throw std::runtime_error("Bad Request: Missparsed header");
 	}
 	if (*it != '\r' || *(it + 1) != '\n')
-		throw std::runtime_error("Bad Request");
+		throw std::runtime_error("Bad Request: Missparsed end of header");
 	it += 2;
 	_content.assign(it, end);
 }
