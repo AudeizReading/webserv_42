@@ -44,6 +44,59 @@ CGIManager&			CGIManager::_setEnv()
     //  scheme             = alpha *( alpha | digit | "+" | "-" | "." )
     //  var-name           = token
     //  extension-var-name = token
+    //
+	// GATEWAY_INTERFACE	The GATEWAY_INTERFACE variable MUST be set to the dialect of CGI
+	//						being used by the server to communicate with the script.
+	//						CGI/1.1
+	// GATEWAY_INTERFACE = "CGI" "/" 1*digit "." 1*digit
+	//
+	// SERVER_NAME
+	// SERVER_SOFTWARE
+	// SERVER_PROTOCOL
+	// SERVER_PORT
+	// REQUEST_METHOD
+	//
+	// PATH_INFO			The PATH_INFO variable specifies a path to be interpreted by the CGI script.  
+	//						It identifies the resource or sub-resource to be returned by the CGI script, 
+	//						and is derived from the portion of the URI path hierarchy following the part 
+	//						that identifies the script itself.
+	//
+	// PATH_TRANSLATED
+	// SCRIPT_NAME
+	// DOCUMENT_ROOT
+	// QUERY_STRING
+	// REMOTE_HOST
+	// REMOTE_ADDR
+	// REMOTE_USER
+	// REMOTE_IDENT
+	//
+	// AUTH_TYPE		= "" | auth-scheme
+    // auth-scheme		= "Basic" | "Digest" | extension-auth
+    // extension-auth	= token
+    // For HTTP, if the client request required authentication for external
+    // access, then the server MUST set the value of this variable from the
+    // 'auth-scheme' token in the request Authorization header field.
+
+	// CONTENT_TYPE			If the request includes a message-body, the CONTENT_TYPE variable is
+    //						set to the Internet Media Type [6] of the message-body. 
+    //						There is no default value for this variable.  
+    //						If and only if it is unset, then the script MAY attempt to determine the media type 
+    //						from the data received.  If the type remains unknown, then the script MAY choose to 
+    //						assume a type of application/octet-stream or it may reject the request with an error
+    // CONTENT_TYPE = "" | media-type
+    // media-type   = type "/" subtype *( ";" parameter )
+    // type         = token
+    // subtype      = token
+    // parameter    = attribute "=" value
+    // attribute    = token
+    // value        = token | quoted-string
+    //
+	// CONTENT_LENGTH		= The CONTENT_LENGTH variable contains the size of the message-body attached to the request
+	//
+	// HTTP_FROM
+	// HTTP_ACCEPT
+	// HTTP_USER_AGENT
+	// HTTP_REFERER
 	return *this;
 }
 
