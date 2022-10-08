@@ -22,5 +22,29 @@ port = 5000
 listen_backlog = 512
 
 [listener.sans_nom.server]
-root = "./demo/www2/" # Path to demo html
+root = "./demo/www2/"
 name = "42 webserv"
+
+[listener.colors]
+port = 8080
+listen_backlog = 512
+
+[listener.colors.blue]
+root = "./demo/servers/blue/"
+domain = "locahost"
+name = "blue"
+
+[listener.colors.green]
+root = "./demo/servers/green/"
+domain = "127.0.0.1"
+name = "green"
+
+[listener.colors.noir]
+root = "./demo/servers/noir/"
+domain = "192.168.13.128"
+name = "noir"
+
+[listener.colors.red]
+root = "./demo/servers/red/"
+domain = "0.0.0.0"
+name = "red"

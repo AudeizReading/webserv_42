@@ -38,19 +38,35 @@ Listener::Listener(TOML::Document const& config)
 	{
 		_port				= config.at("port").Int();
 		_listen_backlog		= config.at("listen_backlog").Int();
-		std::string root	= config.at("server").at("root").Str();
-		std::string name	= config.at("server").at("name").Str();
-		if (root.back() != '/')
-			root.push_back('/');
-
-		// TODO: Array of servers
-		_server = new Server(root.c_str(), name);
+		std::cout << "[Listener::Listener()] new listener " << _port << std::endl;
 	}
 	catch (std::exception const& e)
 	{
-		std::cerr << "FATAL: Listener::Listener: Error while getting config info: " << e.what() << std::endl;
-		throw;
+		std::cerr << "LISTENER: Will not load because…" << e.what() << std::endl;
+		return ;
 	}
+
+	TOML::Document &abc = const_cast<TOML::Document &>(config); // TODO: <== pas de const_iterator???
+	for (TOML::Document::iterator it = abc.begin(); it != abc.end(); ++it)
+	{
+		try
+		{
+			if (!(*it).has("root")) // TODO: Il y a mieux que ça ???
+				continue ;
+			std::string root	= (*it).at("root").Str();
+			std::string name	= (*it).has("name") ? (*it).at("name").Str() : "bouh"; // TODO: Il y a plus propre que ça ?
+			std::string domain	= (*it).has("domain") ? (*it).at("domain").Str() : ""; // TODO: Il y a plus propre que ça ?
+			if (root.back() != '/')
+				root.push_back('/');
+			_servers.push_back(new Server(root, name, domain));
+		}
+		catch (std::exception const& e)
+		{
+			std::cerr << "LISTENER#" << _port << ".SERVER: Will not load because…" << e.what() << std::endl;
+			return ;
+		}
+	}
+
 }
 
 void	Listener::_recv(int fd)
@@ -60,11 +76,21 @@ void	Listener::_recv(int fd)
 	Response					*response;
 
 	if (!request.is_complete())
-		response = new Response_Bad_Request(request, *_server);
+	{
+		response = new Response_Bad_Request(request, *_servers[0]);
+	}
 	else
 	{
+		Server					*server = _servers[0];
+		for (std::vector<Server *>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+		{
+			if ((*it)->get_domain() == request.get_header()["Host"].substr(0, request.get_header()["Host"].find(':')))
+				server = *it;
+			std::cout << "diff" << (*it)->get_domain() << " et " << request.get_header()["Host"] << std::endl;
+		}
+
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
-		response = new Response_Ok(request, *_server);
+		response = new Response_Ok(request, *server);
 
 		std::cerr << "\e[30;48;5;245m\n";
 		if (response->get_ctype().rfind("text/", 0) == 0)
@@ -237,7 +263,7 @@ void	Listener::start_listener()
 
 Listener::~Listener()
 {
-	delete _server;
+	_servers.clear();
 	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
 	if (close(_fd) < 0)
