@@ -31,7 +31,7 @@ listen_backlog = 512
 
 [listener.colors.blue]
 root = "./demo/servers/blue/"
-domain = "locahost"
+domain = "localhost"
 name = "blue"
 
 [listener.colors.green]

@@ -56,6 +56,10 @@ test_diff "http://127.0.0.1:4242/.password" \
 test_diff "http://127.0.0.1:5000/" \
 	"default_to_server2" "../demo/www2/index.html"
 
+test_diff "http://localhost:8080/" "server_blue" "../demo/servers/blue/index.html"
+test_diff "http://127.0.0.1:8080/" "server_green" "../demo/servers/green/index.html"
+test_diff "http://0.0.0.0:8080/" "server_red" "../demo/servers/red/index.html"
+
 pkill -2 webserv
 
 exit 0
