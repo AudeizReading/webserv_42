@@ -1,14 +1,26 @@
-[http]
+[http] # pourquoi ça ne marche pas quand il n'y est pas ?
+
+[listener]
+
+[listener.gc]
 index = "index.html" # Default index
 include = ["demo/mime_types.toml"] # For testing
 port = 4242
 listen_backlog = 512
 
-[http.server]
+[listener.gc.server]
 root = "./demo/www/" # Path to demo html
-name = "42 webserv"
+name = "Groenland"
 
-	[server.log] # TODO: server logging
-	enable = false
-	file = "logs/webserv.log"
-	# NGINX has a log_format field, that's pretty cool
+[listener.gc.server.log] # TODO: server logging
+enable = false
+file = "logs/webserv.log"
+# NGINX has a log_format field, that's pretty cool
+
+[listener.sans_nom]
+port = 5000
+listen_backlog = 512
+
+[listener.sans_nom.server]
+root = "./demo/www2/" # Path to demo html
+name = "42 webserv"

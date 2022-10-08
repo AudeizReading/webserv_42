@@ -2,6 +2,7 @@
 
 cd "$(dirname "$0")"
 
+pkill -2 webserv
 if [[ $? == 0 ]]; then
 	echo "webserv was killed."
 fi
@@ -51,6 +52,9 @@ test_diff "http://127.0.0.1:4242/?je_suis_inutile=1&mais=je_debug&bien=1" \
 
 test_diff "http://127.0.0.1:4242/.password" \
 	"forbidden_access_on_hidden_files" "../res/error/403.html"
+
+test_diff "http://127.0.0.1:5000/" \
+	"default_to_server2" "../demo/www2/index.html"
 
 pkill -2 webserv
 

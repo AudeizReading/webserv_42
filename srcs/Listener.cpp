@@ -36,10 +36,10 @@ Listener::Listener(TOML::Document const& config)
 {
 	try
 	{
-		_port				= config.at("http").at("port").Int();
-		_listen_backlog		= config.at("http").at("listen_backlog").Int();
-		std::string root	= config.at("http").at("server").at("root").Str();
-		std::string name	= config.at("http").at("server").at("name").Str();
+		_port				= config.at("port").Int();
+		_listen_backlog		= config.at("listen_backlog").Int();
+		std::string root	= config.at("server").at("root").Str();
+		std::string name	= config.at("server").at("name").Str();
 		if (root.back() != '/')
 			root.push_back('/');
 
