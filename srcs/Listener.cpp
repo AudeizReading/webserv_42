@@ -36,14 +36,15 @@ Listener::Listener(TOML::Document const& config)
 {
 	try
 	{
-		_port				= config.at("server").at("port").Int();
-		_listen_backlog		= config.at("server").at("listen_backlog").Int();
-		std::string root	= config.at("demo").at("www").at("root").Str();
+		_port				= config.at("http").at("port").Int();
+		_listen_backlog		= config.at("http").at("listen_backlog").Int();
+		std::string root	= config.at("http").at("server").at("root").Str();
+		std::string name	= config.at("http").at("server").at("name").Str();
 		if (root.back() != '/')
 			root.push_back('/');
 
 		// TODO: Array of servers
-		_server = new Server(root.c_str());
+		_server = new Server(root.c_str(), name);
 	}
 	catch (std::exception const& e)
 	{

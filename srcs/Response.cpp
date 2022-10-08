@@ -39,6 +39,8 @@ void Response::create()
 		std::string				ext = _content_path
 									.substr(_content_path.find_last_of(".") + 1);
 
+		// std::cerr << "[ROOTING] " << good << " '" << ext << "'" << '\n';
+
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
 			*this = Response_Forbidden(_request, _server);
@@ -88,12 +90,12 @@ void Response::create()
 
 	response << get_status() << "\r\n";
 	// TODO: full date support
-	response << "date: Wed, 28 Sep " << t->tm_year << " "
+	response << "Date: Wed, 28 Sep " << t->tm_year << " "
 		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT" << "\r\n";
-	response << "server: 42webserv\r\n";
+	response << "Server: " << _server.get_name() << "\r\n";
 	response << "Cache-Control: no-cache\r\n";
-	response << "content-length: " << _content.length() << "\r\n";
-	response << "content-type: " << _content_type << "\r\n";
+	response << "Content-Length: " << _content.length() << "\r\n";
+	response << "Content-Type: " << _content_type << "\r\n";
 	response << "\r\n";
 	response << _content;
 
