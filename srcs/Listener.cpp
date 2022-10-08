@@ -155,7 +155,7 @@ void	Listener::start_listener()
 	// containing its return value
 
 	std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
-	if (listen(_fd, _listen_backlog) == -1)
+	if (listen(_fd, _listen_backlog) < 0)
 	{
 		/*
 		 * If a connection request arrives with the queue full, the client may receive an error
@@ -174,7 +174,7 @@ void	Listener::start_listener()
 	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
 
 	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
-	if (kevent(kq, &change_event, 1, NULL, 0, NULL) == -1)
+	if (kevent(kq, &change_event, 1, NULL, 0, NULL) < 0)
 		throw std::runtime_error(strerror(errno));
 
 	while (I_LOVE_ICEBERG)
@@ -183,7 +183,7 @@ void	Listener::start_listener()
 
 		std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
 		new_events = kevent(kq, NULL, 0, &event, 1, NULL);
-		if (new_events == -1)
+		if (new_events < 0)
 			throw std::runtime_error(strerror(errno));
 
 		for (int i = 0, event_fd; new_events > i; i++)
@@ -198,12 +198,10 @@ void	Listener::start_listener()
 			}
 			else if (event_fd == _fd) // = Socket connection
 			{
-				int					new_socket;
-				int					sockaddr_in_size = sizeof(address);
-
-				
-				new_socket = accept(event_fd, reinterpret_cast<struct sockaddr *>(&address),
+				int sockaddr_in_size = sizeof(address);
+				int new_socket = accept(event_fd, reinterpret_cast<struct sockaddr *>(&address),
 								reinterpret_cast<socklen_t *>(&sockaddr_in_size));
+
 				std::cout << "[listener] accept connection #" << new_socket
 							<< " for socket#" << event_fd << std::endl;
 				if (new_socket < 0)
