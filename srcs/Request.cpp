@@ -33,13 +33,13 @@ void Request::_read_buffer()
 
 	_plaintext = "";
 	do {
-		char buffer[READ_BUFFER_SIZE] = {0};
+		char buffer[PIPE_BUF] = {0};
 		// or read: https://stackoverflow.com/q/1790750/
-		size = recv(_fd, buffer, READ_BUFFER_SIZE - 1, 0);
+		size = recv(_fd, buffer, PIPE_BUF - 1, 0);
 		if (size < 0)
 			throw std::runtime_error(strerror(errno));
 		_plaintext += buffer;
-	} while(size == READ_BUFFER_SIZE - 1); // TODO: On est bloquant en faisant ça ^^"
+	} while(size == PIPE_BUF - 1); // TODO: On est bloquant en faisant ça ^^"
 
 	// std::cerr << "\e[48;5;19m\n" << _plaintext << RESET << std::endl;
 }
