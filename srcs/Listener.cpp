@@ -226,15 +226,6 @@ void	Listener::start_listener()
 				std::cout << "[listener] read bytes for event#" << event_fd << std::endl;
 				_recv(event_fd);
 			}
-<<<<<<< HEAD
-=======
-			else if (event.filter == EVFILT_WRITE)
-			{
-				// TODO: HOW TO DO HERE???
-				// from Aude: IMO, we need to send here the datas to the socket
-				std::cout << "[listener] write bytes for event#" << event_fd << std::endl;
-			}
->>>>>>> cgi:env + repsonse header
 			else
 			{
 				std::cout << "[listener] and else? event#" << event_fd << std::endl;

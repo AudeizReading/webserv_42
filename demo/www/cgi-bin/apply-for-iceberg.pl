@@ -1,15 +1,15 @@
 #!/usr/bin/perl 
 
-print "content-type: text/html\n\n"; 
+#print "content-type: text/html\n\n"; 
 
 %httpform = &get_query_string; 
 
+&cgi_response_header;
 print "Form : ".$httpform{'form'}."<br>\n";
 print "Goal : ".$httpform{'goal'}."<br>\n";
 print "Submit : ".$httpform{'submit'}."<br>\n";
 
-print "CGI_TEST : ".$ENV{'CGI_TEST'}."<br>\n";
-
+#
 print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
 print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";
 print "SERVER_SOFTWARE : ".$ENV{'SERVER_SOFTWARE'}."<br>\n";
@@ -35,11 +35,15 @@ print "HTTP_REFERER : ".$ENV{'HTTP_REFERER'}."<br>\n";
 
 sub	cgi_response_header
 {
-	print $ENV{'SERVER_PROTOCOL'}." 200 OK<br>\n"; # voir par la suite pour passer la rep en arg de la fn
-	print "Date: ".`date`."<br/>\n";
-	print "Server: ".$ENV{'SERVER_SOFTWARE'}."<br>\n";
-	print "Last-Modified: <derniere date de modif du doc auquel on tente d'acceder -> c'est pour la gestion de cache";
-	print "ETag: <entity tag> ->un descripteur d'entité donne une ref unique pr cette ressource";
+	print $ENV{'SERVER_PROTOCOL'}." 200 OK\n"; # voir par la suite pour passer la rep en arg de la fn
+	print "Date: ".`date`;
+	print "Server: ".$ENV{'SERVER_SOFTWARE'}."\n";
+	print "Last-Modified: <derniere date de modif du doc auquel on tente d'acceder -> c'est pour la gestion de cache\n";
+	print "ETag: <entity tag> ->un descripteur d'entité donne une ref unique pr cette ressource, fournit un moyen pr cacher les docs\n";
+	print "Accept-Ranges : bytes\n";
+	print "Content_length : ".$ENV{'CONTENT_LENGTH'}."\n";
+	print "Connection : close\n";
+	print "Content_type :text/html\n";
 }
 
 sub get_query_string

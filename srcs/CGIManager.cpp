@@ -26,9 +26,41 @@ CGIManager::~CGIManager(void) {
 CGIManager::map_ss	CGIManager::getEnv()		const { return this->_env; }
 std::string			CGIManager::getPlainText()	const { return this->_plaintext; }
 
+void				CGIManager::_putenv(const char *name, const char *value)
+{
+	::setenv(name, value, 1);
+}
+
 CGIManager&			CGIManager::_setEnv()
 {
-	PRINT(_request.get_location());
+//	PRINT(_request.get_location()); // maybe need the query part if GET ?
+	this->_putenv("GATEWAY_INTERFACE", "CGI/1.1"); // to take from config file
+	this->_putenv("SERVER_SOFTWARE", "webserv"); // to take from config file
+	this->_putenv("SERVER_NAME", "Groenland"); // Because it is a big Iceberg to take from config file
+	this->_putenv("SERVER_PROTOCOL", "HTTP/1.1"); // to take from config file
+	this->_putenv("SERVER_PORT", "4242"); // to take from config file
+
+	this->_putenv("REQUEST_METHOD", "POST -> to take from request");
+	this->_putenv("QUERY_STRING", "?... -> to take from request");
+
+	this->_putenv("PATH_INFO", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
+	this->_putenv("PATH_TRANSLATED", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
+	this->_putenv("DOCUMENT_ROOT", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
+	this->_putenv("SCRIPT_NAME", "./demo/www/cgi-bin/apply-for-iceberg.pl"); // to take from config file
+
+	this->_putenv("REMOTE_HOST", "-> to take from request");
+	this->_putenv("REMOTE_ADDR", "-> to take from request");
+	this->_putenv("REMOTE_USER", "-> to take from request");
+	this->_putenv("REMOTE_IDENT", "-> to take from request");
+
+	this->_putenv("AUTH_TYPE", "-> to take from request");
+	this->_putenv("CONTENT_TYPE", "text/html -> to take from the CGI script");
+	this->_putenv("CONTENT_LENGTH", "length of the output -> to take from the CGI script");
+
+	this->_putenv("HTTP_FROM", "-> to take from request");
+	this->_putenv("HTTP_ACCEPT", "-> to take from request");
+	this->_putenv("HTTP_USER_AGENT", "-> to take from request");
+	this->_putenv("HTTP_REFERER", "the last page client has visited before requested our server -> to take from request");
 	// List of the META expected by CGI rfc:
 	// meta-variable-name = "AUTH_TYPE" | "CONTENT_LENGTH" |
     //                       "CONTENT_TYPE" | "GATEWAY_INTERFACE" |
@@ -125,8 +157,13 @@ bool				CGIManager::getCGIResponse()
 	}
 
 	size_t	p_size = _plaintext.size();
+	// TODO: convert int into char * without sefault
+//	this->_putenv("CONTENT_LENGTH", reinterpret_cast<const char*>(p_size));
+	std::stringstream			response;
 
-//	std::cerr << "_plaintext: " << _plaintext << std::endl;
+	response <<  p_size;
+//	this->_putenv("CONTENT_LENGTH", reinterpret_cast<const char *>(response.str()));
+
 	// It is forbidden by subject to check errno after a write, so check it manually
 	// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
 	(input_sz == p_size && (this->_content_length = p_size));
@@ -141,7 +178,6 @@ bool				CGIManager::getCGIResponse()
 bool				CGIManager::exec() 
 {
 	pid_t	pid = ::fork();
-//	char	buffer[PIPE_BUF] = {0};
 
 	switch (pid)
 	{
@@ -170,9 +206,7 @@ bool				CGIManager::launchExec() const
 {
 	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)
-	char str[] = "CGI_TEST='What's happend here for the now?'";
-	::putenv(str);
-	if (::execl("./demo/www/cgi-bin/apply-for-iceberg.pl", "./demo/www/cgi-bin/apply-for-iceberg.pl", NULL) == -1)
+	if (::execl(::getenv("SCRIPT_NAME"), ::getenv("SCRIPT_NAME"), NULL) == -1)
 	{
 		throw std::runtime_error(strerror(errno));
 		return false;

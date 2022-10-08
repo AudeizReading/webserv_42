@@ -2,6 +2,7 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
@@ -27,6 +28,7 @@ class CGIManager {
 		CGIManager(const CGIManager &src);
 		CGIManager& operator=(const CGIManager &src);
 
+		void		_putenv(const char *name, const char *value);
 		CGIManager&	_setEnv();
 
 	public:
