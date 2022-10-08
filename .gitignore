@@ -4,6 +4,7 @@
 *.dSYM
 *.swp
 /.guillaume
+/.objs
 
 # Object files
 *.o

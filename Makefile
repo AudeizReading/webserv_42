@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/07 22:37:22 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/10/08 13:32:59 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,14 +43,14 @@ TOML_PARSER = lib/toml_parser
 
 INCLUDES = $(TOML_PARSER) includes
 
-ifeq (,$(wildcard /.guillaume))
+ifeq ($(shell cat .guillaume 2> /dev/null), G)
 GUILLAUME = 1
 endif
 
 ifdef GUILLAUME
 OBJ = $(SRC:.cpp=.o)
 else
-OBJ = $(subst srcs/, objs/, $(patsubst %.cpp, %.o, $(SRC)))
+OBJ = $(subst srcs/, .objs/, $(patsubst %.cpp, %.o, $(SRC)))
 endif
 
 NAME = webserv
@@ -82,7 +82,7 @@ toml:
 ifdef GUILLAUME
 %.o: %.cpp $(HDEP)
 else
-objs/%.o: srcs/%.cpp $(HDEP)
+.objs/%.o: srcs/%.cpp $(HDEP)
 	@mkdir -p $(@D)
 endif
 	$(CXX) $(CXXFLAGS) $(LDLIBS) -c $< -o $@
