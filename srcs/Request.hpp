@@ -23,7 +23,6 @@ public:
 	typedef std::pair<std::string, std::string>			pair_ss;
 
 private:
-	int				_fd;
 	int				_complete;
 	std::string		_plaintext;
 
@@ -40,14 +39,13 @@ private:
 
 	map_ss			_header;
 
-	void		_read_buffer();
 	void		_parse();
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
 	void		_parse_otherline(const std::string &str, std::string::const_iterator &it);
 
 public:
-	Request(int fd);
+	Request(std::string plaintext);
 
 	~Request();
 

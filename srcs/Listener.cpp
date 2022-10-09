@@ -69,11 +69,12 @@ Listener::Listener(TOML::Document const& config)
 
 }
 
-void	Listener::_recv(int fd)
+void	Listener::_send(int fd, std::string plaintext)
 {
 	std::cout << "[listener] recv socket#" << fd << std::endl;
-	Request						request(fd);
+	Request						request(plaintext);
 	Response					*response;
+	std::string					length = request.get_header()["Content-Length"];
 
 	if (!request.is_complete())
 	{
@@ -81,12 +82,15 @@ void	Listener::_recv(int fd)
 	}
 	else
 	{
+		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+			std::cout << "[listener] socket partial#" << fd << std::endl;
 		Server					*server = _servers[0];
 		for (std::vector<Server *>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{
-			if ((*it)->get_domain() == request.get_header()["Host"].substr(0, request.get_header()["Host"].find(':')))
+			std::string host = request.get_header()["Host"];
+			if ((*it)->get_domain() == host.substr(0, host.find(':')))
 				server = *it;
-			std::cout << "diff" << (*it)->get_domain() << " et " << request.get_header()["Host"] << std::endl;
+			std::cout << "diff" << (*it)->get_domain() << " et " << host << std::endl;
 		}
 
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
@@ -208,7 +212,7 @@ void	Listener::start_listener()
 	{
 		int							new_events;
 
-		std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
+		//std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
 		new_events = kevent(kq, NULL, 0, &event, 1, NULL);
 		if (new_events < 0)
 			throw std::runtime_error(strerror(errno));
@@ -250,8 +254,28 @@ void	Listener::start_listener()
 			else if (event.filter & EVFILT_READ)
 			// On utilise `==` https://stackoverflow.com/a/12165298/
 			{
-				std::cout << "[listener] read bytes for event#" << event_fd << std::endl;
-				_recv(event_fd);
+				char buffer[PIPE_BUF + 1] = {0};
+				int size = recv(event_fd, buffer, PIPE_BUF, 0);
+				// TODO: Limit client body size.
+				std::cout << "[listener] read " << size << "/" << PIPE_BUF << " bytes for event#" << event_fd << std::endl;
+				if (size < 0)
+					throw "WRONG"; // TODO: ERROR ?
+
+				Listener::map_is::iterator search = _requests.find(event_fd);
+				if (search == _requests.end())
+				{
+					_requests.insert(Listener::pair_is(event_fd, std::string(buffer)));
+					search = _requests.find(event_fd);
+				}
+				else
+					search->second += buffer;
+
+				if (size < PIPE_BUF)
+				{
+					std::cout << "[listener] ok recv event#" << event_fd << std::endl;
+					_send(event_fd, (*search).second);
+					_requests.erase(event_fd);
+				}
 			}
 			else
 			{

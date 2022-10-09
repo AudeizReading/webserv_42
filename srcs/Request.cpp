@@ -20,28 +20,9 @@
 #include "webserv.hpp"
 #include "Request.hpp"
 
-Request::Request(int fd): _fd(fd), _complete(0)
+Request::Request(std::string plaintext): _complete(0), _plaintext(plaintext)
 {
-	_read_buffer();
-
 	_parse();
-}
-
-void Request::_read_buffer()
-{
-	int							size;
-
-	_plaintext = "";
-	do {
-		char buffer[PIPE_BUF] = {0};
-		// or read: https://stackoverflow.com/q/1790750/
-		size = recv(_fd, buffer, PIPE_BUF - 1, 0);
-		if (size < 0)
-			throw std::runtime_error(strerror(errno)); // TODO: Limit client body size.
-		_plaintext += buffer;
-	} while(size == PIPE_BUF - 1); // TODO: Il faut lire dans kqueue :thinking: 
-
-	// std::cerr << "\e[48;5;19m\n" << _plaintext << RESET << std::endl;
 }
 
 void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)
