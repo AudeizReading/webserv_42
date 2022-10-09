@@ -41,7 +41,12 @@ print "</pre>\n";
 sub	cgi_response_header
 {
 	print $ENV{'SERVER_PROTOCOL'}." 200 OK\r\n"; # voir par la suite pour passer la rep en arg de la fn
+	# la date ca peut fonctionner comme ca: soit on `date` et on formatte la sortie de la cmd
 	#print "Date: ".`date`."\r\n"; # Pas le bon format
+	# soit on utilise la facon perl (perldoc perfunc -> chercher localtime)
+	# on est dans un contexte de liste:
+	# ($sec, $min, $hour, $day_of_month, $month, $years_since_1900, $day_of_week, $day_of_year, $is_winter_time)=localtime;
+	# print $day_of_month." / ".$month; # par exemple
 	#print "Server: ".$ENV{'SERVER_SOFTWARE'}."\r\n";
 	print "Cache-Control: no-cache\r\n";
 	print "Content-Type: text/html\r\n";
