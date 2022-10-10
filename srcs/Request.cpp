@@ -175,3 +175,9 @@ Request::map_ss	Request::get_header() const
 {
 	return (_header);
 }
+
+std::string	Request::get_method() const
+{
+	return (_method);
+}
+

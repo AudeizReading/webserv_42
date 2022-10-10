@@ -13,7 +13,7 @@
 #include "CGIManager.hpp"
 
 // - Constr / Destr ------------------------------------------------------------ 
-CGIManager::CGIManager(const Request& req) : _request(req), _env(), _content_length(0), _plaintext() {
+CGIManager::CGIManager(const Request& req, const Server& serv) : _request(req), _server(serv), _env(), _content_length(0), _plaintext() {
 	try
 	{
 		this->pipe();
@@ -51,21 +51,24 @@ CGIManager&			CGIManager::_setEnv()
 
 	this->_putenv("GATEWAY_INTERFACE", "CGI/1.1"); 		// to take from config file
 	this->_putenv("SERVER_SOFTWARE", "webserv");
-	this->_putenv("SERVER_NAME", "Groenland");		// TODO: _server.get_name() => ajouter _server au construstor (comme _request) 
+	this->_putenv("SERVER_NAME", _server.get_name().c_str());		// TODO: _server.get_name() => ajouter _server au construstor (comme _request) 
+//	this->_putenv("SERVER_NAME", "Groenland");		// TODO: _server.get_name() => ajouter _server au construstor (comme _request) 
 	this->_putenv("SERVER_PROTOCOL", "HTTP/1.1");	// TODO: va falloir stocker firstline.http_version dans _request._http_version et Je te laisse faire les getters :p 
 	this->_putenv("SERVER_PORT", "4242");				// TODO: from _sever
 
-	this->_putenv(request_method_key.c_str(), "_request._method"); // TODO: Je te laisse faire les getters :p
+	this->_putenv(request_method_key.c_str(), _request.get_method().c_str()); // TODO: Je te laisse faire les getters :p
+	//this->_putenv(request_method_key.c_str(), "_request._method"); // TODO: Je te laisse faire les getters :p
 
 	this->_putenv(query_string_key.c_str(), _request.get_query().c_str());
 	this->_putenv(query_string_key.c_str(), _request.get_query().c_str());
 
-	std::string path = "./demo/www" + _request.get_location(); // TODO: utiliser _server.get_name()
+//	std::string path = _server.get_name();//
+	std::string path = _server.get_root() + _request.get_location(); // TODO: utiliser _server.get_name()
 	this->_putenv("PATH_INFO", path.c_str());
 	this->_putenv("PATH_TRANSLATED", path.c_str());
-	this->_putenv("DOCUMENT_ROOT", path.c_str());
+	this->_putenv("DOCUMENT_ROOT", _server.get_root());
 	this->_putenv("SCRIPT_NAME", path.c_str());
-	PRINT(path.c_str());
+//	PRINT(path.c_str());
 
 	this->_putenv("REMOTE_HOST", "-> to take from request");
 	this->_putenv("REMOTE_ADDR", "-> to take from request");
@@ -93,74 +96,6 @@ CGIManager&			CGIManager::_setEnv()
 
 	//dprintf(_fds[0], "%s", content.c_str()); // TODO: @alellouc je te laisse voir pour faire marcher cette ligne
 
-	// List of the META expected by CGI rfc:
-	// meta-variable-name = "AUTH_TYPE" | "CONTENT_LENGTH" |
-    //                       "CONTENT_TYPE" | "GATEWAY_INTERFACE" |
-    //                       "PATH_INFO" | "PATH_TRANSLATED" |
-    //                       "QUERY_STRING" | "REMOTE_ADDR" |
-    //                       "REMOTE_HOST" | "REMOTE_IDENT" |
-    //                       "REMOTE_USER" | "REQUEST_METHOD" |
-    //                       "SCRIPT_NAME" | "SERVER_NAME" |
-    //                       "SERVER_PORT" | "SERVER_PROTOCOL" |
-    //                       "SERVER_SOFTWARE" | scheme |
-    //                       protocol-var-name | extension-var-name
-    //  protocol-var-name  = ( protocol | scheme ) "_" var-name
-    //  scheme             = alpha *( alpha | digit | "+" | "-" | "." )
-    //  var-name           = token
-    //  extension-var-name = token
-    //
-	// GATEWAY_INTERFACE	The GATEWAY_INTERFACE variable MUST be set to the dialect of CGI
-	//						being used by the server to communicate with the script.
-	//						CGI/1.1
-	// GATEWAY_INTERFACE = "CGI" "/" 1*digit "." 1*digit
-	//
-	// SERVER_NAME
-	// SERVER_SOFTWARE
-	// SERVER_PROTOCOL
-	// SERVER_PORT
-	// REQUEST_METHOD
-	//
-	// PATH_INFO			The PATH_INFO variable specifies a path to be interpreted by the CGI script.  
-	//						It identifies the resource or sub-resource to be returned by the CGI script, 
-	//						and is derived from the portion of the URI path hierarchy following the part 
-	//						that identifies the script itself.
-	//
-	// PATH_TRANSLATED
-	// SCRIPT_NAME
-	// DOCUMENT_ROOT
-	// QUERY_STRING
-	// REMOTE_HOST
-	// REMOTE_ADDR
-	// REMOTE_USER
-	// REMOTE_IDENT
-	//
-	// AUTH_TYPE		= "" | auth-scheme
-    // auth-scheme		= "Basic" | "Digest" | extension-auth
-    // extension-auth	= token
-    // For HTTP, if the client request required authentication for external
-    // access, then the server MUST set the value of this variable from the
-    // 'auth-scheme' token in the request Authorization header field.
-
-	// CONTENT_TYPE			If the request includes a message-body, the CONTENT_TYPE variable is
-    //						set to the Internet Media Type [6] of the message-body. 
-    //						There is no default value for this variable.  
-    //						If and only if it is unset, then the script MAY attempt to determine the media type 
-    //						from the data received.  If the type remains unknown, then the script MAY choose to 
-    //						assume a type of application/octet-stream or it may reject the request with an error
-    // CONTENT_TYPE = "" | media-type
-    // media-type   = type "/" subtype *( ";" parameter )
-    // type         = token
-    // subtype      = token
-    // parameter    = attribute "=" value
-    // attribute    = token
-    // value        = token | quoted-string
-    //
-	// CONTENT_LENGTH		= The CONTENT_LENGTH variable contains the size of the message-body attached to the request
-	//
-	// HTTP_FROM
-	// HTTP_ACCEPT
-	// HTTP_USER_AGENT
-	// HTTP_REFERER
 	return *this;
 }
 

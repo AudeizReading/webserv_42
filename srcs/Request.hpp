@@ -54,6 +54,7 @@ public:
 	std::string	get_location() const;
 	std::string	get_query() const;
 	std::string	get_content() const;
+	std::string	get_method() const;
 
 	map_ss		get_header() const;
 };
