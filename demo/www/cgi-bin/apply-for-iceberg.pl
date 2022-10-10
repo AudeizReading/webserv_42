@@ -14,7 +14,9 @@
 #}
 #print "</pre>\n";
 
-#print <STDIN>;
+read (STDN, $buffer, 1);
+#print $buffer;
+print "Bla bla bla bla\n";
 #
 # print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
 # print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";
