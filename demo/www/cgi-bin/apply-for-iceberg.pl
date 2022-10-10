@@ -1,19 +1,22 @@
 #!/usr/bin/perl 
 
-%getquery = &get_query_string; 
+#%getquery = &get_query_string; 
 
-&cgi_response_header;
-print "Form : ".$getquery{'form'}."<br>\n";
-print "Goal : "."POST??"."<br>\n"; # TODO: READ STDIN comme ici: https://fr.acervolima.com/perl-get-vs-post-en-cgi/ (je te laisse faire)
-print "Submit : "."POST??"."<br>\n";
+#&cgi_response_header;
+#print "Form : ".$getquery{'form'}."<br>\n";
+#print "Goal : "."POST??"."<br>\n"; # TODO: READ STDIN comme ici: https://fr.acervolima.com/perl-get-vs-post-en-cgi/ (je te laisse faire)
+#print "Submit : "."POST??"."<br>\n";
 
-print "<pre>\n";
+#print "<pre>\n";
 
-foreach $key (sort keys(%ENV)) {
-  print "$key = $ENV{$key}\r\n";
-}
-print "</pre>\n";
+#foreach $key (sort keys(%ENV)) {
+#print "$key = $ENV{$key}\r\n";
+#}
+#print "</pre>\n";
 
+read (STDN, $buffer, 1);
+#print $buffer;
+print "Bla bla bla bla\n";
 #
 # print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
 # print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";
