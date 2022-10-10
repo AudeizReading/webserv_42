@@ -19,6 +19,7 @@
 #include <sys/wait.h>
 
 #include "Request.hpp"
+#include "Server.hpp"
 
 #define PRINT(x) std::cerr << std::boolalpha << "\nin " << __FILE__ << ":" << __LINE__ << "\n"<< __func__ << ": " << #x << "\n" << x << std::endl;
 // Following https://www.ietf.org/rfc/rfc3875.txt
@@ -29,6 +30,7 @@ class CGIManager {
 	private:
 
 		const Request&	_request;
+		const Server&	_server;
 		int				_fds[2];
 		map_ss			_env;
 		size_t			_content_length;
@@ -43,7 +45,7 @@ class CGIManager {
 		CGIManager&	_setEnv();
 
 	public:
-		CGIManager(const Request& req);
+		CGIManager(const Request& req, const Server& serv);
 		~CGIManager(void);
 
 		map_ss		getEnv() const;

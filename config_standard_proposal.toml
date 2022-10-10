@@ -2,6 +2,10 @@
 # One we all agree on this, we'll all have to stick to its formatting. No deviating.
 # I'll start work on parsing everything on monday, after we discuss this and agree on a final design.
 
+# Document config;
+# auto servers = config["http"]["server"].Array()
+# servers[0].at_or("listen_addr", make_string(""))
+
 [http]
 include = ["mime_types.toml"]		# All include directives are optional. Put whatever we need in there.
 
@@ -13,7 +17,6 @@ include = ["mime_types.toml"]		# All include directives are optional. Put whatev
 
 	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/4XX.html".
 	error_500 = "./foo/bar.html"			# Directive can be any of 4XX/5XX HTTP 1.1 errors.
-
 	# If no location is provided, a default one is provided as follows
 		# [[http.server.location]]
 		# route = "/"
