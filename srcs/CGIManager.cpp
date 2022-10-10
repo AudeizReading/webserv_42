@@ -66,7 +66,7 @@ CGIManager&			CGIManager::_setEnv()
 	std::string path = _server.get_root() + _request.get_location(); // TODO: utiliser _server.get_name()
 	this->_putenv("PATH_INFO", path.c_str());
 	this->_putenv("PATH_TRANSLATED", path.c_str());
-	this->_putenv("DOCUMENT_ROOT", _server.get_root());
+	this->_putenv("DOCUMENT_ROOT", _server.get_root().c_str());
 	this->_putenv("SCRIPT_NAME", path.c_str());
 //	PRINT(path.c_str());
 
@@ -152,11 +152,10 @@ bool				CGIManager::exec()
 			throw std::runtime_error(strerror(errno));
 			return false;
 		case 0:
-			::write(_fds[1], _request.get_content().c_str(), _request.get_content().size());
-			::dup2(_fds[0], STDIN_FILENO);
 			::close(_fds[0]);
 			::close(STDOUT_FILENO);
 			::dup2(_fds[1], STDOUT_FILENO);
+			::write(_fds[1], _request.get_content().c_str(), _request.get_content().size());
 			::close(_fds[1]);
 			if (!this->launchExec())
 				return false;
