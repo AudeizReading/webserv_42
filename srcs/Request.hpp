@@ -42,7 +42,7 @@ private:
 	void		_parse();
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
-	void		_parse_otherline(const std::string &str, std::string::const_iterator &it);
+	void		_parse_otherline(const std::string &str, std::string::const_iterator &it, map_ss &header);
 
 public:
 	Request(std::string plaintext);

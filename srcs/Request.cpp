@@ -78,14 +78,14 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		throw std::runtime_error("Bad Request: Forbidden previous folder");
 }
 
-void Request::_parse_otherline(const std::string &str, std::string::const_iterator &it)
+void Request::_parse_otherline(const std::string &str, std::string::const_iterator &it, map_ss &header)
 {
 	std::string::const_iterator		end = str.end();
 
 	std::string			key;
 	std::string			val;
 
-	_header.clear();
+	header.clear();
 	for (std::string key, val; it < end && *it != '\r'; it += 2, key = "", val = "")
 	{
 		for (int i = 0; it < end && *it != ':'; it++, i++)
@@ -93,7 +93,7 @@ void Request::_parse_otherline(const std::string &str, std::string::const_iterat
 		if (*(++it) == ' ') it++;
 		for (int i = 0; it < end && *it != '\r'; it++, i++)
 			val += *it;
-		_header.insert(Request::pair_ss(key, val));
+		header.insert(Request::pair_ss(key, val));
 		if (*it != '\r' || *(it + 1) != '\n')
 			throw std::runtime_error("Bad Request: Missparsed header");
 	}
@@ -110,7 +110,7 @@ void Request::_parse()
 		std::string::const_iterator		it = _plaintext.begin();
 
 		_parse_firstline(_plaintext, it);
-		_parse_otherline(_plaintext, it);
+		_parse_otherline(_plaintext, it, _header);
 
 		std::cerr << "\e[30;48;5;245m\n";
 
