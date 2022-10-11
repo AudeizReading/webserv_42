@@ -111,7 +111,6 @@ void Response::create()
 	{
 		header["Cache-Control"] = "public, max-age=604800, immutable";
 		header["Age"] = "0";
-		std::cout << header["Cache-Control"] << std::endl;
 	}
 
 	if (_plaintext != "")
