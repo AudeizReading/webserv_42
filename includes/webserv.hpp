@@ -20,4 +20,4 @@
 
 int				webserv(int argc, char *argv[]);
 TOML::Document	parse_config_file(const char *path);
-bool			include_directive(TOML::Value& target, TOML::Value include);
+void			include_directive(TOML::Value& target, TOML::Value include);

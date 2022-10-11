@@ -38,21 +38,20 @@ static void	debug_print_recursive(TOML::Document const& doc, std::string ident =
 }
 
 // This is a recursive, weird mess. But it looks like it works.
-static bool	_parse_value(TOML::Value& val);
+static void	_parse_value(TOML::Value& val);
 
-static bool	_go_through_array(TOML::Value& array)
+static void	_go_through_array(TOML::Value& array)
 {
 	for (TOML::Document::array_type::iterator j = array.Array().begin();
 		j != array.Array().end();
 		++j)
 	{
-		if (_parse_value(*j) == false)
-			return false;
+		_parse_value(*j);
 	}
-	return true;
 }
 
-static bool	_parse_value(TOML::Value& val)
+// Does whatever is required with specific keys. Right now, only the "include" directive matters.
+static void	_parse_value(TOML::Value& val)
 {
 	if (val.type() == TOML::T_ARRAY)
 	{
@@ -61,32 +60,35 @@ static bool	_parse_value(TOML::Value& val)
 	else if (val.type() == TOML::T_GROUP)
 	{
 		if (val.has("include"))
-		{
-			if (include_directive(val, val["include"]) == false)
-				return false;
-		}
+			include_directive(val, val["include"]);
 		for (TOML::Value::group_iterator it = val.group_begin();
 			it != val.group_end();
 			++it)
 		{
-			if (_parse_value(*it) == false)
-				return false;
+			_parse_value(*it);
 		}
 	}
-	return true;
 }
 
-// TODO: Iterate over everything in config file in here, handle special directives like include
 TOML::Document	parse_config_file(const char *path)
 {
 	TOML::Document	config(path);
-	config.parse();
-
-	for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it)
+	try
 	{
-		if (_parse_value(*it) == false)
-			throw std::runtime_error("Failed to parse configuration file");
+		config.parse();
+		for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it)
+			_parse_value(*it);
 	}
+	catch(const std::exception& e)
+	{
+		throw std::runtime_error(std::string("Failed to parse configuration file: ") + e.what());
+	}
+
 	debug_print_recursive(config);
+	if (!config.has("http") || !config["http"].isGroup())
+		throw std::runtime_error("Illegal or missing `http' object in configuration file");
+	if (!config["http"].has("server") || !config["http"]["server"].isArray())
+		throw std::runtime_error("Illegal or missing `server' block(s) in configuration file");
+
 	return config;
 }
