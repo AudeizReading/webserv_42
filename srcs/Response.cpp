@@ -50,7 +50,7 @@ void Response::create()
 				// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ? -> The Server would have one so it will be handled by accesing the Server's ref config's file
 				// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
 				// all infos needed by CGI is setted inside the config file.
-				CGIManager cgi(_request);
+				CGIManager cgi(_request, _server);
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
 			}
