@@ -57,9 +57,11 @@ void Response::create()
 			catch(const std::exception& e)
 			{
 				std::cerr << "[CGI] " << e.what() << std::endl;
+				std::cerr << "[STOP] " << _content_path << std::endl;
 				*this = Response_Internal_Server_Error(_request, _server);
 			}
 			return ;
+			std::cerr << "[CONTINUE] " << _content_path << std::endl;
 		}
 		else if (good)
 		{
