@@ -1,4 +1,3 @@
-#!/usr/bin/perl 
 
 #%getquery = &get_query_string; 
 
@@ -9,14 +8,39 @@
 
 #print "<pre>\n";
 
-#foreach $key (sort keys(%ENV)) {
-#print "$key = $ENV{$key}\r\n";
-#}
-#print "</pre>\n";
+if ($ENV{'REQUEST_METHOD'} eq "POST" ) {
+	#  read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+    $Recu="STDIN (Methode POST)" }
+else {
+    $Recu="QUERY_STRING (Methode GET)";
+    $buffer = $ENV{'QUERY_STRING'};
+}
+# Traitement et découpage.
+    @pairs = split(/&/, $buffer);
+    foreach $pair (@pairs) {
+        ($name, $value) = split(/=/, $pair);
+        $value =~ tr/+/ /;
+        $value =~ s/%(..)/pack("C", hex($1))/eg;
+        $FORM{$name} = $value;
+}
 
-print "Bla bla bla bla\n";
-print <STDOUT>;
-#print <STDIN>;
+print "Content-type: text/html\n\n";
+print "<HTML><HEAD><TITLE>Resultat</TITLE></HEAD>\n";
+print "<BODY BGCOLOR=\"#FFFFFF\">\n";
+
+print "<H1>Résultat du traitement du formulaire</H1>\n";
+print "<H2>Chaine de données reçue par le CGI</H2>\n";
+print "$Recu <B>$buffer</B>\n";
+
+print "<H2>Liste des informations décodées</H2>\n";
+print "<UL>\n";
+
+foreach $match (keys (%FORM)) {
+    print "<LI><B>$match: </B>".$FORM{$match};
+}
+
+print "</UL>\n";
+print "</BODY></HTML>\n";
 #
 # print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
 # print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";
@@ -35,7 +59,7 @@ print <STDOUT>;
 # print "REMOTE_IDENT : ".$ENV{'REMOTE_IDENT'}."<br>\n";
 # print "AUTH_TYPE : ".$ENV{'AUTH_TYPE'}."<br>\n";
 # print "CONTENT_TYPE : ".$ENV{'CONTENT_TYPE'}."<br>\n";
-# print "CONTENT_LENGTH : ".$ENV{'CONTENT_LENGTH'}."<br>\n";
+ print "CONTENT_LENGTH : ".$ENV{'CONTENT_LENGTH'}."<br>\n";
 # print "HTTP_FROM : ".$ENV{'HTTP_FROM'}."<br>\n";
 # print "HTTP_ACCEPT : ".$ENV{'HTTP_ACCEPT'}."<br>\n";
 # print "HTTP_USER_AGENT : ".$ENV{'HTTP_USER_AGENT'}."<br>\n";
