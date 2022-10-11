@@ -87,10 +87,7 @@ std::string Queryparser::parse_otherline(std::string &str, std::string::const_it
 		{
 			if (!(('a' <= *it && *it <= 'z') || ('A' <= *it && *it <= 'Z') || ('0' <= *it && *it <= '9')
 					|| *it == '-' || *it == '_'))
-			{
-				std::cout << *it << " -- " << str << " -- " << std::endl;
 				throw std::runtime_error("Bad Request: Keyname invalid");
-			}
 			key += (i == 0 || *(it - 1) == '-') ? toupper(*it) : tolower(*it);
 		}
 		if (*(++it) == ' ') it++;

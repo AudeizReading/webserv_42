@@ -115,7 +115,6 @@ void Response::create()
 
 	if (_plaintext != "")
 	{
-		std::cout << ">>>" << _plaintext << "<<<" << std::endl;
 		std::string::const_iterator		it = _plaintext.begin();
 
 		try
