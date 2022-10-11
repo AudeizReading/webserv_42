@@ -222,6 +222,6 @@ void				CGIManager::launchExec() const
 	//	throw std::runtime_error(strerror(errno));
 	//	return false;
 		exit(errno);
-		std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << "Cette phrase ne doit jamais etre visible\033[0m" << std::endl;
 	}
+	std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << "Cette phrase ne doit jamais etre visible\033[0m" << std::endl;
 }
