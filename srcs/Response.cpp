@@ -56,9 +56,8 @@ void Response::create()
 			}
 			catch(const std::exception& e)
 			{
-				// TODO: Send error 500
 				std::cerr << "[CGI] " << e.what() << std::endl;
-				*this = Response_Bad_Request(_request, _server);
+				*this = Response_Internal_Server_Error(_request, _server);
 			}
 			return ;
 		}
