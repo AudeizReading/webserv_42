@@ -49,5 +49,3 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 	# Instead of the default server, this server should thus
 	# match all requests with no "Host" field.
 	# http://nginx.org/en/docs/http/request_processing.html
-	root = "./demo/www"
-	index = "index.html"

@@ -44,7 +44,9 @@ int	webserv(int argc, char *argv[])
 	std::signal(SIGINT, signal_handler);
 
 	std::cout << "Config file: " << argv[0] << std::endl;
-	TOML::Document	config = parse_config_file(argv[0]).at("listener");
+	TOML::Document	config = parse_config_file(argv[0]);
+	std::cout << F_BGRN("Config parsed :)") << std::endl;
+	// TOML::Document	config = parse_config_file(argv[0]).at("listener");
 
 	// Listener	*listeners[10]; // TODO: Do better.
 	// pthread_t	threads[10];

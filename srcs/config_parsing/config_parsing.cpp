@@ -13,7 +13,7 @@
 #include "webserv.hpp"
 #include <toml_parser.hpp>
 
-static void	debug_print_recursive(TOML::Document const& doc, std::string ident = "")
+void	debug_print_recursive(TOML::Document const& doc, std::string ident = "")
 {
 	for (TOML::Document::const_iterator it = doc.begin(); it != doc.end(); ++it)
 	{
@@ -78,17 +78,14 @@ TOML::Document	parse_config_file(const char *path)
 		config.parse();
 		for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it)
 			_parse_value(*it);
+		check_mandatory_directives(config);
+		check_optional_directives(config);
 	}
 	catch(const std::exception& e)
 	{
 		throw std::runtime_error(std::string("Failed to parse configuration file: ") + e.what());
 	}
 
-	debug_print_recursive(config);
-	if (!config.has("http") || !config["http"].isGroup())
-		throw std::runtime_error("Illegal or missing `http' object in configuration file");
-	if (!config["http"].has("server") || !config["http"]["server"].isArray())
-		throw std::runtime_error("Illegal or missing `server' block(s) in configuration file");
-
+	// debug_print_recursive(config);
 	return config;
 }
