@@ -22,6 +22,7 @@
 
 #include "Request.hpp"
 #include "Server.hpp"
+#include "CGIEnviron.hpp"
 
 #define REQUEST_METHOD "REQUEST_METHOD"
 #define QUERY_STRING "QUERY_STRING"
@@ -52,7 +53,8 @@ class CGIManager {
 
 		const Request&	_request;
 		const Server&	_server;
-		// const CGIEnvir& _environ
+
+		CGIEnviron		_environ;
 		int				_cgi_response_fds[2];
 		int				_cgi_request_fds[2];
 		size_t			_content_length;
@@ -66,6 +68,11 @@ class CGIManager {
 		void		_putenv(const char *name, const char *value);
 		CGIManager&	_setEnv();
 
+		void		close_fds();
+		bool		pipe();
+		void		launchExec() const;
+		bool		getCGIResponse();
+
 	public:
 		CGIManager(const Request& req, const Server& serv);
 		~CGIManager(void);
@@ -75,10 +82,6 @@ class CGIManager {
 
 		static void	signal_pipe_handler(int signo);
 
-		void	close_fds();
-		bool	pipe();
-		bool	getCGIResponse();
 		bool	exec();
-		void	launchExec() const;
 		
 };

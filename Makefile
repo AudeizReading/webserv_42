@@ -18,6 +18,7 @@ PARSING_SRC = $(addprefix srcs/config_parsing/, $(PARSING_SRC_FILES))
 SRC =	srcs/main.cpp \
 		srcs/Response/Response_4XX.cpp \
 		srcs/Response/Response_Ok.cpp \
+		srcs/CGIEnviron.cpp \
 		srcs/CGIManager.cpp \
 		srcs/Listener.cpp \
 		srcs/Queryparser.cpp \
@@ -31,6 +32,7 @@ SRC =	srcs/main.cpp \
 HDEP1 = srcs/Response.hpp \
 		srcs/Response/Response_4XX.hpp \
 		srcs/Response/Response_Ok.hpp \
+		srcs/CGIEnviron.hpp \
 		srcs/CGIManager.hpp \
 		srcs/Listener.hpp \
 		srcs/Queryparser.hpp \

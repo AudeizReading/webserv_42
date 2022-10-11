@@ -4,14 +4,14 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 {
 	# check for upload file
 	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-    $Recu="STDIN (Methode POST)" 
+    $POST="STDIN (Methode POST)" 
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
 	# TODO: delete content
 }
 else {
-    $Recu="QUERY_STRING (Methode GET)";
+    $POST="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
 }
 # Traitement et découpage.
@@ -25,16 +25,16 @@ else {
 
 print STDOUT "Content-Type: text/html\r\n";
 print STDOUT "\r\n";
-print STDOUT "<html lang=\"fr\"><head><meta charset=\"UTF-8\" />";
-print STDOUT "<title>Resultat</title></head>\n";
-print STDOUT "<body bgcolor=\"#FFFFFF\">\n";
+print STDOUT "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+print STDOUT "<html lang=\"fr\">\r\n<head>\r\n\t<title>Resultat</title>\r\n</head>\r\n";
+print STDOUT "<body bgcolor=\"#FFFFFF\">\r\n";
 
-print STDOUT "<h1>Résultat du traitement du formulaire</h1>\n";
-print STDOUT "<h2>Chaine de données reçue par le CGI</h2>\n";
-print STDOUT "$Recu <b>$buffer</b>\n";
+print STDOUT "\t<h1>Résultat du traitement du formulaire</h1>\r\n";
+print STDOUT "\t<h2>Chaine de données reçue par le CGI</h2>\r\n";
+print STDOUT "\t<p>$POST <b>$buffer</b></p>\r\n";
 
-print STDOUT "<h2>Liste des informations décodées</h2>\n";
-print STDOUT "<ul>\n";
+print STDOUT "\t<h2>Liste des informations décodées</h2>\r\n";
+print STDOUT "\t<ul>\r\n";
 
 #%getquery = &get_query_string; 
 
@@ -46,11 +46,11 @@ print STDOUT "<ul>\n";
 #print "<pre>\n";
 
 foreach $match (keys (%FORM)) {
-    print STDOUT "<li><b>$match: </b>".$FORM{$match};
+    print STDOUT "\t<li><b>$match: </b>".$FORM{$match}."</li>\r\n";
 }
 
-print STDOUT "</ul>\n";
-print STDOUT "</body></html>\n";
+print STDOUT "\t</ul>\r\n";
+print STDOUT "</body>\r\n</html>\r\n";
 #
 # print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
 # print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";
