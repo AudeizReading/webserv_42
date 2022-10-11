@@ -1,14 +1,5 @@
 #!/usr/bin/perl 
 
-#%getquery = &get_query_string; 
-
-#&cgi_response_header;
-#print "Form : ".$getquery{'form'}."<br>\n";
-#print "Goal : "."POST??"."<br>\n"; # TODO: READ STDIN comme ici: https://fr.acervolima.com/perl-get-vs-post-en-cgi/ (je te laisse faire)
-#print "Submit : "."POST??"."<br>\n";
-
-#print "<pre>\n";
-
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
 	# check for upload file
@@ -32,8 +23,10 @@ else {
         $FORM{$name} = $value;
 }
 
-print STDOUT "Content-type: text/html\n\n";
-print STDOUT "<html><head><title>Resultat</title></head>\n";
+print STDOUT "Content-Type: text/html\r\n";
+print STDOUT "\r\n";
+print STDOUT "<html lang=\"fr\"><head><meta charset=\"UTF-8\" />";
+print STDOUT "<title>Resultat</title></head>\n";
 print STDOUT "<body bgcolor=\"#FFFFFF\">\n";
 
 print STDOUT "<h1>Résultat du traitement du formulaire</h1>\n";
@@ -42,6 +35,15 @@ print STDOUT "$Recu <b>$buffer</b>\n";
 
 print STDOUT "<h2>Liste des informations décodées</h2>\n";
 print STDOUT "<ul>\n";
+
+#%getquery = &get_query_string; 
+
+#&cgi_response_header;
+#print "Form : ".$getquery{'form'}."<br>\n";
+#print "Goal : "."POST??"."<br>\n"; # TODO: READ STDIN comme ici: https://fr.acervolima.com/perl-get-vs-post-en-cgi/ (je te laisse faire)
+#print "Submit : "."POST??"."<br>\n";
+
+#print "<pre>\n";
 
 foreach $match (keys (%FORM)) {
     print STDOUT "<li><b>$match: </b>".$FORM{$match};

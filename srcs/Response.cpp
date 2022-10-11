@@ -135,7 +135,7 @@ void Response::create()
 			map_ss		temp_header;
 			it = _plaintext.begin();
 
-			_plaintext = Queryparser::parse_otherline(_plaintext, it, temp_header);
+			_content = Queryparser::parse_otherline(_plaintext, it, temp_header);
 			for (map_ss::iterator it2 = temp_header.begin(); it2 != temp_header.end(); ++it2)
 				header[it2->first] = it2->second;
 			std::cout << "[CGI] Use a partial custom header" << std::endl;
