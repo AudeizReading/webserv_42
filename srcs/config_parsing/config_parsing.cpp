@@ -37,25 +37,19 @@ void	debug_print_recursive(TOML::Document const& doc, std::string ident = "")
 	}
 }
 
-// This is a recursive, weird mess. But it looks like it works.
-static void	_parse_value(TOML::Value& val);
-
-static void	_go_through_array(TOML::Value& array)
-{
-	for (TOML::Document::array_type::iterator j = array.Array().begin();
-		j != array.Array().end();
-		++j)
-	{
-		_parse_value(*j);
-	}
-}
-
+// A bit of a recursive, weird mess. But it looks like it works.
 // Does whatever is required with specific keys. Right now, only the "include" directive matters.
 static void	_parse_value(TOML::Value& val)
 {
 	if (val.type() == TOML::T_ARRAY)
 	{
-		return _go_through_array(val);
+		// for (auto it : val.Array()) => Remember what they took away from you.
+		for (TOML::Document::array_type::iterator it = val.Array().begin();
+			it != val.Array().end();
+			++it)
+		{
+			_parse_value(*it);
+		}
 	}
 	else if (val.type() == TOML::T_GROUP)
 	{
@@ -70,6 +64,30 @@ static void	_parse_value(TOML::Value& val)
 	}
 }
 
+// Goes through each server block in the HTTP group, and adds a default "location"
+// to a server when none is defined.
+static void	_insert_default_locations(TOML::Value& http)
+{
+	TOML::Value::array_type&	serv_array = http["server"].Array();
+	for (TOML::Document::array_type::iterator it = serv_array.begin();
+		it != serv_array.end();
+		++it)
+	{
+		if (!it->has("location"))
+		{
+			TOML::Value new_group = TOML::make_group("");
+			new_group.group_addValue( TOML::make_string("route", "/") );
+			new_group.group_addValue( TOML::make_string("root", "/var/www") );
+			it->group_addValue( TOML::make_array("location", TOML::T_GROUP) );
+			(*it)["location"].groupArray_addValue(new_group);
+		}
+	}
+}
+
+// Opens, parses, and does some basic error checking on the configuration file.
+// Checks if mandatory directives are present. Checks if each supported directive has
+// got the right type. Does NOT check for directives with the right type but bad values.
+// Throws a descriptive std::runtime_error if something went wrong.
 TOML::Document	parse_config_file(const char *path)
 {
 	TOML::Document	config(path);
@@ -80,6 +98,7 @@ TOML::Document	parse_config_file(const char *path)
 			_parse_value(*it);
 		check_mandatory_directives(config);
 		check_optional_directives(config);
+		_insert_default_locations(config["http"]);
 	}
 	catch(const std::exception& e)
 	{
@@ -87,5 +106,6 @@ TOML::Document	parse_config_file(const char *path)
 	}
 
 	// debug_print_recursive(config);
+	// std::cout << config["http"].at("mime_types") << std::endl;
 	return config;
 }
