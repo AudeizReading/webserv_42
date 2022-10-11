@@ -1,3 +1,4 @@
+#!/usr/bin/perl 
 
 #%getquery = &get_query_string; 
 
@@ -8,9 +9,16 @@
 
 #print "<pre>\n";
 
-if ($ENV{'REQUEST_METHOD'} eq "POST" ) {
-	#  read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-    $Recu="STDIN (Methode POST)" }
+if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
+{
+	# check for upload file
+	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+    $Recu="STDIN (Methode POST)" 
+}
+elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
+{
+	# TODO: delete content
+}
 else {
     $Recu="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
@@ -24,23 +32,23 @@ else {
         $FORM{$name} = $value;
 }
 
-print "Content-type: text/html\n\n";
-print "<HTML><HEAD><TITLE>Resultat</TITLE></HEAD>\n";
-print "<BODY BGCOLOR=\"#FFFFFF\">\n";
+print STDOUT "Content-type: text/html\n\n";
+print STDOUT "<html><head><title>Resultat</title></head>\n";
+print STDOUT "<body bgcolor=\"#FFFFFF\">\n";
 
-print "<H1>Résultat du traitement du formulaire</H1>\n";
-print "<H2>Chaine de données reçue par le CGI</H2>\n";
-print "$Recu <B>$buffer</B>\n";
+print STDOUT "<h1>Résultat du traitement du formulaire</h1>\n";
+print STDOUT "<h2>Chaine de données reçue par le CGI</h2>\n";
+print STDOUT "$Recu <b>$buffer</b>\n";
 
-print "<H2>Liste des informations décodées</H2>\n";
-print "<UL>\n";
+print STDOUT "<h2>Liste des informations décodées</h2>\n";
+print STDOUT "<ul>\n";
 
 foreach $match (keys (%FORM)) {
-    print "<LI><B>$match: </B>".$FORM{$match};
+    print STDOUT "<li><b>$match: </b>".$FORM{$match};
 }
 
-print "</UL>\n";
-print "</BODY></HTML>\n";
+print STDOUT "</ul>\n";
+print STDOUT "</body></html>\n";
 #
 # print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
 # print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";

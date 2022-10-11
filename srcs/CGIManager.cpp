@@ -13,7 +13,7 @@
 #include "CGIManager.hpp"
 
 // - Constr / Destr ------------------------------------------------------------ 
-CGIManager::CGIManager(const Request& req, const Server& serv) : _request(req), _server(serv), _env(), _content_length(0), _plaintext() {
+CGIManager::CGIManager(const Request& req, const Server& serv) : _request(req), _server(serv), _content_length(0), _plaintext() {
 	try
 	{
 		this->pipe();
@@ -21,24 +21,19 @@ CGIManager::CGIManager(const Request& req, const Server& serv) : _request(req), 
 	}
 	catch(const std::exception& e)
 	{
-		::close(_cgi_response_fds[0]);
-		::close(_cgi_response_fds[1]);
-		::close(_cgi_request_fds[0]);
-		::close(_cgi_request_fds[1]);
+		this->close_fds();
+		std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " " << e.what() << ": problem with the CGI response\033[0m" << std::endl;
 		std::cerr << e.what() << '\n';
 		return ;
 	}
 }
 
 CGIManager::~CGIManager(void) {
-	::close(_cgi_response_fds[0]);
-	::close(_cgi_response_fds[1]);
-	::close(_cgi_request_fds[0]);
-	::close(_cgi_request_fds[1]);
+	this->close_fds();
 }
 
 // - Accessors ----------------------------------------------------------------- 
-CGIManager::map_ss	CGIManager::getEnv()		const { return this->_env; }
+//CGIManager::map_ss	CGIManager::getEnv()		const { return this->_env; }
 std::string			CGIManager::getPlainText()	const { return this->_plaintext; }
 
 void				CGIManager::_putenv(const char *name, const char *value)
@@ -99,6 +94,14 @@ CGIManager&			CGIManager::_setEnv()
 }
 
 // - Accessors ----------------------------------------------------------------- 
+void				CGIManager::close_fds()
+{
+	::close(this->_cgi_response_fds[0]);
+	::close(this->_cgi_response_fds[1]);
+	::close(this->_cgi_request_fds[0]);
+	::close(this->_cgi_request_fds[1]);
+}
+
 bool				CGIManager::pipe() 
 {
 	if (::pipe(_cgi_response_fds) == -1)
@@ -143,13 +146,13 @@ bool				CGIManager::getCGIResponse()
 	// It is forbidden by subject to check errno after a write, so check it manually
 	// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
 	(input_sz == p_size && (this->_content_length = p_size));
-// This throws an error but for the now i will comment it bc, i'm not sure i've the right content_lenght and it is not the purpose of the day so only commenting it for passing and checking if errors are throwns as we want
-/*	if (p_size != input_sz)
+
+	if (p_size != input_sz)
 
 	{
 		throw std::runtime_error(strerror(EIO));
 		return false;
-	}*/
+	}
 	return true;
 }
 
@@ -166,48 +169,54 @@ void				CGIManager::signal_pipe_handler(int signo)
 bool				CGIManager::exec() 
 {
 
-	int	exit_status = 0;
+	int		exit_status = 0;
 	pid_t	pid = ::fork();
+
 	switch (pid)
 	{
 		case -1:
 			throw std::runtime_error(strerror(errno));
 			return false;
 		case 0:
-			// try catch here
-		//	try
-		//	{
 				::close(_cgi_response_fds[0]);
+				::close(_cgi_request_fds[1]);
 
 				::close(STDOUT_FILENO);
 				::dup2(_cgi_response_fds[1], STDOUT_FILENO);
-				//		::write(_cgi_response_fds[1], _request.get_content().c_str(), _request.get_content().size());
+
+				::close(STDIN_FILENO);
+				::dup2(_cgi_request_fds[0], STDIN_FILENO);
 
 				::close(_cgi_response_fds[1]);
+				::close(_cgi_request_fds[0]);
 				this->launchExec();
-	//		}
-		//	catch(const std::exception& e)
-		//	{
 				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": problem with the CGI executable\033[0m" << std::endl;
 				return false;
-		//	}
 			break;
 		default:
-		//	try
-		//	{
+			try
+			{
+				::close(_cgi_request_fds[0]);
+				::write(_cgi_request_fds[1], _request.get_content().c_str(), _request.get_content().size());
+				::close(_cgi_request_fds[1]);
+
 				::close(_cgi_response_fds[1]);
 				this->getCGIResponse();
 				::close(_cgi_response_fds[0]);
 
-				::waitpid(pid, &exit_status, 0);
-				if (exit_status != 0)
-					throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
-		//	}
-		//	catch(const std::exception& e)
-		//	{
-	//			std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": problem with the CGI response\033[0m" << std::endl;
-		//		return false;
-		//	}
+			}
+			catch(const std::exception& e)
+			{
+				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " " << e.what() << ": problem with the CGI response\033[0m" << std::endl;
+				return false;
+			}
+			::waitpid(pid, &exit_status, 0); //WNOHANG is the non-block opt for waitpid but does really need it?
+			if (exit_status != 0 && WIFEXITED(exit_status))
+				throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
+			else if (WIFSIGNALED(exit_status))
+				throw std::runtime_error(strerror(WTERMSIG(exit_status)));
+			else if (WIFSTOPPED(exit_status))
+				throw std::runtime_error(strerror(WSTOPSIG(exit_status)));
 			break;
 	}
 	return true;
@@ -215,13 +224,10 @@ bool				CGIManager::exec()
 
 void				CGIManager::launchExec() const
 {
-	// first trying with execl and ls cmd
 	// do not forget to check the PATH rights (only exec has to be set)
 	if (::execl(::getenv("SCRIPT_NAME"), ::getenv("SCRIPT_NAME"), NULL) == -1)
 	{
-	//	throw std::runtime_error(strerror(errno));
-	//	return false;
 		exit(errno);
 	}
-	std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << "Cette phrase ne doit jamais etre visible\033[0m" << std::endl;
+	std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " Cette phrase ne doit jamais etre visible\033[0m" << std::endl;
 }
