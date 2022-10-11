@@ -86,7 +86,7 @@ CGIManager&			CGIManager::_setEnv()
 		std::string http_key = it2->first;
 		std::transform(http_key.begin(), http_key.end(),http_key.begin(), toupper);
 		std::replace(http_key.begin(), http_key.end(), '-', '_');
-		std::cerr << " add " << http_key << ": " << it2->second << std::endl;
+		// std::cerr << " add " << http_key << ": " << it2->second << std::endl;
 		this->_putenv(("HTTP_" + http_key).c_str(), it2->second.c_str());
 	}
 

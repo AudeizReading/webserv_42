@@ -18,6 +18,7 @@
 #include "Response.hpp"
 #include "Response/Response_4XX.hpp"
 #include "CGIManager.hpp"
+#include "Queryparser.hpp"
 
 Response::Response(Request &request, Server &server): _request(request), _server(server)
 {
@@ -26,7 +27,7 @@ Response::Response(Request &request, Server &server): _request(request), _server
 
 void Response::create()
 {
-	std::stringstream			response;
+	std::string					ext;
 
 	_init();
 
@@ -34,14 +35,17 @@ void Response::create()
 	if (_content_path != "" && _content == "")
 	{
 		std::cerr << "[Response::create()] " << _content_path << std::endl;
+		ext = _content_path.substr(_content_path.find_last_of(".") + 1);
+
 		std::ifstream			file(_content_path);
 		int						good = file.good();
-		std::string				ext = _content_path
-									.substr(_content_path.find_last_of(".") + 1);
 
 		if (good && _content_path.find("/.", 0) != std::string::npos)
+		{
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
 			*this = Response_Forbidden(_request, _server);
+			return ;
+		}
 		else if (good && ext == "pl") { // TODO: is cgi extension of application #aude: just comment here for testing script
 			// CGI Handling
 			try 
@@ -59,8 +63,8 @@ void Response::create()
 				std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
 				*this = Response_Internal_Server_Error(_request, _server);
+				return ;
 			}
-			return ;
 			std::cerr << "[CONTINUE] " << _content_path << std::endl;
 		}
 		else if (good)
@@ -81,20 +85,73 @@ void Response::create()
 				_content_type = "text/plain";
 		}
 		else
+		{
 			*this = Response_Not_Found(_request, _server);
+			return ;
+		}
 	}
 
 	time_t						ctime = time(NULL);
 	tm							*t = gmtime(&ctime);
+	map_ss						header;
+	std::stringstream			date;
+	// TODO: full date support
+	date << "Wed, 28 Sep " << t->tm_year << " "
+		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT";
+
+	header.insert(Queryparser::pair_ss("Date", date.str()));
+	header.insert(Queryparser::pair_ss("Server", _server.get_name()));
+	header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
+	std::stringstream	length;
+	length << _content.length();
+	header.insert(Queryparser::pair_ss("Cache-Length", length.str()));
+	header.insert(Queryparser::pair_ss("Cache-Type", _content_type));
+
+	if (ext == "ico" || ext == "png" || ext == "jpg") // Mise en cache
+	{
+		header["Cache-Control"] = "public, max-age=604800, immutable";
+		header["Age"] = "0";
+		std::cout << header["Cache-Control"] << std::endl;
+	}
+
+	if (_plaintext != "")
+	{
+		std::cout << ">>>" << _plaintext << "<<<" << std::endl;
+		std::string::const_iterator		it = _plaintext.begin();
+
+		try
+		{
+			Queryparser::parse_resp_firstline(_plaintext, it);
+			std::cout << "[CGI] Send a full custom header" << std::endl;
+			return ;
+		}
+		catch(const std::exception& e)
+		{
+			std::cout << "[CGI] Not a full custom header (" << e.what() << ")" << std::endl;
+		}
+
+		try
+		{
+			map_ss		temp_header;
+			it = _plaintext.begin();
+
+			_plaintext = Queryparser::parse_otherline(_plaintext, it, temp_header);
+			for (map_ss::iterator it2 = temp_header.begin(); it2 != temp_header.end(); ++it2)
+				header[it2->first] = it2->second;
+			std::cout << "[CGI] Use a partial custom header" << std::endl;
+		}
+		catch(const std::exception& e)
+		{
+			std::cout << "[CGI] No partial custom header (" << e.what() << ")" << std::endl;
+		}
+	}
+
+	std::stringstream			response;
 
 	response << get_status() << "\r\n";
-	// TODO: full date support
-	response << "Date: Wed, 28 Sep " << t->tm_year << " "
-		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT" << "\r\n";
-	response << "Server: " << _server.get_name() << "\r\n";
-	response << "Cache-Control: no-cache\r\n";
-	response << "Content-Length: " << _content.length() << "\r\n";
-	response << "Content-Type: " << _content_type << "\r\n";
+	Request::map_ss::iterator	it2;
+	for (it2 = header.begin(); it2 != header.end(); it2++)
+		response << it2->first << ": " << it2->second << "\r\n";
 	response << "\r\n";
 	response << _content;
 

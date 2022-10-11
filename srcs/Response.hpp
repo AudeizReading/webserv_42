@@ -17,6 +17,10 @@
 
 class Response
 {
+public:
+	typedef std::map<std::string, std::string>			map_ss;
+	typedef std::pair<std::string, std::string>			pair_ss;
+
 private:
 	std::string			_plaintext;
 
@@ -27,6 +31,7 @@ protected:
 	std::string			_content_path;
 	std::string			_content_type;
 	std::string			_content;
+	map_ss				_header;
 
 	virtual void _init() = 0;
 

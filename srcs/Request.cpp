@@ -19,6 +19,7 @@
 
 #include "webserv.hpp"
 #include "Request.hpp"
+#include "Queryparser.hpp"
 
 Request::Request(std::string plaintext): _complete(0), _plaintext(plaintext)
 {
@@ -27,32 +28,7 @@ Request::Request(std::string plaintext): _complete(0), _plaintext(plaintext)
 
 void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)
 {
-	std::string::const_iterator		end = str.begin();
-
-	_Firstline						firstline;
-
-	while(end < str.end() && *end != '\r')
-		end++;
-
-	if (*(end + 1) != '\n')
-		throw std::runtime_error("Bad Request: Missparsed end of firstline");
-
-	for (; it < end && *it != ' '; it++)
-		firstline.method += toupper(*it);
-	it++;
-	for (; it < end && *it != ' '; it++)
-		firstline.uri += *it;
-	it++;
-	for (; it < end && *it != ' ' && *it != '\r'; it++)
-		firstline.http_version += *it;
-
-	if (*it != '\r')
-		throw std::runtime_error("Bad Request: Too many element on firstline");
-	it += 2;
-
-	// TODO: check http_version and throw ?
-	if (firstline.http_version.rfind("HTTP/", 0) != 0) 
-		throw std::runtime_error("Bad Request: Bad HTTP_VERSION");
+	Queryparser::Firstline firstline = Queryparser::parse_req_firstline(str, it);
 
 	std::string::size_type			pos = firstline.uri.find("?");
 
@@ -78,31 +54,6 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		throw std::runtime_error("Bad Request: Forbidden previous folder");
 }
 
-void Request::_parse_otherline(const std::string &str, std::string::const_iterator &it, map_ss &header)
-{
-	std::string::const_iterator		end = str.end();
-
-	std::string			key;
-	std::string			val;
-
-	header.clear();
-	for (std::string key, val; it < end && *it != '\r'; it += 2, key = "", val = "")
-	{
-		for (int i = 0; it < end && *it != ':'; it++, i++)
-			key += (i == 0 || *(it - 1) == '-') ? toupper(*it) : tolower(*it);
-		if (*(++it) == ' ') it++;
-		for (int i = 0; it < end && *it != '\r'; it++, i++)
-			val += *it;
-		header.insert(Request::pair_ss(key, val));
-		if (*it != '\r' || *(it + 1) != '\n')
-			throw std::runtime_error("Bad Request: Missparsed header");
-	}
-	if (*it != '\r' || *(it + 1) != '\n')
-		throw std::runtime_error("Bad Request: Missparsed end of header");
-	it += 2;
-	_content.assign(it, end);
-}
-
 void Request::_parse()
 {
 	try
@@ -110,7 +61,7 @@ void Request::_parse()
 		std::string::const_iterator		it = _plaintext.begin();
 
 		_parse_firstline(_plaintext, it);
-		_parse_otherline(_plaintext, it, _header);
+		_content = Queryparser::parse_otherline(_plaintext, it, _header);
 
 		std::cerr << "\e[30;48;5;245m\n";
 

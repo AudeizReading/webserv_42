@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/08 13:32:59 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/10/10 10:14:15 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,22 +18,24 @@ PARSING_SRC = $(addprefix srcs/config_parsing/, $(PARSING_SRC_FILES))
 SRC =	srcs/main.cpp \
 		srcs/Response/Response_4XX.cpp \
 		srcs/Response/Response_Ok.cpp \
+		srcs/CGIManager.cpp \
 		srcs/Listener.cpp \
+		srcs/Queryparser.cpp \
 		srcs/Request.cpp \
 		srcs/Response.cpp \
 		srcs/Server.cpp \
 		srcs/webserv.cpp \
-		srcs/CGIManager.cpp \
 		$(PARSING_SRC)
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/Response.hpp' pos='1' template='		{0} \' -->
 HDEP1 = srcs/Response.hpp \
 		srcs/Response/Response_4XX.hpp \
 		srcs/Response/Response_Ok.hpp \
-		srcs/Server.hpp \
-		srcs/Listener.hpp \
-		srcs/Request.hpp \
 		srcs/CGIManager.hpp \
+		srcs/Listener.hpp \
+		srcs/Queryparser.hpp \
+		srcs/Request.hpp \
+		srcs/Server.hpp \
 
  # <!-- pre='./' path='includes/' match='*.hpp' pos='1' template='		{0} \' -->
 HDEP =	$(HDEP1) \

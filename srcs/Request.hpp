@@ -13,7 +13,6 @@
 #pragma once
 
 #include <iostream>
-
 #include <map>
 
 class Request
@@ -26,12 +25,6 @@ private:
 	int				_complete;
 	std::string		_plaintext;
 
-	struct _Firstline {
-		std::string method;
-		std::string uri;
-		std::string http_version;
-	};
-
 	std::string		_method;
 	std::string		_location;
 	std::string		_query;
@@ -42,7 +35,6 @@ private:
 	void		_parse();
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
-	void		_parse_otherline(const std::string &str, std::string::const_iterator &it, map_ss &header);
 
 public:
 	Request(std::string plaintext);
