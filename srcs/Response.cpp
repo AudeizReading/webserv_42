@@ -57,6 +57,8 @@ void Response::create()
 				CGIManager cgi(_request, _server);
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
+				
+				std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext: " << _plaintext << "\033[0m" << std::endl;
 			}
 			catch(const std::exception& e)
 			{

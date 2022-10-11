@@ -52,9 +52,9 @@ class CGIManager {
 
 		const Request&	_request;
 		const Server&	_server;
+		// const CGIEnvir& _environ
 		int				_cgi_response_fds[2];
 		int				_cgi_request_fds[2];
-		map_ss			_env;
 		size_t			_content_length;
 		std::string		_plaintext;
 
@@ -70,10 +70,12 @@ class CGIManager {
 		CGIManager(const Request& req, const Server& serv);
 		~CGIManager(void);
 
-		map_ss		getEnv() const;
+		//map_ss		getEnv() const;
 		std::string	getPlainText() const;
 
 		static void	signal_pipe_handler(int signo);
+
+		void	close_fds();
 		bool	pipe();
 		bool	getCGIResponse();
 		bool	exec();
