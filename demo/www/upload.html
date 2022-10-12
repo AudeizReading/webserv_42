@@ -5,9 +5,10 @@
 	<title>Upload</title>
 </head>
 <body style="background-color: lightblue;">
-	<form method="POST" action="upload.html" enctype="multipart/form-data">
+	<form method="POST" action="upload" enctype="multipart/form-data">
+		<!-- <form method="POST" action="upload.html" enctype="multipart/form-data"> -->
 		<p>
-		<input type="file" name="form" value="R-42" />
+			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
 		</p>
 		<p>
 			<input type="submit" name="submit" value="Réserver un iceberg" />

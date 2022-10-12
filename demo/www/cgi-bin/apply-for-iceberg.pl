@@ -6,6 +6,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
     $POST="STDIN (Methode POST)" ;
 	%FORM=&split_cgi_array;
+    $buffer = $ENV{'QUERY_STRING'};
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
@@ -29,7 +30,8 @@ sub split_cgi_array
 	}
 	%form;
 }
-%GETQUERY = &get_query_string;
+#%GETQUERY = &get_query_string;
+%GETQUERY = &split_cgi_array;
 # Traitement et découpage.
 #    @pairs = split(/&/, $buffer);
 #    foreach $pair (@pairs) {
@@ -77,7 +79,7 @@ sub cgi_print_environnement
 	print STDOUT "\t</ul>\r\n";
 }
 
-&cgi_print_environnement();
+#&cgi_print_environnement();
 
 sub	cgi_response_header
 {

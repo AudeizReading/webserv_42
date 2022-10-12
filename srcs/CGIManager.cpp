@@ -126,8 +126,6 @@ bool				CGIManager::exec()
 				::close(STDIN_FILENO);
 				::dup2(_cgi_request_fds[0], STDIN_FILENO);
 
-		//		::close(_cgi_response_fds[1]);
-		//		::close(_cgi_request_fds[0]);
 				this->_launchExec();
 				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": problem with the CGI executable\033[0m" << std::endl;
 				return false;
@@ -164,6 +162,7 @@ bool				CGIManager::exec()
 void				CGIManager::_launchExec() const
 {
 	// do not forget to check the PATH rights (only exec has to be set)
+	// what about arguments for the script perl what are they?
 	if (::execl(::getenv("SCRIPT_NAME"), ::getenv("SCRIPT_NAME"), NULL) == -1)
 	{
 		exit(errno);

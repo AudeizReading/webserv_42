@@ -32,11 +32,23 @@ bool				CGIEnviron::_putenv(const char *name, const char *value)
 
 CGIEnviron&			CGIEnviron::_setEnv()
 {
-	std::string					path = _server.get_root() + _request.get_location(); // TODO: utiliser _server.get_name()
+	std::string					location = _request.get_location();
+	std::string					ext = location.substr(location.find_last_of(".") + 1);
+	std::string					tmp_script_name = _server.get_root();
+
+	std::string					path = _server.get_root(); // TODO: utiliser _server.get_name()
+	if (ext == "pl")
+		path += _request.get_location();
+	else
+		path += "cgi-bin/apply-for-iceberg.pl";
 
 	// method POST
 	std::string					content = this->_request.get_content();
 	std::string					content_length = std::to_string(content.length());
+
+	PRINT(path);
+	PRINT(_server.get_root());
+	PRINT(_request.get_location());
 
 	Request::map_ss				header = this->_request.get_header();
 	Request::map_ss::iterator	header_begin = header.begin();
@@ -73,11 +85,10 @@ CGIEnviron&			CGIEnviron::_setEnv()
 			{REMOTE_HOST, "\033[44;37m-> has to be taken from request?\033[0m"}, \
 			{REMOTE_ADDR, "\033[44;37m-> has to be taken from request?\033[0m"}, \
 			{REMOTE_USER, "\033[44;37m-> has to be taken from request?\033[0m"}, \
-			{REMOTE_IDENT, "\033[44;37m-> has to be taken from request?\033[0m"}, \
 			{AUTH_TYPE, "\033[44;37m-> has to be taken from request?\033[0m"}\
 	};
 
-	for (int i = 0; i != 18; ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
+	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
 	{
 		this->_env.insert(value_type(cgi_env[i][0], cgi_env[i][1]));
 	}

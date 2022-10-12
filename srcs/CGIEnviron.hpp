@@ -44,6 +44,9 @@
 
 #define PRINT(x) std::cerr << std::boolalpha << "\nin " << __FILE__ << ":" << __LINE__ << "\n"<< __func__ << ": " << #x << "\n" << x << std::endl;
 
+template<typename T, int row, int col>
+int get_arr_2D_width(T(&)[row][col]) {return row;}
+
 class CGIEnviron {
 	public:
 		typedef std::map<std::string, std::string>			map_ss;

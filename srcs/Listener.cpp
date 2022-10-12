@@ -254,6 +254,7 @@ void	Listener::start_listener()
 			else if (event.filter & EVFILT_READ)
 			// On utilise `==` https://stackoverflow.com/a/12165298/
 			{
+			//	std::cerr << "\033[32;1m[SOCKET]: " << __FILE__ << " " << __LINE__ << "\r\naddress.sin_port: " << address.sin_port << "\r\n address.sin_addr.s_addr: " << address.sin_addr.s_addr << "\033[0m" << std::endl;
 				char buffer[PIPE_BUF + 1] = {0};
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
 				// TODO: Limit client body size.
