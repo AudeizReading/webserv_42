@@ -39,7 +39,7 @@ void	debug_print_recursive(TOML::Document const& doc, std::string ident = "")
 
 // A bit of a recursive, weird mess. But it looks like it works.
 // Does whatever is required with specific keys. Right now, only the "include" directive matters.
-static void	_parse_value(TOML::Value& val)
+/* static */ void	_parse_value(TOML::Value& val)
 {
 	if (val.type() == TOML::T_ARRAY)
 	{
@@ -66,7 +66,7 @@ static void	_parse_value(TOML::Value& val)
 
 // Goes through each server block in the HTTP group, and adds a default "location"
 // to a server when none is defined.
-static void	_insert_default_locations(TOML::Value& http)
+/* static */ void	_insert_default_locations(TOML::Value& http)
 {
 	TOML::Value::array_type&	serv_array = http["server"].Array();
 	for (TOML::Document::array_type::iterator it = serv_array.begin();
@@ -94,11 +94,11 @@ TOML::Document	parse_config_file(const char *path)
 	try
 	{
 		config.parse();
-		for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it)
-			_parse_value(*it);
-		check_mandatory_directives(config);
-		check_optional_directives(config);
-		_insert_default_locations(config["http"]);
+		// for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it)
+		// 	_parse_value(*it);
+		// check_mandatory_directives(config);
+		// check_optional_directives(config);
+		// _insert_default_locations(config["http"]);
 	}
 	catch(const std::exception& e)
 	{

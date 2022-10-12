@@ -16,6 +16,7 @@
 #include <toml_parser.hpp>
 
 #include "Server.hpp"
+#include "Request.hpp"
 
 #define DEFAULT_PORT	5000
 #define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
@@ -30,13 +31,18 @@ private:
 	int						_fd;
 	int						_port;
 	int						_listen_backlog;
-	std::vector<Server *>	_servers;
+	std::vector<Server>		_servers;
 	map_is					_requests;
 
-	void	_send(int fd, std::string plaintext);
+	// void		_send(int fd, std::string plaintext);
+	void		_send(int fd, Request request);
+	Server*		_get_matching_server(Request const& req);
 
 public:
 	Listener(TOML::Document const& config);
+	template <class InputIt>
+	Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
+		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type = 0);
 
 	void	start_listener();
 

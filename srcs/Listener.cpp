@@ -30,7 +30,21 @@
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
 
+#include <arpa/inet.h>
+#include <cassert>
+
 #define I_LOVE_ICEBERG 1
+
+template <class InputIt>
+Listener::Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
+		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type)
+: _port(listen_port), _listen_backlog(listen_backlog)
+{
+	_servers.assign(servers_first, servers_last);
+	assert(_port >= 0 && _port <= 65535);
+	// if (_port < 0 || _port > 65535) // TODO: Should be checked before ?
+	// 	throw std::runtime_error("Cannot create Listener: illegal port number");
+}
 
 Listener::Listener(TOML::Document const& config)
 {
@@ -53,12 +67,12 @@ Listener::Listener(TOML::Document const& config)
 		{
 			if (!(*it).has("root")) // TODO: Il y a mieux que ça ???
 				continue ;
-			std::string root	= (*it).at("root").Str();
-			std::string name	= (*it).has("name") ? (*it).at("name").Str() : "bouh"; // TODO: Il y a plus propre que ça ?
-			std::string domain	= (*it).has("domain") ? (*it).at("domain").Str() : ""; // TODO: Il y a plus propre que ça ?
+			std::string root	= it->at("root").Str(); // NOTE: Obsolete, will be moved in location.
+			std::string name	= it->has("name")	? it->at("name").Str()		: "bouh"; // TODO: Il y a plus propre que ça ?
+			std::string domain	= it->has("domain")	? it->at("domain").Str()	: ""; // TODO: Il y a plus propre que ça ?
 			if (root.back() != '/')
 				root.push_back('/');
-			_servers.push_back(new Server(root, name, domain));
+			_servers.push_back(Server(root, name, domain));
 		}
 		catch (std::exception const& e)
 		{
@@ -69,28 +83,56 @@ Listener::Listener(TOML::Document const& config)
 
 }
 
-void	Listener::_send(int fd, std::string plaintext)
+// Returns the server that matches the request, based on the listen_addr and server_name fields.
+Server*	Listener::_get_matching_server(Request const& req)
+{
+	std::vector<Server*>	candidates; // Servers that match the given client address
+
+	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	{
+		if (it->get_listen_addr().s_addr == 0 // Means 0.0.0.0, i.e. listen to everyone
+			|| it->get_listen_addr().s_addr == req.get_client_addr().s_addr)
+			candidates.push_back(&(*it));
+	}
+	if (candidates.empty())
+		return NULL; // TODO: Send a 403: Forbidden in this case?
+
+	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
+	const std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
+
+	// Go through candidate servers, and find the one with the matching server_name
+	Server	*target = candidates.front(); // If no server_name matches, get the first server
+	for (std::vector<Server*>::iterator it = candidates.begin(); it != candidates.end(); ++it)
+	{
+		if ((*it)->has_server_name(host))
+			target = *it;
+	}
+	return target;
+}
+
+void	Listener::_send(int fd, Request request)
 {
 	std::cout << "[listener] recv socket#" << fd << std::endl;
-	Request						request(plaintext);
 	Response					*response;
 	std::string					length = request.get_header()["Content-Length"];
+	std::string					test[fd];
 
 	if (!request.is_complete())
 	{
-		response = new Response_Bad_Request(request, *_servers[0]);
+		response = new Response_Bad_Request(request, _servers[0]);
 	}
 	else
 	{
 		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 			std::cout << "[listener] socket partial#" << fd << std::endl;
-		Server					*server = _servers[0];
-		for (std::vector<Server *>::iterator it = _servers.begin(); it != _servers.end(); ++it)
-		{
+		
+		Server					*server = &_servers[0];
+		for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+		{ // Find server to use, or get first one by default
 			std::string host = request.get_header()["Host"];
-			if ((*it)->get_domain() == host.substr(0, host.find(':')))
-				server = *it;
-			std::cout << "diff" << (*it)->get_domain() << " et " << host << std::endl;
+			if (it->get_domain() == host.substr(0, host.find(':')))
+				server = &*it;
+			std::cout << "diff" << it->get_domain() << " et " << host << std::endl;
 		}
 
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
@@ -273,7 +315,11 @@ void	Listener::start_listener()
 				if (size < PIPE_BUF)
 				{
 					std::cout << "[listener] ok recv event#" << event_fd << std::endl;
-					_send(event_fd, (*search).second);
+					char	addr_str[INET_ADDRSTRLEN];
+					std::cout << _RED << "[listener] Client address: "
+						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
+						<< RESET << std::endl;
+					_send(event_fd, Request(search->second, address.sin_addr));
 					_requests.erase(event_fd);
 				}
 			}
