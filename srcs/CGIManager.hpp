@@ -46,9 +46,6 @@
 #define PRINT(x) std::cerr << std::boolalpha << "\nin " << __FILE__ << ":" << __LINE__ << "\n"<< __func__ << ": " << #x << "\n" << x << std::endl;
 // Following https://www.ietf.org/rfc/rfc3875.txt
 class CGIManager {
-	public:
-		typedef std::map<std::string, std::string>			map_ss;
-
 	private:
 		CGIEnviron		_environ;
 		int				_cgi_response_fds[2];

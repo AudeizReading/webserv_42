@@ -4,7 +4,8 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 {
 	# check for upload file
 	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-    $POST="STDIN (Methode POST)" 
+    $POST="STDIN (Methode POST)" ;
+	%FORM=&split_cgi_array;
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
@@ -14,20 +15,39 @@ else {
     $POST="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
 }
-# Traitement et découpage.
-    @pairs = split(/&/, $buffer);
+
+sub split_cgi_array
+{
+	local (@pairs, $pair, $name, $value, %form);
+	@pairs = split(/&/, $buffer);
     foreach $pair (@pairs) {
+		print STDOUT "Here: ".$pair."\r\n";
         ($name, $value) = split(/=/, $pair);
         $value =~ tr/+/ /;
         $value =~ s/%(..)/pack("C", hex($1))/eg;
-        $FORM{$name} = $value;
+        $form{$name} = $value;
+	}
+	%form;
 }
+%GETQUERY = &get_query_string;
+# Traitement et découpage.
+#    @pairs = split(/&/, $buffer);
+#    foreach $pair (@pairs) {
+#        ($name, $value) = split(/=/, $pair);
+#        $value =~ tr/+/ /;
+#        $value =~ s/%(..)/pack("C", hex($1))/eg;
+#        $FORM{$name} = $value;
+#}
 
 print STDOUT "Content-Type: text/html\r\n";
 print STDOUT "\r\n";
 print STDOUT "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
-print STDOUT "<html lang=\"fr\">\r\n<head>\r\n\t<title>Resultat</title>\r\n</head>\r\n";
-print STDOUT "<body bgcolor=\"#FFFFFF\">\r\n";
+print STDOUT "<html lang=\"fr\">\r\n";
+print STDOUT "<head>\r\n";
+print STDOUT "\t<meta charset=\"UTF-8\">\r\n";
+print STDOUT "\t<title>Resultat</title>\r\n";
+print STDOUT "</head>\r\n";
+print STDOUT "<body bgcolor=\"#FFBFFF\">\r\n";
 
 print STDOUT "\t<h1>Résultat du traitement du formulaire</h1>\r\n";
 print STDOUT "\t<h2>Chaine de données reçue par le CGI</h2>\r\n";
@@ -36,44 +56,28 @@ print STDOUT "\t<p>$POST <b>$buffer</b></p>\r\n";
 print STDOUT "\t<h2>Liste des informations décodées</h2>\r\n";
 print STDOUT "\t<ul>\r\n";
 
-#%getquery = &get_query_string; 
-
-#&cgi_response_header;
-#print "Form : ".$getquery{'form'}."<br>\n";
-#print "Goal : "."POST??"."<br>\n"; # TODO: READ STDIN comme ici: https://fr.acervolima.com/perl-get-vs-post-en-cgi/ (je te laisse faire)
-#print "Submit : "."POST??"."<br>\n";
-
-#print "<pre>\n";
-
+foreach $match (keys (%GETQUERY)) {
+    print STDOUT "\t\t<li><b>$match: </b>".$GETQUERY{$match}."</li>\n";
+}
 foreach $match (keys (%FORM)) {
     print STDOUT "\t\t<li><b>$match: </b>".$FORM{$match}."</li>\n";
 }
 
 print STDOUT "\t</ul>\r\n";
 print STDOUT "</body>\r\n</html>\r\n";
-#
-# print "GATEWAY_INTERFACE : ".$ENV{'GATEWAY_INTERFACE'}."<br>\n";
-# print "SERVER_NAME : ".$ENV{'SERVER_NAME'}."<br>\n";
-# print "SERVER_SOFTWARE : ".$ENV{'SERVER_SOFTWARE'}."<br>\n";
-# print "SERVER_PROTOCOL : ".$ENV{'SERVER_PROTOCOL'}."<br>\n";
-# print "SERVER_PORT : ".$ENV{'SERVER_PORT'}."<br>\n";
-# print "REQUEST_METHOD : ".$ENV{'REQUEST_METHOD'}."<br>\n";
-# print "PATH_INFO : ".$ENV{'PATH_INFO'}."<br>\n";
-# print "PATH_TRANSLATED : ".$ENV{'PATH_TRANSLATED'}."<br>\n";
-# print "SCRIPT_NAME : ".$ENV{'SCRIPT_NAME'}."<br>\n";
-# print "DOCUMENT_ROOT : ".$ENV{'DOCUMENT_ROOT'}."<br>\n";
-# print "QUERY_STRING : ".$ENV{'QUERY_STRING'}."<br>\n";
-# print "REMOTE_HOST : ".$ENV{'REMOTE_HOST'}."<br>\n";
-# print "REMOTE_ADDR : ".$ENV{'REMOTE_ADDR'}."<br>\n";
-# print "REMOTE_USER : ".$ENV{'REMOTE_USER'}."<br>\n";
-# print "REMOTE_IDENT : ".$ENV{'REMOTE_IDENT'}."<br>\n";
-# print "AUTH_TYPE : ".$ENV{'AUTH_TYPE'}."<br>\n";
-# print "CONTENT_TYPE : ".$ENV{'CONTENT_TYPE'}."<br>\n";
- print "CONTENT_LENGTH : ".$ENV{'CONTENT_LENGTH'}."<br>\n";
-# print "HTTP_FROM : ".$ENV{'HTTP_FROM'}."<br>\n";
-# print "HTTP_ACCEPT : ".$ENV{'HTTP_ACCEPT'}."<br>\n";
-# print "HTTP_USER_AGENT : ".$ENV{'HTTP_USER_AGENT'}."<br>\n";
-# print "HTTP_REFERER : ".$ENV{'HTTP_REFERER'}."<br>\n";
+
+sub cgi_print_environnement
+{
+	print STDOUT "\t<ul>\r\n";
+	print STDOUT "\t\t<span>ENVIRONNEMENT:</span>\r\n";
+	foreach $env (keys (%ENV))
+	{
+		print STDOUT "\t\t<li><b>$env: </b>".$ENV{$env}."</li>\n";
+	}
+	print STDOUT "\t</ul>\r\n";
+}
+
+&cgi_print_environnement();
 
 sub	cgi_response_header
 {
