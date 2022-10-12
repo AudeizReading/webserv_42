@@ -45,8 +45,8 @@ void	check_mandatory_directives(TOML::Document const& doc)
 				j != locations.end();
 				++j)
 			{
-				if (!exists_and_has_type(*j, "route", TOML::T_STRING))
-					throw std::runtime_error("missing or illegal `route' directive in location");
+				if (!exists_and_has_type(*j, "URI", TOML::T_STRING))
+					throw std::runtime_error("missing or illegal `URI' directive in location");
 				if (!exists_and_has_type(*j, "root", TOML::T_STRING))
 					throw std::runtime_error("missing or illegal `root' directive in location");
 			}

@@ -76,7 +76,7 @@ static void	_insert_default_locations(TOML::Value& http)
 		if (!it->has("location"))
 		{
 			TOML::Value new_group = TOML::make_group("");
-			new_group.group_addValue( TOML::make_string("route", "/") );
+			new_group.group_addValue( TOML::make_string("URI", "/") );
 			new_group.group_addValue( TOML::make_string("root", "/var/www") );
 			it->group_addValue( TOML::make_array("location", TOML::T_GROUP) );
 			(*it)["location"].groupArray_addValue(new_group);
