@@ -19,7 +19,6 @@
 
 #include "webserv.hpp"
 #include "Request.hpp"
-#include "Queryparser.hpp"
 
 Request::Request(std::string plaintext): _complete(0), _plaintext(plaintext)
 {
@@ -97,6 +96,23 @@ void Request::_parse()
 	}
 }
 
+Queryparser::Firstline Request::_get_first_line() const
+{
+	try
+	{
+		std::string::const_iterator	it = _plaintext.begin();
+		Queryparser::Firstline		firstline = Queryparser::parse_req_firstline(_plaintext, it);
+
+		return firstline;
+	}
+	catch(const std::runtime_error& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	return Queryparser::Firstline();
+}
+
+
 Request::~Request()
 {
 
@@ -132,3 +148,9 @@ std::string	Request::get_method() const
 	return (_method);
 }
 
+std::string	Request::get_http_version() const
+{
+	Queryparser::Firstline	firstline = this->_get_first_line();
+
+	return (firstline.http_version);
+}

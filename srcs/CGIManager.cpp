@@ -13,88 +13,27 @@
 #include "CGIManager.hpp"
 
 // - Constr / Destr ------------------------------------------------------------ 
-CGIManager::CGIManager(const Request& req, const Server& serv) : _request(req), _server(serv), _content_length(0), _plaintext() {
+CGIManager::CGIManager(const Request& req, const Server& serv) : _environ(req, serv), _content_length(0), _request_data(req.get_content()), _request_data_length(_request_data.size()), _plaintext() {
 	try
 	{
-		this->pipe();
-		this->_setEnv();
+		this->_pipe();
 	}
 	catch(const std::exception& e)
 	{
-		this->close_fds();
+		this->_close_fds();
 		std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " " << e.what() << ": problem with the CGI response\033[0m" << std::endl;
 		std::cerr << e.what() << '\n';
 		return ;
 	}
 }
 
-CGIManager::~CGIManager(void) {
-	this->close_fds();
-}
+CGIManager::~CGIManager(void) { this->_close_fds(); }
 
 // - Accessors ----------------------------------------------------------------- 
-//CGIManager::map_ss	CGIManager::getEnv()		const { return this->_env; }
 std::string			CGIManager::getPlainText()	const { return this->_plaintext; }
 
-void				CGIManager::_putenv(const char *name, const char *value)
-{
-	::setenv(name, value, 1);
-}
-
-CGIManager&			CGIManager::_setEnv()
-{
-	std::string query_string_key	= "QUERY_STRING";	// to take from config file
-	std::string request_method_key	= "REQUEST_METHOD";	// to take from config file
-	std::string content_length_key	= "CONTENT_LENGTH";	// to take from config file
-	std::string content_type_key	= "CONTENT_TYPE";	// to take from config file
-
-	this->_putenv(GATEWAY_INTERFACE, "CGI/1.1"); 		// to take from config file
-	this->_putenv(SERVER_SOFTWARE, "webserv");
-	this->_putenv(SERVER_NAME, _server.get_name().c_str());
-	this->_putenv(SERVER_PROTOCOL, "HTTP/1.1");	// TODO: va falloir stocker firstline.http_version dans _request._http_version et Je te laisse faire les getters :p 
-	this->_putenv(SERVER_PORT, "4242");				// TODO: from _sever
-
-	this->_putenv(request_method_key.c_str(), _request.get_method().c_str());
-
-	this->_putenv(query_string_key.c_str(), _request.get_query().c_str());
-	this->_putenv(query_string_key.c_str(), _request.get_query().c_str());
-
-	std::string path = _server.get_root() + _request.get_location(); // TODO: utiliser _server.get_name()
-	this->_putenv(PATH_INFO, path.c_str());
-	this->_putenv(PATH_TRANSLATED, path.c_str());
-	this->_putenv(DOCUMENT_ROOT, _server.get_root().c_str());
-	this->_putenv(SCRIPT_NAME, path.c_str());
-//	PRINT(path.c_str());
-
-	this->_putenv(REMOTE_HOST, "-> to take from request");
-	this->_putenv(REMOTE_ADDR, "-> to take from request");
-	this->_putenv(REMOTE_USER, "-> to take from request");
-	this->_putenv(REMOTE_IDENT, "-> to take from request");
-
-	//Utile celui la?
-	//this->_putenv("AUTH_TYPE", "-> to take from request");
-
-	Request::map_ss				header = _request.get_header();
-	Request::map_ss::iterator	it2;
-		
-	for (it2 = header.begin(); it2 != header.end(); it2++)
-	{
-		std::string http_key = it2->first;
-		std::transform(http_key.begin(), http_key.end(),http_key.begin(), toupper);
-		std::replace(http_key.begin(), http_key.end(), '-', '_');
-		// std::cerr << " add " << http_key << ": " << it2->second << std::endl;
-		this->_putenv(("HTTP_" + http_key).c_str(), it2->second.c_str());
-	}
-
-	std::string					content = _request.get_content();
-	this->_putenv(content_length_key.c_str(), std::to_string(content.length()).c_str());
-	this->_putenv(content_type_key.c_str(), header["Content-Type"].c_str());
-
-	return *this;
-}
-
 // - Accessors ----------------------------------------------------------------- 
-void				CGIManager::close_fds()
+void				CGIManager::_close_fds()
 {
 	::close(this->_cgi_response_fds[0]);
 	::close(this->_cgi_response_fds[1]);
@@ -102,7 +41,7 @@ void				CGIManager::close_fds()
 	::close(this->_cgi_request_fds[1]);
 }
 
-bool				CGIManager::pipe() 
+bool				CGIManager::_pipe() 
 {
 	if (::pipe(_cgi_response_fds) == -1)
 	{
@@ -122,7 +61,7 @@ bool				CGIManager::pipe()
 	return true;
 }
 
-bool				CGIManager::getCGIResponse()
+bool				CGIManager::_getCGIResponse()
 {
 	char	buffer[PIPE_BUF] = {0};
 	size_t	tmp_sz = 0;
@@ -187,9 +126,9 @@ bool				CGIManager::exec()
 				::close(STDIN_FILENO);
 				::dup2(_cgi_request_fds[0], STDIN_FILENO);
 
-				::close(_cgi_response_fds[1]);
-				::close(_cgi_request_fds[0]);
-				this->launchExec();
+		//		::close(_cgi_response_fds[1]);
+		//		::close(_cgi_request_fds[0]);
+				this->_launchExec();
 				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": problem with the CGI executable\033[0m" << std::endl;
 				return false;
 			break;
@@ -197,11 +136,11 @@ bool				CGIManager::exec()
 			try
 			{
 				::close(_cgi_request_fds[0]);
-				::write(_cgi_request_fds[1], _request.get_content().c_str(), _request.get_content().size());
+				::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
 				::close(_cgi_request_fds[1]);
 
 				::close(_cgi_response_fds[1]);
-				this->getCGIResponse();
+				this->_getCGIResponse();
 				::close(_cgi_response_fds[0]);
 
 			}
@@ -222,7 +161,7 @@ bool				CGIManager::exec()
 	return true;
 }
 
-void				CGIManager::launchExec() const
+void				CGIManager::_launchExec() const
 {
 	// do not forget to check the PATH rights (only exec has to be set)
 	if (::execl(::getenv("SCRIPT_NAME"), ::getenv("SCRIPT_NAME"), NULL) == -1)
