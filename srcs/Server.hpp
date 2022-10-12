@@ -29,6 +29,7 @@ private:
 	struct in_addr				_listen_addr; // The address this server listen to. 0.0.0.0 means all addresses.
 	unsigned int				_max_body_size;
 	std::vector<std::string>	_server_names;
+	int							_port; // Is only here to be used in parsing.
 	// TODO: Error pages
 	// TODO: Locations
 	// TODO: CGI
@@ -36,7 +37,7 @@ private:
 public:
 	Server(std::string root, std::string name, std::string domain);
 	template <class InputIt>
-	Server(std::string const& listen_address, unsigned int max_body_size,
+	Server(std::string const& listen_address, unsigned int max_body_size, int port,
 			InputIt serv_names_first, InputIt serv_names_last,
 			typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type = 0);
 
@@ -48,16 +49,17 @@ public:
 
 	in_addr			get_listen_addr() const		{ return _listen_addr;		}
 	unsigned int	get_max_body_size() const	{ return _max_body_size;	}
+	int				get_port() const			{ return _port;				}
 
 	std::vector<std::string> const&	get_server_names() const { return _server_names; }
 	bool	has_server_name(std::string const& name) const;
 };
 
 template <class InputIt>
-Server::Server(std::string const& listen_address, unsigned int max_body_size,
+Server::Server(std::string const& listen_address, unsigned int max_body_size, int port,
 				InputIt serv_names_first, InputIt serv_names_last,
 				typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type)
-: _max_body_size(max_body_size)
+: _max_body_size(max_body_size), _port(port)
 {
 	_server_names.assign(serv_names_first, serv_names_last);
 

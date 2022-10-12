@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 PARSING_SRC_FILES =				include_directive.cpp			config_parsing.cpp\
-	config_error_checking.cpp
+	config_error_checking.cpp	create_servers.cpp
 
 PARSING_SRC = $(addprefix srcs/config_parsing/, $(PARSING_SRC_FILES))
 

@@ -48,3 +48,14 @@ public:
 
 	~Listener();
 };
+
+template <class InputIt>
+Listener::Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
+		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type)
+: _port(listen_port), _listen_backlog(listen_backlog)
+{
+	_servers.assign(servers_first, servers_last);
+	// assert(_port >= 0 && _port <= 65535);
+	if (_port < 0 || _port > 65535)
+		throw std::runtime_error("Cannot create Listener: illegal port number");
+}

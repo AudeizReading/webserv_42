@@ -35,17 +35,6 @@
 
 #define I_LOVE_ICEBERG 1
 
-template <class InputIt>
-Listener::Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
-		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type)
-: _port(listen_port), _listen_backlog(listen_backlog)
-{
-	_servers.assign(servers_first, servers_last);
-	assert(_port >= 0 && _port <= 65535);
-	// if (_port < 0 || _port > 65535) // TODO: Should be checked before ?
-	// 	throw std::runtime_error("Cannot create Listener: illegal port number");
-}
-
 Listener::Listener(TOML::Document const& config)
 {
 	try
