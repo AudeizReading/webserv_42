@@ -46,7 +46,7 @@ print STDOUT "\t<ul>\r\n";
 #print "<pre>\n";
 
 foreach $match (keys (%FORM)) {
-    print STDOUT "\t<li><b>$match: </b>".$FORM{$match}."</li>\r\n";
+    print STDOUT "\t\t<li><b>$match: </b>".$FORM{$match}."</li>\n";
 }
 
 print STDOUT "\t</ul>\r\n";

@@ -50,14 +50,12 @@ class CGIManager {
 		typedef std::map<std::string, std::string>			map_ss;
 
 	private:
-
-		const Request&	_request;
-		const Server&	_server;
-
 		CGIEnviron		_environ;
 		int				_cgi_response_fds[2];
 		int				_cgi_request_fds[2];
 		size_t			_content_length;
+		std::string		_request_data;
+		size_t			_request_data_length;
 		std::string		_plaintext;
 
 
@@ -65,23 +63,19 @@ class CGIManager {
 		CGIManager(const CGIManager &src);
 		CGIManager& operator=(const CGIManager &src);
 
-		void		_putenv(const char *name, const char *value);
-		CGIManager&	_setEnv();
-
-		void		close_fds();
-		bool		pipe();
-		void		launchExec() const;
-		bool		getCGIResponse();
+		void		_close_fds();
+		bool		_pipe();
+		void		_launchExec() const;
+		bool		_getCGIResponse();
 
 	public:
 		CGIManager(const Request& req, const Server& serv);
 		~CGIManager(void);
 
-		//map_ss		getEnv() const;
 		std::string	getPlainText() const;
 
 		static void	signal_pipe_handler(int signo);
 
-		bool	exec();
+		bool		exec();
 		
 };
