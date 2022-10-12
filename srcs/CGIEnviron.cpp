@@ -45,6 +45,7 @@ CGIEnviron&			CGIEnviron::_setEnv()
 	for (; header_begin != header_end; ++header_begin)
 	{
 		std::string http_key = header_begin->first;
+		std::string http_val = header_begin->second;
 
 		std::transform(http_key.begin(), http_key.end(), http_key.begin(), toupper);
 		std::replace(http_key.begin(), http_key.end(), '-', '_');
@@ -52,7 +53,7 @@ CGIEnviron&			CGIEnviron::_setEnv()
 	//	 std::cerr << " add " << http_key << ": " << header_begin->second << std::endl;
 
 		this->_env.insert(value_type(("HTTP_" + http_key), header_begin->second));
-	//	this->_putenv(("HTTP_" + http_key).c_str(), header_begin->second.c_str());
+		this->_env.insert(value_type((http_key), header_begin->second));
 	}
 
 	std::string	cgi_env[][2] = {\
@@ -63,7 +64,7 @@ CGIEnviron&			CGIEnviron::_setEnv()
 			{GATEWAY_INTERFACE, "\033[43;30mCGI/1.1\033[0m"}, \
 			{SERVER_SOFTWARE, "\033[43;30mwebserv\033[0m"}, \
 			{SERVER_NAME, _server.get_name()}, \
-			{SERVER_PROTOCOL, "\033[43;30mHTTP/1.1\033[0m"}, \
+			{SERVER_PROTOCOL, this->_request.get_http_version()}, \
 			{SERVER_PORT, "\033[43;30m4242\033[0m"}, \
 			{PATH_INFO, path.c_str()}, \
 			{PATH_TRANSLATED, path.c_str()}, \
@@ -78,14 +79,13 @@ CGIEnviron&			CGIEnviron::_setEnv()
 
 	for (int i = 0; i != 18; ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
 	{
-		//std::cout << "[cgi_env]...i: " << i << " " << cgi_env[i][0] << " = " << cgi_env[i][1] << std::endl;
 		this->_env.insert(value_type(cgi_env[i][0], cgi_env[i][1]));
 	}
 
 	for (map_ss::iterator it = this->_env.begin(); it != this->_env.end(); ++it)
 	{
 		 try {
-			 this->_putenv(it->first.c_str(), it->second.c_str()); 		// to take from config file
+			 this->_putenv(it->first.c_str(), it->second.c_str());
 		 }
 		 catch(const std::exception& e)
 		 {
@@ -94,7 +94,6 @@ CGIEnviron&			CGIEnviron::_setEnv()
 			 return *this;
 		 }
 	}
-//	this->_putenv(SERVER_PROTOCOL, "HTTP/1.1");	// TODO: va falloir stocker firstline.http_version dans _request._http_version et Je te laisse faire les getters :p 
 //	this->_putenv(SERVER_PORT, "4242");				// TODO: from _sever
 
 	return *this;

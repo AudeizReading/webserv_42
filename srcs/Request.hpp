@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <map>
+#include "Queryparser.hpp"
 
 class Request
 {
@@ -35,6 +36,8 @@ private:
 	void		_parse();
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
+	
+	Queryparser ::Firstline _get_first_line() const;
 
 public:
 	Request(std::string plaintext);
@@ -47,6 +50,7 @@ public:
 	std::string	get_query() const;
 	std::string	get_content() const;
 	std::string	get_method() const;
+	std::string	get_http_version() const;
 
 	map_ss		get_header() const;
 };
