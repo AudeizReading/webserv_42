@@ -25,6 +25,12 @@ Request::Request(std::string plaintext): _complete(0), _plaintext(plaintext)
 	_parse();
 }
 
+Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0),
+	_plaintext(plaintext), _client_addr(client_in_addr)
+{
+	_parse();
+}
+
 void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)
 {
 	std::string::const_iterator		end = str.begin();
@@ -171,7 +177,12 @@ std::string	Request::get_content() const
 	return (_content);
 }
 
-Request::map_ss	Request::get_header() const
+Request::map_ss&	Request::get_header()
+{
+	return (_header);
+}
+
+Request::map_ss const&	Request::get_header() const
 {
 	return (_header);
 }
@@ -180,4 +191,3 @@ std::string	Request::get_method() const
 {
 	return (_method);
 }
-
