@@ -15,9 +15,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
 #include <toml_parser.hpp>
+#include "Location.hpp"
 
 class Server
 {
@@ -30,16 +33,21 @@ private:
 	unsigned int				_max_body_size;
 	std::vector<std::string>	_server_names;
 	int							_port; // Is only here to be used in parsing.
+	std::vector<Location>		_locations;
 	// TODO: Error pages
-	// TODO: Locations
 	// TODO: CGI
 
 public:
 	Server(std::string root, std::string name, std::string domain);
+
+	// Not using a reference on locations is intentional. That SHOULD let us use copy elision.
 	template <class InputIt>
 	Server(std::string const& listen_address, unsigned int max_body_size, int port,
-			InputIt serv_names_first, InputIt serv_names_last,
-			typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type = 0);
+			std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
+
+			typename ft::enable_if<
+				!ft::is_fundamental<InputIt>::value, int
+			>::type = 0);
 
 	~Server();
 
@@ -57,12 +65,17 @@ public:
 
 template <class InputIt>
 Server::Server(std::string const& listen_address, unsigned int max_body_size, int port,
-				InputIt serv_names_first, InputIt serv_names_last,
-				typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type)
-: _max_body_size(max_body_size), _port(port)
-{
-	_server_names.assign(serv_names_first, serv_names_last);
+		std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
 
+		typename ft::enable_if<
+			!ft::is_fundamental<InputIt>::value, int
+		>::type)
+: _max_body_size(max_body_size), _port(port), _locations(locations)
+{
+	_server_names.assign(serv_names.first, serv_names.second);
+
+	// Checking this is necessary because inet_addr() is a depreciated piece of... cake.
+	// See https://linux.die.net/man/3/inet_addr
 	_listen_addr.s_addr = inet_addr(listen_address.c_str());
 	if (_listen_addr.s_addr == INADDR_NONE && listen_address != "255.255.255.255")
 		throw std::runtime_error("Invalid listen_addr IP in server block");
