@@ -26,7 +26,7 @@ void signal_handler(int signal)
 	exit(0);
 }
 
-/* static */ void	*init_thread(void *listener)
+static void	*init_thread(void *listener)
 {
 	reinterpret_cast<Listener *>(listener)->start_listener();
 	return (0);
