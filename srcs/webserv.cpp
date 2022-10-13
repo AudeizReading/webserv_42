@@ -48,6 +48,18 @@ int	webserv(int argc, char *argv[])
 	std::cout << F_BGRN("Config parsed :)") << std::endl;
 
 	std::vector<Listener>	listeners = create_Listeners(config);
+	std::cout << "Number of listeners: " << listeners.size() << std::endl;
+	std::vector<pthread_t>	threads;
+	threads.reserve(listeners.size());
+
+	unsigned int i = 0;
+	for (std::vector<Listener>::iterator it = listeners.begin(); it != listeners.end(); ++it, ++i)
+	{
+		int errnum;
+		if ((errnum = pthread_create(&threads[i], NULL, &init_thread, &listeners[i])) < 0)
+			throw std::runtime_error(std::string("Failed to launch thread :") + strerror(errnum));
+		pthread_detach(threads[i]);
+	}
 
 	#if false
 	# error "test"
@@ -64,8 +76,8 @@ int	webserv(int argc, char *argv[])
 				perror("thread: ");
 			pthread_detach(threads[i]);
 		}
-	while (1) {}
 	#endif
+	while (1) {}
 
 	return (0);
 }

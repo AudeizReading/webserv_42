@@ -14,6 +14,7 @@
 
 #include "Request.hpp"
 #include "Server.hpp"
+#include "Location.hpp"
 
 class Response
 {
@@ -26,7 +27,7 @@ private:
 
 protected:
 	const Request*		_request;
-	const Server*		_server;
+	const Location*		_location;
 	std::string			_status;
 	std::string			_content_path;
 	std::string			_content_type;
@@ -36,7 +37,7 @@ protected:
 	virtual void _init() = 0;
 
 public:
-	Response(Request const& request, Server const& server);
+	Response(Request const& request, Location const& location);
 
 	virtual ~Response();
 

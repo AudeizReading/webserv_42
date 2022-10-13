@@ -47,7 +47,7 @@ const Server*	Listener::_get_matching_Server(Request const& req) const
 			candidates.push_back(&(*it));
 	}
 	if (candidates.empty())
-		return NULL; // TODO: Send a 403: Forbidden in this case?
+		return NULL;
 
 	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
 	const std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
@@ -62,25 +62,22 @@ const Server*	Listener::_get_matching_Server(Request const& req) const
 	return target;
 }
 
+// TESTME !!!
 Location const&	Listener::_get_matching_Location(Request const& req, Server const& serv) const
 {
-	return serv.get_locations().front();
-
-	std::string location_path = req.get_location();
-	if (location_path.size() > 1)
-		location_path.erase(location_path.find_last_of('/')); // Erase everything at and after the last '/'
+	std::string req_location_URI = req.get_location();
 	
-	// Locations are sorted from least to most complete. Go through them backward to find
-	// most specialized match, or get the default "/" if no match.
+	std::cerr << BCYN << "Request URI:  " << req_location_URI << RESET << std::endl; // DEBUG
+
+	// Locations are sorted from least to most complete.
 	const Location*	target = &serv.get_locations().front();
-	for (std::vector<Location>::const_reverse_iterator it = serv.get_locations().rbegin();
-		it != serv.get_locations().rend();
+	for (std::vector<Location>::const_iterator it = serv.get_locations().begin();
+		it != serv.get_locations().end();
 		++it)
 	{
-		if (it->URI() == location_path) {
-			target = &(*it);
-			break;
-		}
+		std::cerr << _CYN << "Location URI: " << it->URI() << RESET << '\n'; // DEBUG
+		if (req_location_URI.find(it->URI()) != std::string::npos)
+			target = &*(it);
 	}
 	return *target;
 }
@@ -94,7 +91,7 @@ void	Listener::_send(int fd, Request request)
 
 	if (!request.is_complete())
 	{
-		response = new Response_Bad_Request(request, _servers[0]);
+		response = new Response_Bad_Request(request, _servers[0].get_locations()[0]); // TESTME
 	}
 	else
 	{
@@ -103,12 +100,22 @@ void	Listener::_send(int fd, Request request)
 		
 		const Server	*server = _get_matching_Server(request);
 		if (server == NULL)
-			; // TODO: Send 403: Forbidden
-		const Location&	location = _get_matching_Location(request, *server);
-		(void)location;
+		{	// TODO: Make me prettier?
+			response = new Response_Forbidden(request, _servers[0].get_locations()[0]);
+			send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
+			delete response;
+			close(fd);
+			return ;
+		}
+		// FIXME: Forbidden function inet_ntoa
+		std::cerr << "[listener] matched server "
+			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << std::endl;
 
-		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
-		response = new Response_Ok(request, *server);
+		const Location&	location = _get_matching_Location(request, *server);
+
+		std::cerr << "[listener] matched location: " << location.URI() << std::endl;
+
+		response = new Response_Ok(request, location);
 
 		std::cerr << "\e[30;48;5;245m\n";
 		if (response->get_ctype().rfind("text/", 0) == 0)
