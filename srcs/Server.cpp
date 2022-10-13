@@ -23,12 +23,5 @@ std::string Server::get_name() const
 
 bool	Server::has_server_name(std::string const& name) const
 {
-	for (std::vector<std::string>::const_iterator it = _server_names.begin();
-		it != _server_names.end();
-		++it)
-	{
-		if (name == *it)
-			return true;
-	}
-	return false;
+	return std::find(_server_names.begin(), _server_names.end(), name) != _server_names.end();
 }
