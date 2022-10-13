@@ -22,3 +22,4 @@
 _DEFINE_RESPONSE(Response_Bad_Request, "res/error/400.html", "400 Bad Request")
 _DEFINE_RESPONSE(Response_Forbidden, "res/error/403.html", "403 Forbidden")
 _DEFINE_RESPONSE(Response_Not_Found, "res/error/404.html", "404 Not Found")
+_DEFINE_RESPONSE(Response_Internal_Server_Error, "res/error/500.html", "500 Internal Server Error")

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <map>
 #include <netinet/in.h>
+#include "Queryparser.hpp"
 
 class Request
 {
@@ -25,12 +26,6 @@ public:
 private:
 	int				_complete;
 	std::string		_plaintext;
-
-	struct _Firstline {
-		std::string method;
-		std::string uri;
-		std::string http_version;
-	};
 
 	std::string		_method;
 	std::string		_location;
@@ -44,7 +39,8 @@ private:
 	void		_parse();
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
-	void		_parse_otherline(const std::string &str, std::string::const_iterator &it, map_ss &header);
+	
+	Queryparser ::Firstline _get_first_line() const;
 
 public:
 	// Request(std::string plaintext); // TODO: Delete me
@@ -58,6 +54,7 @@ public:
 	std::string	get_query() const;
 	std::string	get_content() const;
 	std::string	get_method() const;
+	std::string	get_http_version() const;
 
 	map_ss &		get_header();
 	map_ss const&	get_header() const;
