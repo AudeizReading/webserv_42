@@ -56,14 +56,18 @@ class CGIEnviron {
 		const Request&	_request;
 		const Server&	_server;
 
-		map_ss	_env;
+		Request::map_ss	_header;
+		map_ss			_env;
 
 		CGIEnviron(void);
 		CGIEnviron(const CGIEnviron &src);
 		CGIEnviron & operator=(const CGIEnviron &src);
 
 		bool		_putenv(const char *name, const char *value);
-		CGIEnviron&	_setEnv();
+		CGIEnviron&	_setGlobalEnv();
+		void		_setHeaderEnv();
+		void		_setEnv();
+
 	public:
 		CGIEnviron(const Request& req, const Server& serv);
 		~CGIEnviron(void);

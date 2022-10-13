@@ -262,6 +262,7 @@ void	Listener::start_listener()
 				if (size < 0)
 					throw "WRONG"; // TODO: ERROR ?
 
+				std::cout << "\033[31;1m[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << "\033[0m" << std::endl;
 				Listener::map_is::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{

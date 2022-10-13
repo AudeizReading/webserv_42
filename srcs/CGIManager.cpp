@@ -75,12 +75,6 @@ bool				CGIManager::_getCGIResponse()
 	}
 
 	size_t	p_size = _plaintext.size();
-	// TODO: convert int into char * without segfault
-//	this->_putenv("CONTENT_LENGTH", reinterpret_cast<const char*>(p_size));
-	std::stringstream			response;
-
-	response <<  p_size;
-//	this->_putenv("CONTENT_LENGTH", reinterpret_cast<const char *>(response.str()));
 
 	// It is forbidden by subject to check errno after a write, so check it manually
 	// If we have read the same num of octets than writen them, _content_length takes this value, else throws exception
@@ -134,6 +128,7 @@ bool				CGIManager::exec()
 			try
 			{
 				::close(_cgi_request_fds[0]);
+				// Attention checker la data lenght, si 0 ne pas envoyer!
 				::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
 				::close(_cgi_request_fds[1]);
 
@@ -156,13 +151,18 @@ bool				CGIManager::exec()
 				throw std::runtime_error(strerror(WSTOPSIG(exit_status)));
 			break;
 	}
+	if (::signal(SIGPIPE, SIG_DFL) == SIG_ERR) // reset the sighandler to his previous state
+	{
+		throw std::runtime_error(strerror(errno));
+		return false;
+	}
 	return true;
 }
 
 void				CGIManager::_launchExec() const
 {
 	// do not forget to check the PATH rights (only exec has to be set)
-	// what about arguments for the script perl what are they?
+	// what about arguments for the script perl what are they? -> they are the filename to be upload if I have understand well
 	if (::execl(::getenv("SCRIPT_NAME"), ::getenv("SCRIPT_NAME"), NULL) == -1)
 	{
 		exit(errno);
