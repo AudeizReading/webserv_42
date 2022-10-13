@@ -7,7 +7,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	{
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 		$POST="STDIN (Methode POST)" ;
-		%FORM=&split_cgi_array;
+		%FORM=&split_cgi_array($buffer);
 	}
     $buffer = $ENV{'QUERY_STRING'};
 }
@@ -22,16 +22,19 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 }
 else {
 	print "Content-Type: text/html\r\n";
-	print $ENV{'SERVER_PROTOCOL'}." 403 Forbidden\r\n"; # voir par la suite pour passer la rep en arg de la fn
+	print $ENV{'SERVER_PROTOCOL'}." 403 Forbidden\r\n"; 
 	print STDOUT "\r\n";
+	exit 1;
 }
 
+# split by & and =, put this in a sort of map
 sub split_cgi_array
 {
-	local (@pairs, $pair, $name, $value, %form);
+	local (@pairs, $pair, $name, $value, %form, $arg);
+	($arg)=@_;
+	print "arg\r\n:".$arg."\nfin arg\n";
 	@pairs = split(/&/, $buffer);
     foreach $pair (@pairs) {
-		print STDOUT "Here: ".$pair."\r\n";
         ($name, $value) = split(/=/, $pair);
         $value =~ tr/+/ /;
         $value =~ s/%(..)/pack("C", hex($1))/eg;
@@ -40,7 +43,7 @@ sub split_cgi_array
 	%form;
 }
 #%GETQUERY = &get_query_string;
-%GETQUERY = &split_cgi_array;
+%GETQUERY = &split_cgi_array($buffer);
 
 print STDOUT "Content-Type: text/html\r\n";
 print STDOUT "\r\n";
@@ -81,7 +84,7 @@ sub cgi_print_environnement
 	print STDOUT "\t</ul>\r\n";
 }
 
-&cgi_print_environnement();
+#&cgi_print_environnement();
 
 sub	cgi_response_header
 {

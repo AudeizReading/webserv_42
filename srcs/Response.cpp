@@ -46,19 +46,15 @@ void Response::create()
 			*this = Response_Forbidden(_request, _server);
 			return ;
 		}
-		else if (good && ext == "pl") { // TODO: is cgi extension of application #aude: just comment here for testing script
+		else if (good && ext == "pl") { // TODO: is cgi extension of application
 			// CGI Handling
 			try 
 			{
-				// it would be better to access to the config file than the request because I can reach the location with Request obj,
-				// but I can't reach the config file here, maybe could we get a ref on the Document inside the Listener ? -> The Server would have one so it will be handled by accesing the Server's ref config's file
-				// and it seems that, with the http://nginx.org/en/docs/http/ngx_http_fastcgi_module.html
-				// all infos needed by CGI is setted inside the config file.
 				CGIManager cgi(_request, _server);
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
 				
-				std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext: " << _plaintext << "\033[0m" << std::endl;
+				std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext << "\033[0m" << std::endl;
 			}
 			catch(const std::exception& e)
 			{

@@ -127,10 +127,13 @@ bool				CGIManager::exec()
 		default:
 			try
 			{
-				::close(_cgi_request_fds[0]);
-				// Attention checker la data lenght, si 0 ne pas envoyer!
-				::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
-				::close(_cgi_request_fds[1]);
+				if (_request_data_length > 0)
+				{
+					::close(_cgi_request_fds[0]);
+					// Attention checker la data lenght, si 0 ne pas envoyer!
+					::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
+					::close(_cgi_request_fds[1]);
+				}
 
 				::close(_cgi_response_fds[1]);
 				this->_getCGIResponse();
