@@ -10,7 +10,7 @@
 include = ["demo/mime_types.toml"]		# All include directives are optional. Put whatever we need in there.
 
 	[[http.server]]
-	listen_port = 8080						# Mandatory parameter.
+	listen_port = 8081						# Mandatory parameter.
 	listen_addr = "127.0.0.1"				# Optional. Defaults to "0.0.0.0", meaning accepts requests from anyone.
 	server_name = ["localhost"]				# Optional. Defaults to [""], i.e. no "Host" field.
 	client_max_body_size = 1048576			# Optional. Defaults to 1 MiB (1048576 bytes).
@@ -78,9 +78,35 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		root = "/var/www"
 		redirect = "./demo/www"					# Optional. Defaults to "", i.e. no redirect.
 
-	# [[http.server]]
-	# listen_port = 4242
-	# # This server has no server_name, so it's defaulted to [""].
-	# # Instead of the default server, this server should thus
-	# # match all requests with no "Host" field.
-	# # http://nginx.org/en/docs/http/request_processing.html
+	[[http.server]]
+	listen_port = 4242
+	# This server has no server_name, so it's defaulted to [""].
+	# Instead of the default server, this server should thus
+	# match all requests with no "Host" field.
+	# http://nginx.org/en/docs/http/request_processing.html
+
+	[[http.server]]
+	listen_port = 5000
+		[[http.server.location]]
+		URI = "/"
+		root = "./demo/www2"
+		index = "index.html"
+
+	[[http.server]]
+	listen_port = 8080
+	server_name = ["localhost"]
+		[[http.server.location]]
+		URI = "/"
+		root = "./demo/servers/blue"
+	[[http.server]]
+	listen_port = 8080
+	server_name = ["127.0.0.1"]
+		[[http.server.location]]
+		URI = "/"
+		root = "./demo/servers/green"
+	[[http.server]]
+	listen_port = 8080
+	server_name = ["0.0.0.0"]
+		[[http.server.location]]
+		URI = "/"
+		root = "./demo/servers/red"
