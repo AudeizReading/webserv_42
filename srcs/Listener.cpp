@@ -35,42 +35,42 @@
 
 #define I_LOVE_ICEBERG 1
 
-Listener::Listener(TOML::Document const& config)
-{
-	try
-	{
-		_port				= config.at("port").Int();
-		_listen_backlog		= config.at("listen_backlog").Int();
-		std::cout << "[Listener::Listener()] new listener " << _port << std::endl;
-	}
-	catch (std::exception const& e)
-	{
-		std::cerr << "LISTENER: Will not load because…" << e.what() << std::endl;
-		return ;
-	}
+// Listener::Listener(TOML::Document const& config)
+// {
+// 	try
+// 	{
+// 		_port				= config.at("port").Int();
+// 		_listen_backlog		= config.at("listen_backlog").Int();
+// 		std::cout << "[Listener::Listener()] new listener " << _port << std::endl;
+// 	}
+// 	catch (std::exception const& e)
+// 	{
+// 		std::cerr << "LISTENER: Will not load because…" << e.what() << std::endl;
+// 		return ;
+// 	}
 
-	TOML::Document &abc = const_cast<TOML::Document &>(config); // TODO: <== pas de const_iterator???
-	for (TOML::Document::iterator it = abc.begin(); it != abc.end(); ++it)
-	{
-		try
-		{
-			if (!(*it).has("root")) // TODO: Il y a mieux que ça ???
-				continue ;
-			std::string root	= it->at("root").Str(); // NOTE: Obsolete, will be moved in location.
-			std::string name	= it->has("name")	? it->at("name").Str()		: "bouh"; // TODO: Il y a plus propre que ça ?
-			std::string domain	= it->has("domain")	? it->at("domain").Str()	: ""; // TODO: Il y a plus propre que ça ?
-			if (root.back() != '/')
-				root.push_back('/');
-			_servers.push_back(Server(root, name, domain));
-		}
-		catch (std::exception const& e)
-		{
-			std::cerr << "LISTENER#" << _port << ".SERVER: Will not load because…" << e.what() << std::endl;
-			return ;
-		}
-	}
+// 	TOML::Document &abc = const_cast<TOML::Document &>(config); // TODO: <== pas de const_iterator???
+// 	for (TOML::Document::iterator it = abc.begin(); it != abc.end(); ++it)
+// 	{
+// 		try
+// 		{
+// 			if (!(*it).has("root")) // TODO: Il y a mieux que ça ???
+// 				continue ;
+// 			std::string root	= it->at("root").Str(); // NOTE: Obsolete, will be moved in location.
+// 			std::string name	= it->has("name")	? it->at("name").Str()		: "bouh"; // TODO: Il y a plus propre que ça ?
+// 			std::string domain	= it->has("domain")	? it->at("domain").Str()	: ""; // TODO: Il y a plus propre que ça ?
+// 			if (root.back() != '/')
+// 				root.push_back('/');
+// 			_servers.push_back(Server(root, name, domain));
+// 		}
+// 		catch (std::exception const& e)
+// 		{
+// 			std::cerr << "LISTENER#" << _port << ".SERVER: Will not load because…" << e.what() << std::endl;
+// 			return ;
+// 		}
+// 	}
 
-}
+// }
 
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
 Server*	Listener::_get_matching_server(Request const& req)
@@ -322,7 +322,8 @@ void	Listener::start_listener()
 
 Listener::~Listener()
 {
-	_servers.clear();
+	if (_fd == INT_MIN) // Listener hasn't been started
+		return ;
 	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
 	if (close(_fd) < 0)

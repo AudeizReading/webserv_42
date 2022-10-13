@@ -47,7 +47,7 @@ private:
 	void		_parse_otherline(const std::string &str, std::string::const_iterator &it, map_ss &header);
 
 public:
-	Request(std::string plaintext);
+	// Request(std::string plaintext); // TODO: Delete me
 	Request(std::string const& plaintext, in_addr client_in_addr);
 
 	~Request();

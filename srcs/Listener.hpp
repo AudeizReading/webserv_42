@@ -39,7 +39,7 @@ private:
 	Server*		_get_matching_server(Request const& req);
 
 public:
-	Listener(TOML::Document const& config);
+	// Listener(TOML::Document const& config); // TODO: Delete me
 	template <class InputIt>
 	Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
 		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type = 0);
@@ -52,7 +52,7 @@ public:
 template <class InputIt>
 Listener::Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
 		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type)
-: _port(listen_port), _listen_backlog(listen_backlog)
+: _fd(INT_MIN), _port(listen_port), _listen_backlog(listen_backlog)
 {
 	_servers.assign(servers_first, servers_last);
 	// assert(_port >= 0 && _port <= 65535);
