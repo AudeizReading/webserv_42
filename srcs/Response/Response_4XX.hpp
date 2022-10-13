@@ -18,7 +18,7 @@
 		protected: \
 			virtual void _init(); \
 		public: \
-			_Name(Request &request, Server &server); \
+			_Name(Request const& request, Server const& server); \
 			~_Name(); \
 		};
 
