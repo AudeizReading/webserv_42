@@ -127,7 +127,7 @@ std::vector<Listener>	create_Listeners(TOML::Document const& conf)
 	std::vector<Listener>			listeners;
 
 	// Sorting servers by port number allows us to give iterator ranges to Listener later on.
-	std::sort(servers.begin(), servers.end(), _Server_port_compare);
+	std::stable_sort(servers.begin(), servers.end(), _Server_port_compare);
 
 	// Create a Listener for each different port in servers
 	for (std::vector<Server>::const_iterator it = servers.begin(); it != servers.end();)
