@@ -3,25 +3,38 @@
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
 	# check for upload file
-	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-    $POST="STDIN (Methode POST)" ;
-	%FORM=&split_cgi_array;
+	if ($ENV{'CONTENT_LENGTH'} > 0)
+	{
+		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+		$POST="STDIN (Methode POST)" ;
+		%FORM=&split_cgi_array($buffer);
+	}
+    $buffer = $ENV{'QUERY_STRING'};
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
 	# TODO: delete content
 }
-else {
+elsif ($ENV{'REQUEST_METHOD'} eq "GET")
+{
     $POST="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
 }
+else {
+	print "Content-Type: text/html\r\n";
+	print $ENV{'SERVER_PROTOCOL'}." 403 Forbidden\r\n"; 
+	print STDOUT "\r\n";
+	exit 1;
+}
 
+# split by & and =, put this in a sort of map
 sub split_cgi_array
 {
-	local (@pairs, $pair, $name, $value, %form);
+	local (@pairs, $pair, $name, $value, %form, $arg);
+	($arg)=@_;
+	print "arg\r\n:".$arg."\nfin arg\n";
 	@pairs = split(/&/, $buffer);
     foreach $pair (@pairs) {
-		print STDOUT "Here: ".$pair."\r\n";
         ($name, $value) = split(/=/, $pair);
         $value =~ tr/+/ /;
         $value =~ s/%(..)/pack("C", hex($1))/eg;
@@ -29,15 +42,8 @@ sub split_cgi_array
 	}
 	%form;
 }
-%GETQUERY = &get_query_string;
-# Traitement et découpage.
-#    @pairs = split(/&/, $buffer);
-#    foreach $pair (@pairs) {
-#        ($name, $value) = split(/=/, $pair);
-#        $value =~ tr/+/ /;
-#        $value =~ s/%(..)/pack("C", hex($1))/eg;
-#        $FORM{$name} = $value;
-#}
+#%GETQUERY = &get_query_string;
+%GETQUERY = &split_cgi_array($buffer);
 
 print STDOUT "Content-Type: text/html\r\n";
 print STDOUT "\r\n";
@@ -64,6 +70,7 @@ foreach $match (keys (%FORM)) {
 }
 
 print STDOUT "\t</ul>\r\n";
+print STDOUT "\t<p>Come back at index.html? <a href=\"../index.html\">Click Here:</a> </p>\r\n";
 print STDOUT "</body>\r\n</html>\r\n";
 
 sub cgi_print_environnement
@@ -77,7 +84,7 @@ sub cgi_print_environnement
 	print STDOUT "\t</ul>\r\n";
 }
 
-&cgi_print_environnement();
+#&cgi_print_environnement();
 
 sub	cgi_response_header
 {
