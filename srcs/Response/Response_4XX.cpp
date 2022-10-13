@@ -13,7 +13,7 @@
 #include "Response_4XX.hpp"
 
 #define _DEFINE_RESPONSE(_Name, _Page, _Status) \
-		_Name::_Name(Request &request, Server &server): Response(request, server) { create(); } \
+		_Name::_Name(Request const& request, Server const& serv, Location const& location): Response(request, serv, location) { create(); } \
 		_Name::~_Name() { } \
 		void _Name::_init() { _content_path = _Page; _status = _Status; } \
 

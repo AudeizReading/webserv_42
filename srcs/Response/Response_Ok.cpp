@@ -15,7 +15,7 @@
 #include "Response_Ok.hpp"
 #include "Response_4XX.hpp"
 
-Response_Ok::Response_Ok(Request &request, Server &server): Response(request, server)
+Response_Ok::Response_Ok(Request const& request, Server const& serv, Location const& location): Response(request, serv, location)
 {
 	create();
 }
@@ -26,20 +26,29 @@ Response_Ok::~Response_Ok()
 
 void Response_Ok::_init()
 {
-	std::string					location = _request.get_location();
+	const std::string	req_location = _request->get_location();
+	std::string	file = req_location.substr(_location->URI().length());
+	if (file[0] == '/')
+		file.erase(file.begin());
 
-	if (location[0] != '/')
+	if (req_location[0] != '/')
 	{
 		Response				&moi = *this;
-		moi = Response_Not_Found(_request, _server);
+		moi = Response_Not_Found(*_request, *_server, *_location);
 		return ;
 	}
-	if (*(location.end() - 1) == '/')
-		location = location.substr(1) + "index.html"; // TODO: Setting for default home
-	else
-		location = location.substr(1);
+	_content_path = _location->get_path();
+	if (_content_path.back() != '/')
+		_content_path += '/';
 
-	_content_path = _server.get_root() + location;
+	std::cerr << _GRN
+		<< "Request location: " << _request->get_location() << '\n'
+		<< "File: " << file << RESET << std::endl;
+
+	if (!file.empty())
+		_content_path += file;
+	else
+		_content_path += _location->index();
 
 	_status = "200 OK";
 }

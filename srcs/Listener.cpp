@@ -30,71 +30,94 @@
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
 
+#include <arpa/inet.h>
+#include <cassert>
+
 #define I_LOVE_ICEBERG 1
 
-Listener::Listener(TOML::Document const& config)
+// Returns the server that matches the request, based on the listen_addr and server_name fields.
+const Server*	Listener::_get_matching_Server(Request const& req) const
 {
-	try
-	{
-		_port				= config.at("port").Int();
-		_listen_backlog		= config.at("listen_backlog").Int();
-		std::cout << "[Listener::Listener()] new listener " << _port << std::endl;
-	}
-	catch (std::exception const& e)
-	{
-		std::cerr << "LISTENER: Will not load because…" << e.what() << std::endl;
-		return ;
-	}
+	std::vector<const Server*>	candidates; // Servers that match the given client address
 
-	TOML::Document &abc = const_cast<TOML::Document &>(config); // TODO: <== pas de const_iterator???
-	for (TOML::Document::iterator it = abc.begin(); it != abc.end(); ++it)
+	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
 	{
-		try
-		{
-			if (!(*it).has("root")) // TODO: Il y a mieux que ça ???
-				continue ;
-			std::string root	= (*it).at("root").Str();
-			std::string name	= (*it).has("name") ? (*it).at("name").Str() : "bouh"; // TODO: Il y a plus propre que ça ?
-			std::string domain	= (*it).has("domain") ? (*it).at("domain").Str() : ""; // TODO: Il y a plus propre que ça ?
-			if (root.back() != '/')
-				root.push_back('/');
-			_servers.push_back(new Server(root, name, domain));
-		}
-		catch (std::exception const& e)
-		{
-			std::cerr << "LISTENER#" << _port << ".SERVER: Will not load because…" << e.what() << std::endl;
-			return ;
-		}
+		if (it->get_listen_addr().s_addr == 0 // Means 0.0.0.0, i.e. listen to everyone
+			|| it->get_listen_addr().s_addr == req.get_client_addr().s_addr)
+			candidates.push_back(&(*it));
 	}
+	if (candidates.empty())
+		return NULL;
 
+	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
+	std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
+	host.erase(host.find(':'));
+
+	// Go through candidate servers, and find the one with the matching server_name
+	const Server	*target = candidates.front(); // If no server_name matches, get the first server
+	for (std::vector<const Server*>::iterator it = candidates.begin(); it != candidates.end(); ++it)
+	{
+		if ((*it)->has_server_name(host))
+			target = *it;
+	}
+	return target;
 }
 
-void	Listener::_send(int fd, std::string plaintext)
+// TESTME !!!
+Location const&	Listener::_get_matching_Location(Request const& req, Server const& serv) const
+{
+	std::string req_location_URI = req.get_location();
+	
+	std::cerr << BCYN << "Request URI:  " << req_location_URI << RESET << std::endl; // DEBUG
+
+	// Locations are sorted from least to most complete.
+	const Location*	target = &serv.get_locations().front();
+	for (std::vector<Location>::const_iterator it = serv.get_locations().begin();
+		it != serv.get_locations().end();
+		++it)
+	{
+		std::cerr << _CYN << "Location URI: " << it->URI() << RESET << '\n'; // DEBUG
+		if (req_location_URI.find(it->URI()) != std::string::npos)
+			target = &*(it);
+	}
+	return *target;
+}
+
+void	Listener::_send(int fd, Request request)
 {
 	std::cout << "[listener] recv socket#" << fd << std::endl;
-	Request						request(plaintext);
 	Response					*response;
 	std::string					length = request.get_header()["Content-Length"];
+	std::string					test[fd];
 
 	if (!request.is_complete())
 	{
-		response = new Response_Bad_Request(request, *_servers[0]);
+		response = new Response_Bad_Request(request, _servers[0], _servers[0].get_locations()[0]); // TESTME
 	}
 	else
 	{
 		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 			std::cout << "[listener] socket partial#" << fd << std::endl;
-		Server					*server = _servers[0];
-		for (std::vector<Server *>::iterator it = _servers.begin(); it != _servers.end(); ++it)
-		{
-			std::string host = request.get_header()["Host"];
-			if ((*it)->get_domain() == host.substr(0, host.find(':')))
-				server = *it;
-			std::cout << "diff" << (*it)->get_domain() << " et " << host << std::endl;
+		
+		const Server	*server = _get_matching_Server(request);
+		if (server == NULL)
+		{	// TODO: Make me prettier?
+			response = new Response_Forbidden(request, _servers[0], _servers[0].get_locations()[0]);
+			send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
+			delete response;
+			close(fd);
+			return ;
 		}
+		// FIXME: Forbidden function inet_ntoa
+		std::cerr << "[listener] matched server "
+			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << '\n'
+			<< server->get_server_names()[0] << std::endl;
 
-		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
-		response = new Response_Ok(request, *server);
+		const Location&	location = _get_matching_Location(request, *server);
+
+		std::cerr << "[listener] matched location: " << location.URI() << std::endl;
+
+		response = new Response_Ok(request, *server, location);
 
 		std::cerr << "\e[30;48;5;245m\n";
 		if (response->get_ctype().rfind("text/", 0) == 0)
@@ -262,7 +285,7 @@ void	Listener::start_listener()
 				if (size < 0)
 					throw "WRONG"; // TODO: ERROR ?
 
-				std::cout << "\033[31;1m[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << "\033[0m" << std::endl;
+				std::cout << BRED"[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << RESET << std::endl;
 				Listener::map_is::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
@@ -275,7 +298,11 @@ void	Listener::start_listener()
 				if (size < PIPE_BUF)
 				{
 					std::cout << "[listener] ok recv event#" << event_fd << std::endl;
-					_send(event_fd, (*search).second);
+					char	addr_str[INET_ADDRSTRLEN];
+					std::cout << _RED << "[listener] Client address: "
+						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
+						<< RESET << std::endl;
+					_send(event_fd, Request(search->second, address.sin_addr));
 					_requests.erase(event_fd);
 				}
 			}
@@ -289,7 +316,8 @@ void	Listener::start_listener()
 
 Listener::~Listener()
 {
-	_servers.clear();
+	if (_fd == INT_MIN) // Listener hasn't been started
+		return ;
 	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
 	if (close(_fd) < 0)

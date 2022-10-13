@@ -47,7 +47,7 @@ class CGIManager {
 		bool		_getCGIResponse();
 
 	public:
-		CGIManager(const Request& req, const Server& serv);
+		CGIManager(const Request& req, const Server& serv, const Location& location);
 		~CGIManager(void);
 
 		std::string	getPlainText() const;

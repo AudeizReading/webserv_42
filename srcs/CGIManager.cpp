@@ -13,7 +13,7 @@
 #include "CGIManager.hpp"
 
 // - Constr / Destr ------------------------------------------------------------ 
-CGIManager::CGIManager(const Request& req, const Server& serv) : _environ(req, serv), _content_length(0), _request_data(req.get_content()), _request_data_length(_request_data.size()), _plaintext() {
+CGIManager::CGIManager(const Request& req, const Server& serv, const Location& location) : _environ(req, serv, location), _content_length(0), _request_data(req.get_content()), _request_data_length(_request_data.size()), _plaintext() {
 	try
 	{
 		this->_pipe();

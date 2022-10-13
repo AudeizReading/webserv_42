@@ -20,7 +20,7 @@ int	main(int argc, char *argv[])
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << BRED << "Caught exception in main: " << e.what() << RESET << '\n';
 		return (1);
 	}
 }

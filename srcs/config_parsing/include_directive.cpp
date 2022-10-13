@@ -6,7 +6,7 @@
 /*   By: pbremond <pbremond@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/05 20:17:13 by pbremond          #+#    #+#             */
-/*   Updated: 2022/10/05 23:20:20 by pbremond         ###   ########.fr       */
+/*   Updated: 2022/10/11 05:24:56 by pbremond         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 // NOTE: include has to be a copy and not a reference, else, it gets invalidated when values are added.
 
 // To call whenever a include key is found in config. See the docs (TODO) for more information.
-bool	include_directive(TOML::Value& target, TOML::Value include)
+void	include_directive(TOML::Value& target, TOML::Value include)
 {
 	assert(target.type() == TOML::T_GROUP);
 
@@ -43,10 +43,8 @@ bool	include_directive(TOML::Value& target, TOML::Value include)
 			_insert_toml_doc_in_group(target, include_doc);
 		}
 		catch (std::exception const& e) {
-			std::cerr << "Error when trying to include " << *it << ": " << e.what() << std::endl;
-			return false;
+			throw std::runtime_error("Failed to include " + it->Str() + ": " + e.what());
 		}
 	}
 	target.erase(include.key());
-	return true;
 }

@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <map>
+#include <netinet/in.h>
 #include "Queryparser.hpp"
 
 class Request
@@ -33,6 +34,8 @@ private:
 
 	map_ss			_header;
 
+	in_addr			_client_addr;
+
 	void		_parse();
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
@@ -40,7 +43,8 @@ private:
 	Queryparser ::Firstline _get_first_line() const;
 
 public:
-	Request(std::string plaintext);
+	// Request(std::string plaintext); // TODO: Delete me
+	Request(std::string const& plaintext, in_addr client_in_addr);
 
 	~Request();
 
@@ -52,5 +56,8 @@ public:
 	std::string	get_method() const;
 	std::string	get_http_version() const;
 
-	map_ss		get_header() const;
+	map_ss &		get_header();
+	map_ss const&	get_header() const;
+
+	in_addr		get_client_addr() const	{ return _client_addr; }
 };

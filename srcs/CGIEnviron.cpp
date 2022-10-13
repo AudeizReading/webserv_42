@@ -12,7 +12,7 @@
 
 #include "CGIEnviron.hpp"
 
-CGIEnviron::CGIEnviron(const Request& req, const Server& serv) : _request(req), _server(serv), _header(this->_request.get_header()), _env() {
+CGIEnviron::CGIEnviron(const Request& req, const Server& serv, const Location& location) : _request(req), _server(serv), _location(location), _header(this->_request.get_header()), _env() {
 	this->_setGlobalEnv();
 }
 
@@ -49,10 +49,13 @@ void				CGIEnviron::_setEnv()
 		location = location.substr(location.find_first_of("/") + 1); // delete first / because root has already it at its end
 	}
 
-	std::string	root = _server.get_root();
-	std::string	server_name = _server.get_name();
-	std::string	server_domain = _server.get_domain();
-//	std::string	port = _server.get_port();
+	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
+	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
+	std::string	root = _location.root() + _location.URI();
+	// Il me semble que SERVER_NAME doit être le champ "Host" de la requête.
+	std::string	server_name = "TESTME";
+
+	std::string	port = _server.get_port_str();
 
 //	std::string	remote_host = _request.get_?();
 //	std::string	remote_addr = _request.get_?();
