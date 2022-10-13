@@ -1,50 +1,59 @@
-[http] # pourquoi ça ne marche pas quand il n'y est pas ?
+# This is the prototype/proposal of what will be the expected standard of the confirguration file.
+# One we all agree on this, we'll all have to stick to its formatting. No deviating.
+# I'll start work on parsing everything on monday, after we discuss this and agree on a final design.
 
-[listener]
+# Document config;
+# auto servers = config["http"]["server"].Array()
+# servers[0].at_or("listen_addr", make_string(""))
 
-[listener.gc]
-index = "index.html" # Default index
-include = ["demo/mime_types.toml"] # For testing
-port = 4242
-listen_backlog = 512
+[http]
+include = ["demo/mime_types.toml"]		# All include directives are optional. Put whatever we need in there.
 
-[listener.gc.server]
-root = "./demo/www/" # Path to demo html
-name = "Groenland"
+	[[http.server]]
+	listen_port = 8080						# Mandatory parameter.
+	listen_addr = "127.0.0.1"				# Optional. Defaults to "0.0.0.0", meaning accepts requests from anyone.
+	server_name = ["localhost"]				# Optional. Defaults to [""], i.e. no "Host" field.
+	client_max_body_size = 1048576			# Optional. Defaults to 1 MiB (1048576 bytes).
+	# listen_backlog = 32						# Optional. Defaults to 128.
 
-[listener.gc.server.log] # TODO: server logging
-enable = false
-file = "logs/webserv.log"
-# NGINX has a log_format field, that's pretty cool
+	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/4XX.html".
+	error_500 = "./foo/bar.html"			# Directive can be any of 4XX/5XX HTTP 1.1 errors.
+	# If no location is provided, a default one is provided as follows
+		# [[http.server.location]]
+		# URI = "/"
+		# root = "/var/www"
 
-[listener.sans_nom]
-port = 5000
-listen_backlog = 512
+	[[http.server]]							# Is first server for this port, so is default.
+	listen_port = 4242
+	server_name = ["c4r2p6.42nice.fr", "www.c4r2p6.42nice.fr",
+					"c4r2p6"]
 
-[listener.sans_nom.server]
-root = "./demo/www2/"
-name = "42 webserv"
+		[[http.server.location]]
+		URI = "/"								# Mandatory parameter.
+		root = "./demo/www"						# Mandatory parameter.
+		index = "index.html"					# Optional. Defaults to "index.html".
+		allowed_methods = ["POST", "GET"]		# Optional. Defaults to allow POST, GET, and DELETE.
+		dir_listing = true						# Optional. Defaults to false.
+		# include = ["fast_cgi.toml"]
 
-[listener.colors]
-port = 8080
-listen_backlog = 512
+		[[http.server.location]]
+		URI = "/img"							# Points to /var/www/img, see NGINX doc
+		root = "./demo/www"
+		index = "issberg.png"
 
-[listener.colors.blue]
-root = "./demo/servers/blue/"
-domain = "localhost"
-name = "blue"
+		[[http.server.location]]
+		URI = "www"
+		root = "./demo"
+		index = "img/issberg.png"
 
-[listener.colors.green]
-root = "./demo/servers/green/"
-domain = "127.0.0.1"
-name = "green"
+		[[http.server.location]]
+		URI = "/something_old"
+		root = "/var/www"
+		redirect = "./demo/www"					# Optional. Defaults to "", i.e. no redirect.
 
-[listener.colors.noir]
-root = "./demo/servers/noir/"
-domain = "192.168.13.128"
-name = "noir"
-
-[listener.colors.red]
-root = "./demo/servers/red/"
-domain = "0.0.0.0"
-name = "red"
+	# [[http.server]]
+	# listen_port = 4242
+	# # This server has no server_name, so it's defaulted to [""].
+	# # Instead of the default server, this server should thus
+	# # match all requests with no "Host" field.
+	# # http://nginx.org/en/docs/http/request_processing.html
