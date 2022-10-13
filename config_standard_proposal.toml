@@ -37,18 +37,23 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		# include = ["fast_cgi.toml"]
 
 		[[http.server.location]]
-		URI = "img"								# Points to /var/www/img, see NGINX doc
-		root = "/var/www"
+		URI = "/img"							# Points to /var/www/img, see NGINX doc
+		root = "./demo/www"
 		index = "issberg.png"
 
 		[[http.server.location]]
-		URI = "/somethind_old"
+		URI = "www"
+		root = "./demo"
+		index = "img/issberg.png"
+
+		[[http.server.location]]
+		URI = "/something_old"
 		root = "/var/www"
 		redirect = "./demo/www"					# Optional. Defaults to "", i.e. no redirect.
 
-	[[http.server]]
-	listen_port = 4242
-	# This server has no server_name, so it's defaulted to [""].
-	# Instead of the default server, this server should thus
-	# match all requests with no "Host" field.
-	# http://nginx.org/en/docs/http/request_processing.html
+	# [[http.server]]
+	# listen_port = 4242
+	# # This server has no server_name, so it's defaulted to [""].
+	# # Instead of the default server, this server should thus
+	# # match all requests with no "Host" field.
+	# # http://nginx.org/en/docs/http/request_processing.html
