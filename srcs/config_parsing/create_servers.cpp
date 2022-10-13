@@ -59,7 +59,7 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 
 // NOTE: I also had a function which returned void and took in a reference to the vector, and edited that.
 // I don't know which overload is the best, in term of performance and/or clean code ?
-// Apparently this one might take advantage of RVO.
+// Apparently this one could take advantage of RVO. But it didn't do that in testing?
 static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type const& toml_servers)
 {
 	std::vector<Server>		servers;
@@ -75,8 +75,8 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 		else
 		{	// Copy everything in there. Assign won't work because TOML::Value isn't 
 			// implicitely convertible to string. TODO ?
-			for (TOML::Value::array_type::const_iterator j = (*it)["server_names"].Array().begin();
-				j != (*it)["server_names"].Array().end();
+			for (TOML::Value::array_type::const_iterator j = (*it)["server_name"].Array().begin();
+				j != (*it)["server_name"].Array().end();
 				++j)
 			{
 				server_names.push_back(j->Str());
@@ -86,7 +86,7 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 			Server(
 				it->at_or("listen_addr",			TOML::make_string("0.0.0.0"))	.Str(),
 				it->at_or("client_max_body_size",	TOML::make_int(1048576))		.Int(),
-				(*it)["port"].Int(),
+				(*it)["listen_port"].Int(),
 				std::make_pair(server_names.begin(), server_names.end()),
 				_get_locations_from_server((*it)["location"].Array()) // "location" is guaranteed to exist at this state
 			) );
@@ -111,12 +111,14 @@ static bool	_Server_different_port(Server const& a, Server const& b)
 // TOML::Document as an input is already parsed and error checked for missing/incorrect directives
 std::vector<Listener>	create_Listeners(TOML::Document const& conf)
 {
-	TOML::Value::array_type const&	toml_servers = conf["http"]["servers"].Array();
+	TOML::Value::array_type const&	toml_servers = conf["http"]["server"].Array();
 	std::vector<Server>				servers = _get_servers_from_config(toml_servers);
 	std::vector<Listener>			listeners;
 
 	// Sorting servers by port number allows us to give iterator ranges to Listener later on.
 	std::sort(servers.begin(), servers.end(), _Server_port_compare);
+
+	std::cerr << F_BLUB("Server vector created and sorted") << std::endl;
 
 	// Create a Listener for each different port in servers
 	for (std::vector<Server>::const_iterator it = servers.begin(); it != servers.end();)
@@ -127,6 +129,7 @@ std::vector<Listener>	create_Listeners(TOML::Document const& conf)
 		listeners.push_back(Listener(port, LISTEN_BACKLOG, it, different_port));
 		it = different_port;
 	}
+	std::cerr << F_BLUB("Listener vector created") << std::endl;
 
 	return listeners;
 }
