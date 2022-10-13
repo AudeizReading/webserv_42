@@ -25,9 +25,7 @@
 class Server
 {
 private:
-	std::string		_root; // remove me, it's in location
-	std::string		_name; // useless ?
-	std::string		_domain; // Is that server_names ?
+	std::string		_name; // useless ? For debugging only ?
 
 	struct in_addr				_listen_addr; // The address this server listen to. 0.0.0.0 means all addresses.
 	unsigned int				_max_body_size;
@@ -38,8 +36,6 @@ private:
 	// TODO: CGI
 
 public:
-	Server(std::string root, std::string name, std::string domain);
-
 	// Not using a reference on locations is intentional. That SHOULD let us use copy elision.
 	template <class InputIt>
 	Server(std::string const& listen_address, unsigned int max_body_size, int port,
@@ -51,9 +47,7 @@ public:
 
 	~Server();
 
-	std::string get_root() const;
 	std::string get_name() const;
-	std::string get_domain() const;
 
 	in_addr			get_listen_addr()	const { return _listen_addr;	}
 	unsigned int	get_max_body_size()	const { return _max_body_size;	}
@@ -72,7 +66,7 @@ Server::Server(std::string const& listen_address, unsigned int max_body_size, in
 		typename ft::enable_if<
 			!ft::is_fundamental<InputIt>::value, int
 		>::type)
-: _max_body_size(max_body_size), _port(port), _locations(locations)
+: _name("HELLO WORD"), _max_body_size(max_body_size), _port(port), _locations(locations)
 {
 	_server_names.assign(serv_names.first, serv_names.second);
 
