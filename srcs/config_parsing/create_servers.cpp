@@ -19,6 +19,14 @@
 #include <string>
 #include <algorithm>
 
+static bool	_location_URI_comp(Location const& a, Location const& b)
+{
+	return (std::count(a.URI().begin(), a.URI().end(), '/')
+		< std::count(b.URI().begin(), b.URI().end(), '/'));
+}
+
+// Why can't this take advantage of RVO/copy elision ? I might need to read more docs.
+// Maybe Apple clang or C++98 just sucks at that ?
 static
 std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& toml_locations)
 {
@@ -54,6 +62,8 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 			locations.back().set_allowed_methods(allowed & 0b001, allowed & 0b010, allowed & 0b100);
 		}
 	}
+	// Sort locations from smallest path to biggest, by counting the number of '/'
+	std::sort(locations.begin(), locations.end(), _location_URI_comp);
 	return locations;
 }
 
@@ -75,6 +85,7 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 		else
 		{	// Copy everything in there. Assign won't work because TOML::Value isn't 
 			// implicitely convertible to string. TODO ?
+			// for (auto j : (*it)["server_name"].Array()) => I cry every day
 			for (TOML::Value::array_type::const_iterator j = (*it)["server_name"].Array().begin();
 				j != (*it)["server_name"].Array().end();
 				++j)
@@ -88,7 +99,7 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 				it->at_or("client_max_body_size",	TOML::make_int(1048576))		.Int(),
 				(*it)["listen_port"].Int(),
 				std::make_pair(server_names.begin(), server_names.end()),
-				_get_locations_from_server((*it)["location"].Array()) // "location" is guaranteed to exist at this state
+				_get_locations_from_server((*it)["location"].Array()) // "location" is guaranteed to exist at this point
 			) );
 	}
 	return servers;

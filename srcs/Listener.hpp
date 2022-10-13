@@ -34,12 +34,11 @@ private:
 	std::vector<Server>		_servers;
 	map_is					_requests;
 
-	// void		_send(int fd, std::string plaintext);
-	void		_send(int fd, Request request);
-	Server*		_get_matching_server(Request const& req);
+	void				_send(int fd, Request request);
+	const Server*		_get_matching_Server(Request const& req) const;
+	const Location&		_get_matching_Location(Request const& req, Server const& serv) const;
 
 public:
-	// Listener(TOML::Document const& config); // TODO: Delete me
 	template <class InputIt>
 	Listener(int listen_port, int listen_backlog, InputIt servers_first, InputIt servers_last,
 		typename ft::enable_if< !ft::is_fundamental<InputIt>::value, int >::type = 0);

@@ -55,11 +55,13 @@ public:
 	std::string get_name() const;
 	std::string get_domain() const;
 
-	in_addr			get_listen_addr() const		{ return _listen_addr;		}
-	unsigned int	get_max_body_size() const	{ return _max_body_size;	}
-	int				get_port() const			{ return _port;				}
+	in_addr			get_listen_addr()	const { return _listen_addr;	}
+	unsigned int	get_max_body_size()	const { return _max_body_size;	}
+	int				get_port() 			const { return _port;			}
 
-	std::vector<std::string> const&	get_server_names() const { return _server_names; }
+	std::vector<Location> const&	get_locations() const		{ return _locations;	}
+	std::vector<std::string> const&	get_server_names() const	{ return _server_names;	}
+
 	bool	has_server_name(std::string const& name) const;
 };
 

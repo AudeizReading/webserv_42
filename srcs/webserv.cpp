@@ -26,7 +26,7 @@ void signal_handler(int signal)
 	exit(0);
 }
 
-static void	*init_thread(void *listener)
+/* static */ void	*init_thread(void *listener)
 {
 	reinterpret_cast<Listener *>(listener)->start_listener();
 	return (0);
@@ -44,21 +44,28 @@ int	webserv(int argc, char *argv[])
 	std::signal(SIGINT, signal_handler);
 
 	std::cout << "Config file: " << argv[0] << std::endl;
-	// TOML::Document	config = parse_config_file(argv[0]);
-	// std::cout << F_BGRN("Config parsed :)") << std::endl;
-	TOML::Document	config = parse_config_file(argv[0]).at("listener");
+	TOML::Document	config = parse_config_file(argv[0]);
+	std::cout << F_BGRN("Config parsed :)") << std::endl;
 
-	Listener	*listeners[10]; // TODO: Do better.
-	pthread_t	threads[10];
+	std::vector<Listener>	listeners = create_Listeners(config);
 
-	int i = 0;
-	for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it, ++i)
-	{
-		listeners[i] = new Listener(*it);
-		if (pthread_create(&threads[i], NULL, &init_thread, listeners[i]) < 0)
-			perror("thread: ");
-		pthread_detach(threads[i]);
-	}
+	#if false
+	# error "test"
+		TOML::Document	config = parse_config_file(argv[0]).at("listener");
+
+		Listener	*listeners[10]; // TODO: Do better.
+		pthread_t	threads[10];
+
+		int i = 0;
+		for (TOML::Document::iterator it = config.begin(); it != config.end(); ++it, ++i)
+		{
+			listeners[i] = new Listener(*it);
+			if (pthread_create(&threads[i], NULL, &init_thread, listeners[i]) < 0)
+				perror("thread: ");
+			pthread_detach(threads[i]);
+		}
 	while (1) {}
+	#endif
+
 	return (0);
 }

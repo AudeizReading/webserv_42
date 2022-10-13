@@ -35,49 +35,12 @@
 
 #define I_LOVE_ICEBERG 1
 
-// Listener::Listener(TOML::Document const& config)
-// {
-// 	try
-// 	{
-// 		_port				= config.at("port").Int();
-// 		_listen_backlog		= config.at("listen_backlog").Int();
-// 		std::cout << "[Listener::Listener()] new listener " << _port << std::endl;
-// 	}
-// 	catch (std::exception const& e)
-// 	{
-// 		std::cerr << "LISTENER: Will not load because…" << e.what() << std::endl;
-// 		return ;
-// 	}
-
-// 	TOML::Document &abc = const_cast<TOML::Document &>(config); // TODO: <== pas de const_iterator???
-// 	for (TOML::Document::iterator it = abc.begin(); it != abc.end(); ++it)
-// 	{
-// 		try
-// 		{
-// 			if (!(*it).has("root")) // TODO: Il y a mieux que ça ???
-// 				continue ;
-// 			std::string root	= it->at("root").Str(); // NOTE: Obsolete, will be moved in location.
-// 			std::string name	= it->has("name")	? it->at("name").Str()		: "bouh"; // TODO: Il y a plus propre que ça ?
-// 			std::string domain	= it->has("domain")	? it->at("domain").Str()	: ""; // TODO: Il y a plus propre que ça ?
-// 			if (root.back() != '/')
-// 				root.push_back('/');
-// 			_servers.push_back(Server(root, name, domain));
-// 		}
-// 		catch (std::exception const& e)
-// 		{
-// 			std::cerr << "LISTENER#" << _port << ".SERVER: Will not load because…" << e.what() << std::endl;
-// 			return ;
-// 		}
-// 	}
-
-// }
-
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
-Server*	Listener::_get_matching_server(Request const& req)
+const Server*	Listener::_get_matching_Server(Request const& req) const
 {
-	std::vector<Server*>	candidates; // Servers that match the given client address
+	std::vector<const Server*>	candidates; // Servers that match the given client address
 
-	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
 	{
 		if (it->get_listen_addr().s_addr == 0 // Means 0.0.0.0, i.e. listen to everyone
 			|| it->get_listen_addr().s_addr == req.get_client_addr().s_addr)
@@ -90,13 +53,36 @@ Server*	Listener::_get_matching_server(Request const& req)
 	const std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
 
 	// Go through candidate servers, and find the one with the matching server_name
-	Server	*target = candidates.front(); // If no server_name matches, get the first server
-	for (std::vector<Server*>::iterator it = candidates.begin(); it != candidates.end(); ++it)
+	const Server	*target = candidates.front(); // If no server_name matches, get the first server
+	for (std::vector<const Server*>::iterator it = candidates.begin(); it != candidates.end(); ++it)
 	{
 		if ((*it)->has_server_name(host))
 			target = *it;
 	}
 	return target;
+}
+
+Location const&	Listener::_get_matching_Location(Request const& req, Server const& serv) const
+{
+	return serv.get_locations().front();
+
+	std::string location_path = req.get_location();
+	if (location_path.size() > 1)
+		location_path.erase(location_path.find_last_of('/')); // Erase everything at and after the last '/'
+	
+	// Locations are sorted from least to most complete. Go through them backward to find
+	// most specialized match, or get the default "/" if no match.
+	const Location*	target = &serv.get_locations().front();
+	for (std::vector<Location>::const_reverse_iterator it = serv.get_locations().rbegin();
+		it != serv.get_locations().rend();
+		++it)
+	{
+		if (it->URI() == location_path) {
+			target = &(*it);
+			break;
+		}
+	}
+	return *target;
 }
 
 void	Listener::_send(int fd, Request request)
@@ -115,14 +101,11 @@ void	Listener::_send(int fd, Request request)
 		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 			std::cout << "[listener] socket partial#" << fd << std::endl;
 		
-		Server					*server = &_servers[0];
-		for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
-		{ // Find server to use, or get first one by default
-			std::string host = request.get_header()["Host"];
-			if (it->get_domain() == host.substr(0, host.find(':')))
-				server = &*it;
-			std::cout << "diff" << it->get_domain() << " et " << host << std::endl;
-		}
+		const Server	*server = _get_matching_Server(request);
+		if (server == NULL)
+			; // TODO: Send 403: Forbidden
+		const Location&	location = _get_matching_Location(request, *server);
+		(void)location;
 
 		// TODO: Servers dispatch + rootage (request via HOST/LOCATION)
 		response = new Response_Ok(request, *server);
