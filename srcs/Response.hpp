@@ -21,8 +21,8 @@ private:
 	std::string			_plaintext;
 
 protected:
-	Request&			_request;
-	Server&				_server;
+	const Request*		_request;
+	const Server*		_server;
 	std::string			_status;
 	std::string			_content_path;
 	std::string			_content_type;
@@ -31,7 +31,7 @@ protected:
 	virtual void _init() = 0;
 
 public:
-	Response(Request &request, Server &server);
+	Response(Request const& request, Server const& server);
 
 	virtual ~Response();
 
