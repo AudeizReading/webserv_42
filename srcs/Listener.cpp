@@ -50,7 +50,8 @@ const Server*	Listener::_get_matching_Server(Request const& req) const
 		return NULL;
 
 	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
-	const std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
+	std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
+	host.erase(host.find(':'));
 
 	// Go through candidate servers, and find the one with the matching server_name
 	const Server	*target = candidates.front(); // If no server_name matches, get the first server
@@ -109,7 +110,8 @@ void	Listener::_send(int fd, Request request)
 		}
 		// FIXME: Forbidden function inet_ntoa
 		std::cerr << "[listener] matched server "
-			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << std::endl;
+			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << '\n'
+			<< server->get_server_names()[0] << std::endl;
 
 		const Location&	location = _get_matching_Location(request, *server);
 
