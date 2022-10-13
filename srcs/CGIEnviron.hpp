@@ -22,6 +22,7 @@
 
 #include "Request.hpp"
 #include "Server.hpp"
+#include "Location.hpp"
 
 #define REQUEST_METHOD "REQUEST_METHOD"
 #define QUERY_STRING "QUERY_STRING"
@@ -51,7 +52,7 @@ class CGIEnviron {
 
 	private:
 		const Request&	_request;
-		const Server&	_server;
+		const Location&	_location;
 
 		map_ss	_env;
 
@@ -62,7 +63,7 @@ class CGIEnviron {
 		bool		_putenv(const char *name, const char *value);
 		CGIEnviron&	_setEnv();
 	public:
-		CGIEnviron(const Request& req, const Server& serv);
+		CGIEnviron(const Request& req, const Location& location);
 		~CGIEnviron(void);
 
 		map_ss		getEnv() const;

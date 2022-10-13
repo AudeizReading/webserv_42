@@ -12,7 +12,7 @@
 
 #include "CGIEnviron.hpp"
 
-CGIEnviron::CGIEnviron(const Request& req, const Server& serv) : _request(req), _server(serv), _env() {
+CGIEnviron::CGIEnviron(const Request& req, const Location& location) : _request(req), _location(location), _env() {
 	this->_setEnv();
 }
 
@@ -32,7 +32,7 @@ bool				CGIEnviron::_putenv(const char *name, const char *value)
 
 CGIEnviron&			CGIEnviron::_setEnv()
 {
-	std::string					path = _server.get_root() + _request.get_location(); // TODO: utiliser _server.get_name()
+	std::string					path = _location.get_path() + _request.get_location(); // TODO: utiliser _server.get_name()
 
 	// method POST
 	std::string					content = this->_request.get_content();
@@ -63,12 +63,12 @@ CGIEnviron&			CGIEnviron::_setEnv()
 			{CONTENT_TYPE, header["Content-Type"]}, \
 			{GATEWAY_INTERFACE, "\033[43;30mCGI/1.1\033[0m"}, \
 			{SERVER_SOFTWARE, "\033[43;30mwebserv\033[0m"}, \
-			{SERVER_NAME, _server.get_name()}, \
+			{SERVER_NAME, this->_request.get_header().at("Host").c_str()}, \
 			{SERVER_PROTOCOL, this->_request.get_http_version()}, \
 			{SERVER_PORT, "\033[43;30m4242\033[0m"}, \
 			{PATH_INFO, path.c_str()}, \
 			{PATH_TRANSLATED, path.c_str()}, \
-			{DOCUMENT_ROOT, this->_server.get_root().c_str()}, \
+			{DOCUMENT_ROOT, this->_location.root().c_str()}, \
 			{SCRIPT_NAME, path.c_str()}, \
 			{REMOTE_HOST, "\033[44;37m-> has to be taken from request?\033[0m"}, \
 			{REMOTE_ADDR, "\033[44;37m-> has to be taken from request?\033[0m"}, \
