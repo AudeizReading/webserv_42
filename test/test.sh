@@ -31,7 +31,11 @@ echo "=============================="
 test_diff () {
 	sleep 0.1
 	echo ">> req GET $1"
-	curl -s "$1" > "$2.log"
+	if [[ "$2" == "server_black" ]]; then
+		curl -s -H 'Host:' "$1" > "$2.log"
+	else
+		curl -s "$1" > "$2.log"
+	fi
 	# cat "$2.log"
 
 	sleep 0.1
@@ -59,6 +63,7 @@ test_diff 'http://127.0.0.1:5000/' \
 test_diff "http://localhost:8080/" "server_blue" "../demo/servers/blue/index.html"
 test_diff "http://127.0.0.1:8080/" "server_green" "../demo/servers/green/index.html"
 test_diff "http://0.0.0.0:8080/" "server_red" "../demo/servers/red/index.html"
+test_diff "http://127.0.0.1:8080/" "server_black" "../demo/servers/black/index.html"
 
 pkill -2 webserv
 
