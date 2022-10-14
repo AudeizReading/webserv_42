@@ -25,10 +25,14 @@ class Location
 		void	set_allowed_methods(bool GET, bool POST, bool DELETE);
 	
 	public:
-		bool	allows_GET() const;
-		bool	allows_POST() const;
-		bool	allows_DELETE() const;
-		bool	allows_method(std::string const& method_name) const;
+		bool		allows_GET() const;
+		bool		allows_POST() const;
+		bool		allows_DELETE() const;
+		// Returns whether a given method is allowed. Given string has to be all uppercase, no whitespaces.
+		bool		allows_method(std::string const& method_name) const;
+		// Returns a string of allowed methods in the RFC expected format for the "Allow" field.
+		std::string	get_allowed_methods() const;
+
 		bool	allows_dir_listing() const;
 		bool	has_redirect() const;
 

@@ -55,6 +55,18 @@ bool	Location::allows_method(std::string const& method_name) const
 		return false;
 }
 
+std::string	Location::get_allowed_methods() const
+{
+	std::string allowed;
+	if (_allow_GET)
+		allowed += "GET";
+	if (_allow_POST)
+		allowed += std::string(allowed.empty() ? "" : ", ") + "POST";
+	if (_allow_DELETE)
+		allowed += std::string(allowed.empty() ? "" : ", ") + "DELETE";
+	return allowed;
+}
+
 bool	Location::allows_dir_listing() const
 {
 	return _dir_listing;
