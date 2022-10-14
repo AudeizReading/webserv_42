@@ -27,6 +27,7 @@ SRC =	srcs/main.cpp \
 		srcs/Response.cpp \
 		srcs/Server.cpp \
 		srcs/webserv.cpp \
+		srcs/Location.cpp \
 		$(PARSING_SRC)
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/Response.hpp' pos='1' template='		{0} \' -->
@@ -39,6 +40,7 @@ HDEP1 = srcs/Response.hpp \
 		srcs/Queryparser.hpp \
 		srcs/Request.hpp \
 		srcs/Server.hpp \
+		srcs/Location.hpp \
 
  # <!-- pre='./' path='includes/' match='*.hpp' pos='1' template='		{0} \' -->
 HDEP =	$(HDEP1) \
