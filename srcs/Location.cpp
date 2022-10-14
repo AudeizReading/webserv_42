@@ -15,7 +15,7 @@
 Location::Location(std::string const& URI, std::string const& root, std::string const& index,
 	bool dir_listing, std::string const& redirect)
 : _URI(URI), _root(root), _index(index), _redirect(redirect), _dir_listing(dir_listing),
-	_allow_GET(true), _allow_POST(true), _allow_DELETE(true)
+	_allow_GET(true), _allow_POST(true), _allow_DELETE(true), _allow_HEAD(true)
 {
 	if (*(_root.end() - 1) == '/')
 		_root.erase(_root.end() - 1);
@@ -23,11 +23,12 @@ Location::Location(std::string const& URI, std::string const& root, std::string 
 		_URI = '/' + _URI;
 }
 
-void	Location::set_allowed_methods(bool GET, bool POST, bool DELETE)
+void	Location::set_allowed_methods(bool GET, bool POST, bool DELETE, bool HEAD)
 {
-	_allow_GET = GET;
-	_allow_POST = POST;
-	_allow_DELETE = DELETE;
+	_allow_GET		= GET;
+	_allow_POST		= POST;
+	_allow_DELETE	= DELETE;
+	_allow_HEAD		= HEAD;
 }
 
 bool	Location::allows_GET() const
@@ -51,6 +52,8 @@ bool	Location::allows_method(std::string const& method_name) const
 		return _allow_POST;
 	else if (method_name == "DELETE")
 		return _allow_DELETE;
+	else if (method_name == "HEAD")
+		return _allow_HEAD;
 	else
 		return false;
 }

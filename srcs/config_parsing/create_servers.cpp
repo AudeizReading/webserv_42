@@ -53,13 +53,16 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 			for (TOML::Value::array_type::const_iterator j = array.begin(); j != array.end(); ++j)
 			{
 				if (j->Str() == "GET")
-					allowed |= 0b001;
+					allowed |= 0b0001;
 				else if (j->Str() == "POST")
-					allowed |= 0b010;
+					allowed |= 0b0010;
 				else if (j->Str() == "DELETE")
-					allowed |= 0b100;
+					allowed |= 0b0100;
+				else if (j->Str() == "HEAD")
+					allowed |= 0b1000;
 			}
-			locations.back().set_allowed_methods(allowed & 0b001, allowed & 0b010, allowed & 0b100);
+			locations.back().set_allowed_methods(allowed & 0b001, allowed & 0b010, allowed & 0b100,
+				allowed & 0b1000);
 		}
 	}
 	// Sort locations from smallest path to biggest, by counting the number of '/'

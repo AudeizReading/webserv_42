@@ -22,12 +22,13 @@ class Location
 		Location(std::string const& URI, std::string const& root, std::string const& index,
 			bool dir_listing, std::string const& redirect);
 
-		void	set_allowed_methods(bool GET, bool POST, bool DELETE);
+		void	set_allowed_methods(bool GET, bool POST, bool DELETE, bool HEAD);
 	
 	public:
 		bool		allows_GET() const;
 		bool		allows_POST() const;
 		bool		allows_DELETE() const;
+		bool		allows_HEAD() const;
 		// Returns whether a given method is allowed. Given string has to be all uppercase, no whitespaces.
 		bool		allows_method(std::string const& method_name) const;
 		// Returns a string of allowed methods in the RFC expected format for the "Allow" field.
@@ -53,5 +54,6 @@ class Location
 		int8_t			_allow_GET;		// These 4 are declared as int8 and not
 		int8_t			_allow_POST;	// bool to save space. Combined, they
 		int8_t			_allow_DELETE;	// take the space of a single bool.
+		int8_t			_allow_HEAD;
 		// NOTE: Include some CGI stuff in there ?
 };
