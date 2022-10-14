@@ -94,9 +94,6 @@ void Response::create()
 
 	time_t						ctime = time(NULL);
 	tm							*t = gmtime(&ctime);
-	// We didn't use the _header member var. Was that normal?
-	// I need to use it to add the "Allow" field with the 405 error
-	// map_ss						header;
 	std::stringstream			date;
 	// TODO: full date support
 	date << "Wed, 28 Sep " << t->tm_year << " "
@@ -173,6 +170,7 @@ Response	&Response::operator=(Response const &src)
 	this->_content_path	= src._content_path;
 	this->_content_type	= src._content_type;
 	this->_content		= src._content;
+	this->_header		= src._header;
 
 	return (*this);
 }
