@@ -101,8 +101,8 @@ void	Listener::_send(int fd, Request request)
 			std::cout << "[listener] socket partial#" << fd << std::endl;
 		
 		const Server	*server = _get_matching_Server(request);
-		if (server == NULL)
-		{	// TODO: Make me prettier?
+		if (server == NULL)	// No server found: forbidden access.
+		{
 			response = new Response_Forbidden(request, _servers[0], _servers[0].get_locations()[0]);
 			send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
 			delete response;
@@ -118,7 +118,10 @@ void	Listener::_send(int fd, Request request)
 
 		std::cerr << "[listener] matched location: " << location.URI() << std::endl;
 
-		response = new Response_Ok(request, *server, location);
+		if (!location.allows_method(request.get_method()))
+			response = new Response_Method_Not_Allowed(request, *server, location);
+		else
+			response = new Response_Ok(request, *server, location);
 
 		std::cerr << "\e[30;48;5;245m\n";
 		if (response->get_ctype().rfind("text/", 0) == 0)
