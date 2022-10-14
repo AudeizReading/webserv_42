@@ -27,11 +27,12 @@ class Server
 private:
 	std::string		_name; // useless ? For debugging only ?
 
-	struct in_addr				_listen_addr; // The address this server listen to. 0.0.0.0 means all addresses.
-	unsigned int				_max_body_size;
-	std::vector<std::string>	_server_names;
-	int							_port;
-	std::vector<Location>		_locations;
+	struct in_addr						_listen_addr; // The address this server listen to. 0.0.0.0 means all addresses.
+	unsigned int						_max_body_size;
+	std::vector<std::string>			_server_names;
+	int									_port;
+	std::vector<Location>				_locations;
+	std::map<std::string, std::string>	_error_pages;
 	// TODO: Error pages
 	// TODO: CGI
 
@@ -49,18 +50,13 @@ public:
 
 	std::string get_name() const;
 
-	in_addr			get_listen_addr()	const { return _listen_addr;	}
-	unsigned int	get_max_body_size()	const { return _max_body_size;	}
-	int				get_port() 			const { return _port;			}
-	std::string		get_port_str()		const
-	{
-		std::stringstream portstr;
-		portstr << _port;
-		return portstr.str();
-	}
+	in_addr			get_listen_addr()	const;
+	unsigned int	get_max_body_size()	const;
+	int				get_port() 			const;
+	std::string		get_port_str()		const;
 
-	std::vector<Location> const&	get_locations() const		{ return _locations;	}
-	std::vector<std::string> const&	get_server_names() const	{ return _server_names;	}
+	std::vector<Location> const&	get_locations() const;
+	std::vector<std::string> const&	get_server_names() const;
 
 	bool	has_server_name(std::string const& name) const;
 };
