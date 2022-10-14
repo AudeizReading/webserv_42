@@ -25,3 +25,4 @@ webserv_sanitize
 # Misc
 *.txt
 *.log
+!test/diff/*.txt

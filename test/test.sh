@@ -31,8 +31,8 @@ echo "=============================="
 test_diff () {
 	sleep 0.1
 	echo ">> req GET $1"
-	if [[ "$2" == "server_black" ]]; then
-		curl -s -H 'Host:' "$1" > "$2.log"
+	if [[ $4 ]]; then
+		curl -s "$1" ${4} > "$2.log"
 	else
 		curl -s "$1" > "$2.log"
 	fi
@@ -41,7 +41,11 @@ test_diff () {
 	sleep 0.1
 	echo ""
 	echo "$2"
-	diff "$2.log" $3
+	if [[ $4 ]]; then
+		diff -I 'Date: ' "$2.log" $3 # TODO: Improve this one
+	else
+		diff "$2.log" $3
+	fi
 	if [[ $? == 0 ]]; then
 		echo "output ok"
 	else
@@ -63,7 +67,15 @@ test_diff 'http://127.0.0.1:5000/' \
 test_diff "http://localhost:8080/" "server_blue" "../demo/servers/blue/index.html"
 test_diff "http://127.0.0.1:8080/" "server_green" "../demo/servers/green/index.html"
 test_diff "http://0.0.0.0:8080/" "server_red" "../demo/servers/red/index.html"
-test_diff "http://127.0.0.1:8080/" "server_black" "../demo/servers/black/index.html"
+test_diff "http://127.0.0.1:8080/" "server_default" "../demo/servers/green/index.html"
+test_diff "http://127.0.0.1:8080/" "server_black" "../demo/servers/black/index.html" "-H Host:"
+
+test_diff "http://127.0.0.1:4242/cgi-bin/test/try-error-500.pl" "cgi_try-error-500" "../res/error/500.html"
+
+test_diff "http://127.0.0.1:4242/cgi-bin/test/no-header.pl" "cgi_no-header" "./diff/cgi_no-header.txt"
+# TODO: Improve this two test, check also content
+test_diff "http://127.0.0.1:4242/cgi-bin/test/full-header.pl" "cgi_full-header" "./diff/cgi_full-header.txt" "-I"
+test_diff "http://127.0.0.1:4242/cgi-bin/test/partial-header.pl" "cgi_partial-header" "./diff/cgi_partial-header.txt" "-I"
 
 pkill -2 webserv
 
