@@ -141,6 +141,7 @@ void Response::create()
 		}
 		catch(const std::exception& e)
 		{
+			_content = _plaintext;
 			std::cout << "[CGI] No partial custom header (" << e.what() << ")" << std::endl;
 		}
 	}
