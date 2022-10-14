@@ -16,7 +16,8 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 	client_max_body_size = 1048576			# Optional. Defaults to 1 MiB (1048576 bytes).
 	# listen_backlog = 32						# Optional. Defaults to 128.
 
-	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/4XX.html".
+	error_404 = "test/test_page.html"
+	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/XXX.html".
 											# Directive can be any of webserv supported errors.
 	# error_500 = "./foo/bar.html"			# These are illegal errors, here to test parsing.
 	# error_500 = 1234

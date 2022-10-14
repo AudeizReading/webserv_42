@@ -64,11 +64,11 @@ test_diff "http://127.0.0.1:4242/.password" \
 test_diff 'http://127.0.0.1:5000/' \
 	"default_to_server2" "../demo/www2/index.html"
 
-test_diff "http://localhost:8080/" "server_blue" "../demo/servers/blue/index.html"
-test_diff "http://127.0.0.1:8080/" "server_green" "../demo/servers/green/index.html"
-test_diff "http://0.0.0.0:8080/" "server_red" "../demo/servers/red/index.html"
-test_diff "http://127.0.0.1:8080/" "server_default" "../demo/servers/green/index.html"
-test_diff "http://127.0.0.1:8080/" "server_black" "../demo/servers/black/index.html" "-H Host:"
+test_diff "http://localhost:8080/"	"server_blue"		"../demo/servers/blue/index.html"
+test_diff "http://127.0.0.1:8080/"	"server_green"		"../demo/servers/green/index.html"
+test_diff "http://0.0.0.0:8080/"	"server_red"		"../demo/servers/red/index.html"
+test_diff "http://127.0.0.1:8080/"	"server_default"	"../demo/servers/green/index.html"
+test_diff "http://127.0.0.1:8080/"	"server_black"		"../demo/servers/black/index.html" "-H Host:"
 
 test_diff "http://127.0.0.1:4242/cgi-bin/test/try-error-500.pl" "cgi_try-error-500" "../res/error/500.html"
 
@@ -76,6 +76,8 @@ test_diff "http://127.0.0.1:4242/cgi-bin/test/no-header.pl" "cgi_no-header" "./d
 # TODO: Improve this two test, check also content
 test_diff "http://127.0.0.1:4242/cgi-bin/test/full-header.pl" "cgi_full-header" "./diff/cgi_full-header.txt" "-I"
 test_diff "http://127.0.0.1:4242/cgi-bin/test/partial-header.pl" "cgi_partial-header" "./diff/cgi_partial-header.txt" "-I"
+
+test_diff "http://localhost:8081/fdshfjkds" "custom_err_page"	"test_page.html"
 
 pkill -2 webserv
 
