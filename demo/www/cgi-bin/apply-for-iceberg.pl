@@ -1,40 +1,97 @@
 #!/usr/bin/perl 
 
+# --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
+	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
 	# check for upload file
+	#  $buffer = $ENV{'QUERY_STRING'};
+	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
 	if ($ENV{'CONTENT_LENGTH'} > 0)
 	{
+		print "We are waiting for ".$ENV{'CONTENT_LENGTH'}." octets.\r\n";
+		print "We are waiting for ".$ENV{'CONTENT_TYPE'}.".\r\n";
+
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-		$POST="STDIN (Methode POST)" ;
-		%FORM=&split_cgi_array($buffer);
+		$output_mess="STDIN (Methode POST)" ;
+		%_POST=&split_cgi_array($buffer);
 	}
-    $buffer = $ENV{'QUERY_STRING'};
+
+	&cgi_response_header(200, "OK");
+	&cgi_print_html_dtd();
+	&cgi_print_html_begin();
+	&cgi_print_html_head();
+	&cgi_print_html_body_begin();
+	&cgi_print_html_double_elt("h1", "Résultat de la requete POST");
+	&cgi_print_html_double_elt("h2", $output_mess);
+	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
+	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
+	print STDOUT "\t<ul>\r\n";
+	&cgi_print_array_html(%_GET);
+	&cgi_print_array_html(%_POST);
+	print STDOUT "\t</ul>\r\n";
+	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
+	&cgi_print_html_body_end();
+	&cgi_print_html_end();
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
 	# TODO: delete content
+	&cgi_response_header(200, "OK");
+	&cgi_print_html_dtd();
+	&cgi_print_html_begin();
+	&cgi_print_html_head();
+	&cgi_print_html_body_begin();
+	&cgi_print_html_double_elt("h1", "Résultat de la requete DELETE");
+	&cgi_print_html_double_elt("h2", $output_mess);
+	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
+	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
+	&cgi_print_html_double_elt("p", "Not handled Yet");
+	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
+	&cgi_print_html_body_end();
+	&cgi_print_html_end();
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 {
-    $POST="QUERY_STRING (Methode GET)";
+	# il faut aussi recup PATH_INFO dans le cas d'une req GET
+    $output_mess="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
+	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
+
+	&cgi_response_header(200, "OK");
+	&cgi_print_html_dtd();
+	&cgi_print_html_begin();
+	&cgi_print_html_head();
+	&cgi_print_html_body_begin();
+	&cgi_print_html_double_elt("h1", "Résultat de la requete GET");
+	&cgi_print_html_double_elt("h2", $output_mess);
+	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
+	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
+	print STDOUT "\t<ul>\r\n";
+	&cgi_print_array_html(%_GET);
+	print STDOUT "\t</ul>\r\n";
+	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
+	&cgi_print_html_body_end();
+	&cgi_print_html_end();
 }
-else {
-	print "Content-Type: text/html\r\n";
-	print $ENV{'SERVER_PROTOCOL'}." 403 Forbidden\r\n"; 
-	print STDOUT "\r\n";
+else # other methods that we do not handle
+{
+	&cgi_response_header(403, "Forbidden");
 	exit 1;
 }
+# --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
 
 # split by & and =, put this in a sort of map
+# works with GET and also POST and ENV
 sub split_cgi_array
 {
 	local (@pairs, $pair, $name, $value, %form, $arg);
+
 	($arg)=@_;
-	print "arg\r\n:".$arg."\nfin arg\n";
-	@pairs = split(/&/, $buffer);
-    foreach $pair (@pairs) {
+	@pairs = split(/&/, $arg);
+
+    foreach $pair (@pairs) 
+    {
         ($name, $value) = split(/=/, $pair);
         $value =~ tr/+/ /;
         $value =~ s/%(..)/pack("C", hex($1))/eg;
@@ -42,53 +99,63 @@ sub split_cgi_array
 	}
 	%form;
 }
-#%GETQUERY = &get_query_string;
-%GETQUERY = &split_cgi_array($buffer);
 
-print STDOUT "Content-Type: text/html\r\n";
-print STDOUT "\r\n";
-print STDOUT "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
-print STDOUT "<html lang=\"fr\">\r\n";
-print STDOUT "<head>\r\n";
-print STDOUT "\t<meta charset=\"UTF-8\">\r\n";
-print STDOUT "\t<title>Resultat</title>\r\n";
-print STDOUT "</head>\r\n";
-print STDOUT "<body bgcolor=\"#FFBFFF\">\r\n";
-
-print STDOUT "\t<h1>Résultat du traitement du formulaire</h1>\r\n";
-print STDOUT "\t<h2>Chaine de données reçue par le CGI</h2>\r\n";
-print STDOUT "\t<p>$POST <b>$buffer</b></p>\r\n";
-
-print STDOUT "\t<h2>Liste des informations décodées</h2>\r\n";
-print STDOUT "\t<ul>\r\n";
-
-foreach $match (keys (%GETQUERY)) {
-    print STDOUT "\t\t<li><b>$match: </b>".$GETQUERY{$match}."</li>\n";
-}
-foreach $match (keys (%FORM)) {
-    print STDOUT "\t\t<li><b>$match: </b>".$FORM{$match}."</li>\n";
-}
-
-print STDOUT "\t</ul>\r\n";
-print STDOUT "\t<p>Come back at index.html? <a href=\"../index.html\">Click Here:</a> </p>\r\n";
-print STDOUT "</body>\r\n</html>\r\n";
-
-sub cgi_print_environnement
+# print any array nom
+sub cgi_print_array_html
 {
-	print STDOUT "\t<ul>\r\n";
-	print STDOUT "\t\t<span>ENVIRONNEMENT:</span>\r\n";
-	foreach $env (keys (%ENV))
-	{
-		print STDOUT "\t\t<li><b>$env: </b>".$ENV{$env}."</li>\n";
+	local (%array);
+
+	%array = @_;
+	foreach $match (keys (%array)) {
+		print STDOUT "\t\t<li><b>$match: </b>".$array{$match}."</li>\n";
 	}
-	print STDOUT "\t</ul>\r\n";
 }
 
-#&cgi_print_environnement();
+sub cgi_print_html_dtd
+{
+	print STDOUT "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+}
+
+sub cgi_print_html_begin
+{
+	print STDOUT "<html lang=\"fr\">\r\n";
+}
+
+sub cgi_print_html_head
+{
+	print STDOUT "<head>\r\n";
+	print STDOUT "\t<meta charset=\"UTF-8\">\r\n";
+	print STDOUT "\t<title>$ENV{'REQUEST_METHOD'}</title>\r\n";
+	print STDOUT "</head>\r\n";
+}
+
+sub cgi_print_html_body_begin
+{
+	print STDOUT "<body bgcolor=\"#FFBFFF\">\r\n";
+}
+
+sub cgi_print_html_end
+{
+	print STDOUT "</html>\r\n";
+}
+
+sub cgi_print_html_body_end
+{
+	print STDOUT "</body>\r\n";
+}
+
+sub cgi_print_html_double_elt
+{
+	local ($elt, $value)=@_;
+	print STDOUT "<".$elt.">".$value."</".$elt.">\r\n";
+}
 
 sub	cgi_response_header
 {
+	local ($code_response, $message_response)=@_;
+
 	# Use a partial custom header functionnality
+	print $ENV{'SERVER_PROTOCOL'}." ".$code_response." ".$message_response."\r\n";
 	print "Content-Type: text/html\r\n";
 	print "\r\n";
 
@@ -106,17 +173,3 @@ sub	cgi_response_header
 	#print "Content_length : ".$ENV{'CONTENT_LENGTH'}."\n"; # Pas obligatoire, vaut mieux rien mettre
 }
 
-sub get_query_string
-{
-	local ($buffer, @pairs, $pair, $name, $value, %form);
-	$buffer = $ENV{'QUERY_STRING'};
-	@pairs = split(/&/, $buffer);
-	foreach $pair (@pairs)
-	{
-		($name, $value) = split(/=/, $pair);
-		$value =~ tr/+/ /;
-		$value =~ s/%(..)/pack("c", hex($1))/eg;
-		$form{$name} = $value;
-	}
-	%form;
-}
