@@ -59,5 +59,5 @@ public:
 	map_ss &		get_header();
 	map_ss const&	get_header() const;
 
-	in_addr		get_client_addr() const	{ return _client_addr; }
+	in_addr		get_client_addr() const;
 };

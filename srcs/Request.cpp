@@ -165,3 +165,8 @@ std::string	Request::get_http_version() const
 
 	return (firstline.http_version);
 }
+
+in_addr		Request::get_client_addr() const
+{
+	return _client_addr;
+}
