@@ -93,7 +93,8 @@ void	Listener::_send(int fd, Request request)
 
 	if (!request.is_complete())
 	{
-		response = new Response_Bad_Request(request, _servers[0], _servers[0].get_locations()[0]); // TESTME
+		response = new Response_Bad_Request(request, _servers[0], _servers[0].get_locations()[0],
+											_servers[0].get_error_page(E_BAD_REQUEST)); // TESTME
 	}
 	else
 	{
@@ -103,7 +104,8 @@ void	Listener::_send(int fd, Request request)
 		const Server	*server = _get_matching_Server(request);
 		if (server == NULL)	// No server found: forbidden access.
 		{
-			response = new Response_Forbidden(request, _servers[0], _servers[0].get_locations()[0]);
+			response = new Response_Forbidden(request, _servers[0], _servers[0].get_locations()[0],
+												_servers[0].get_error_page(E_FORBIDDEN));
 			send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
 			delete response;
 			close(fd);
@@ -119,7 +121,7 @@ void	Listener::_send(int fd, Request request)
 		std::cerr << "[listener] matched location: " << location.URI() << std::endl;
 
 		if (!location.allows_method(request.get_method()))
-			response = new Response_Method_Not_Allowed(request, *server, location);
+			response = new Response_Method_Not_Allowed(request, *server, location, server->get_error_page(405));
 		else
 			response = new Response_Ok(request, *server, location);
 

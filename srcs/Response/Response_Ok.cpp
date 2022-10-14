@@ -34,7 +34,7 @@ void Response_Ok::_init()
 	if (req_location[0] != '/')
 	{
 		Response				&moi = *this;
-		moi = Response_Not_Found(*_request, *_server, *_location);
+		moi = Response_Not_Found(*_request, *_server, *_location, _server->get_error_page(404));
 		return ;
 	}
 	_content_path = _location->get_path();

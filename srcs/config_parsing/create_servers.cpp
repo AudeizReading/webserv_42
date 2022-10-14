@@ -14,6 +14,7 @@
 #include "../Listener.hpp"
 #include "../Server.hpp"
 #include <toml_parser.hpp>
+#include <http_error_codes.hpp>
 
 #include <vector>
 #include <string>
@@ -71,16 +72,16 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 }
 
 static
-std::map<std::string, std::string>	_get_error_pages(TOML::Value const& server)
+std::map<int, std::string>	_get_error_pages(TOML::Value const& server)
 {
 	const std::string	supported_errors[] = SUPPORTED_ERROR_CODES;
-	std::map<std::string, std::string>	error_pages;
+	std::map<int, std::string>	error_pages;
 
 	for (unsigned int i = 0; i < sizeof(supported_errors) / sizeof(supported_errors[0]); ++i)
 	{
 		error_pages.insert(
-			std::pair<std::string, std::string>(
-				supported_errors[i],
+			std::pair<int, std::string>(
+				std::atoi(supported_errors[i].c_str()),
 				server.at_or(std::string("error_") + supported_errors[i],
 					TOML::make_string("./res/error/" + supported_errors[i] + ".html")).Str()
 			)

@@ -12,6 +12,7 @@
 
 #include "webserv.hpp"
 #include <toml_parser.hpp>
+#include <http_error_codes.hpp>
 
 static bool	exists_and_has_type(TOML::Value const& group, const char *key, TOML::Type type)
 {

@@ -15,6 +15,7 @@
 #include "Request.hpp"
 #include "Server.hpp"
 #include "Location.hpp"
+#include <http_error_codes.hpp>
 
 class Response
 {
