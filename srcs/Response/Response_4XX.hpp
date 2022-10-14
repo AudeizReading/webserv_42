@@ -25,4 +25,5 @@
 _PROTO_RESPONSE(Response_Bad_Request)
 _PROTO_RESPONSE(Response_Forbidden)
 _PROTO_RESPONSE(Response_Not_Found)
+_PROTO_RESPONSE(Response_Method_Not_Allowed)
 _PROTO_RESPONSE(Response_Internal_Server_Error)

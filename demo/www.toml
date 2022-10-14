@@ -32,7 +32,6 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		URI = "/"								# Mandatory parameter.
 		root = "./demo/www"						# Mandatory parameter.
 		index = "index.html"					# Optional. Defaults to "index.html".
-		allowed_methods = ["POST", "GET"]		# Optional. Defaults to allow POST, GET, and DELETE.
 		dir_listing = true						# Optional. Defaults to false.
 		# include = ["fast_cgi.toml"]
 
@@ -51,7 +50,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		root = "/var/www"
 		redirect = "./demo/www"					# Optional. Defaults to "", i.e. no redirect.
 
-	[[http.server]]							# Is first server for this port, so is default.
+	[[http.server]]
 	listen_port = 4242
 	server_name = ["localhost"]
 
@@ -59,7 +58,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		URI = "/"								# Mandatory parameter.
 		root = "./demo/www"						# Mandatory parameter.
 		index = "index.html"					# Optional. Defaults to "index.html".
-		allowed_methods = ["POST", "GET"]		# Optional. Defaults to allow POST, GET, and DELETE.
+		allowed_methods = ["POST", "HEAD"]		# Optional. Defaults to allow POST, GET, and DELETE.
 		dir_listing = true						# Optional. Defaults to false.
 		# include = ["fast_cgi.toml"]
 

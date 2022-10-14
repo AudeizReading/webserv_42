@@ -94,24 +94,23 @@ void Response::create()
 
 	time_t						ctime = time(NULL);
 	tm							*t = gmtime(&ctime);
-	map_ss						header;
 	std::stringstream			date;
 	// TODO: full date support
 	date << "Wed, 28 Sep " << t->tm_year << " "
 		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT";
 
-	header.insert(Queryparser::pair_ss("Date", date.str()));
-	header.insert(Queryparser::pair_ss("Server", "42_AGP_webserv"));
-	header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
+	_header.insert(Queryparser::pair_ss("Date", date.str()));
+	_header.insert(Queryparser::pair_ss("Server", "42_AGP_webserv"));
+	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
 	std::stringstream	length;
 	length << _content.length();
-	header.insert(Queryparser::pair_ss("Cache-Length", length.str()));
-	header.insert(Queryparser::pair_ss("Cache-Type", _content_type));
+	_header.insert(Queryparser::pair_ss("Cache-Length", length.str()));
+	_header.insert(Queryparser::pair_ss("Cache-Type", _content_type));
 
 	if (ext == "ico" || ext == "png" || ext == "jpg") // Mise en cache
 	{
-		header["Cache-Control"] = "public, max-age=604800, immutable";
-		header["Age"] = "0";
+		_header["Cache-Control"] = "public, max-age=604800, immutable";
+		_header["Age"] = "0";
 	}
 
 	if (_plaintext != "")
@@ -136,7 +135,7 @@ void Response::create()
 
 			_content = Queryparser::parse_otherline(_plaintext, it, temp_header);
 			for (map_ss::iterator it2 = temp_header.begin(); it2 != temp_header.end(); ++it2)
-				header[it2->first] = it2->second;
+				_header[it2->first] = it2->second;
 			std::cout << "[CGI] Use a partial custom header" << std::endl;
 		}
 		catch(const std::exception& e)
@@ -150,7 +149,7 @@ void Response::create()
 
 	response << get_status() << "\r\n";
 	Request::map_ss::iterator	it2;
-	for (it2 = header.begin(); it2 != header.end(); it2++)
+	for (it2 = _header.begin(); it2 != _header.end(); it2++)
 		response << it2->first << ": " << it2->second << "\r\n";
 	response << "\r\n";
 	response << _content;
@@ -171,6 +170,7 @@ Response	&Response::operator=(Response const &src)
 	this->_content_path	= src._content_path;
 	this->_content_type	= src._content_type;
 	this->_content		= src._content;
+	this->_header		= src._header;
 
 	return (*this);
 }
