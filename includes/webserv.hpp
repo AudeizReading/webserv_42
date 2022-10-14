@@ -21,8 +21,6 @@
 
 int				webserv(int argc, char *argv[]);
 
-#define SUPPORTED_ERROR_CODES	{ "400", "403", "404", "405", "500" }
-
 TOML::Document	parse_config_file(const char *path);
 void			include_directive(TOML::Value& target, TOML::Value include);
 void			check_mandatory_directives(TOML::Document const& doc);
