@@ -70,6 +70,25 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 	return locations;
 }
 
+static
+std::map<std::string, std::string>	_get_error_pages(TOML::Value const& server)
+{
+	const std::string	supported_errors[] = SUPPORTED_ERROR_CODES;
+	std::map<std::string, std::string>	error_pages;
+
+	for (unsigned int i = 0; i < sizeof(supported_errors) / sizeof(supported_errors[0]); ++i)
+	{
+		error_pages.insert(
+			std::pair<std::string, std::string>(
+				supported_errors[i],
+				server.at_or(std::string("error_") + supported_errors[i],
+					TOML::make_string("./res/error/" + supported_errors[i] + ".html")).Str()
+			)
+		);
+	}
+	return error_pages;
+}
+
 // NOTE: I also had a function which returned void and took in a reference to the vector, and edited that.
 // I don't know which overload is the best, in term of performance and/or clean code ?
 // Apparently this one could take advantage of RVO. But it didn't do that in testing?
@@ -102,7 +121,8 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 				it->at_or("client_max_body_size",	TOML::make_int(1048576))		.Int(),
 				(*it)["listen_port"].Int(),
 				std::make_pair(server_names.begin(), server_names.end()),
-				_get_locations_from_server((*it)["location"].Array()) // "location" is guaranteed to exist at this point
+				_get_locations_from_server((*it)["location"].Array()), // "location" is guaranteed to exist at this point
+				_get_error_pages(*it)
 			) );
 	}
 	return servers;

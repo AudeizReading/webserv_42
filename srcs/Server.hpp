@@ -41,6 +41,7 @@ public:
 	template <class InputIt>
 	Server(std::string const& listen_address, unsigned int max_body_size, int port,
 			std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
+			std::map<std::string, std::string> error_pages,
 
 			typename ft::enable_if<
 				!ft::is_fundamental<InputIt>::value, int
@@ -64,11 +65,12 @@ public:
 template <class InputIt>
 Server::Server(std::string const& listen_address, unsigned int max_body_size, int port,
 		std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
+		std::map<std::string, std::string> error_pages,
 
 		typename ft::enable_if<
 			!ft::is_fundamental<InputIt>::value, int
 		>::type)
-: _name("HELLO WORD"), _max_body_size(max_body_size), _port(port), _locations(locations)
+: _name("HELLO WORD"), _max_body_size(max_body_size), _port(port), _locations(locations), _error_pages(error_pages)
 {
 	_server_names.assign(serv_names.first, serv_names.second);
 
