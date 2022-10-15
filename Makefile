@@ -28,6 +28,7 @@ SRC =	srcs/main.cpp \
 		srcs/Server.cpp \
 		srcs/webserv.cpp \
 		srcs/Location.cpp \
+		srcs/utils.cpp \
 		$(PARSING_SRC)
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/Response.hpp' pos='1' template='		{0} \' -->

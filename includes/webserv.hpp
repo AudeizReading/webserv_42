@@ -19,6 +19,8 @@
 
 #include <toml_parser.hpp>
 
+#include <webserv_utils.hpp>
+
 int				webserv(int argc, char *argv[]);
 
 TOML::Document	parse_config_file(const char *path);

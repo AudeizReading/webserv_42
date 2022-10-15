@@ -19,9 +19,9 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/4XX.html".
 	error_500 = "./foo/bar.html"			# Directive can be any of 4XX/5XX HTTP 1.1 errors.
 	# If no location is provided, a default one is provided as follows
-		[[http.server.location]]
-		URI = "/"
-		root = "./demo/www"
+		# [[http.server.location]]
+		# URI = "/"
+		# root = "./demo/www"
 
 	[[http.server]]							# Is first server for this port, so is default.
 	listen_port = 4242
@@ -36,13 +36,13 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		# include = ["fast_cgi.toml"]
 
 		[[http.server.location]]
-		URI = "/img"							# Points to /var/www/img, see NGINX doc
-		root = "./demo/www"
+		URI = "/img/"							# Points to /var/www/img, see NGINX doc
+		root = "./demo/www/img/"
 		index = "issberg.png"
 
 		[[http.server.location]]
 		URI = "www"
-		root = "./demo"
+		root = "./demo/www"
 		index = "img/issberg.png"
 
 		[[http.server.location]]
@@ -64,12 +64,12 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 		[[http.server.location]]
 		URI = "/img"							# Points to /var/www/img, see NGINX doc
-		root = "./demo/www"
+		root = "./demo/www/img"
 		index = "issberg.png"
 
 		[[http.server.location]]
 		URI = "www"
-		root = "./demo"
+		root = "./demo/www"
 		index = "img/issberg.png"
 
 		[[http.server.location]]
