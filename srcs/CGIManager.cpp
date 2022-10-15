@@ -130,6 +130,9 @@ bool				CGIManager::exec()
 				if (_request_data_length > 0)
 				{
 					PRINT(_request_data.find(this->_environ.getBoundary()));
+					PRINT(_request_data.find(_request_data.c_str()));
+				//	PRINT(_request_data); // Quand je print ca c'est en attente de la suite, la lecture est bloquante
+				//	Si je peux pas recup ca je peux pas parser ce qu'il faut pour recup l'image
 					::close(_cgi_request_fds[0]);
 					::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
 					::close(_cgi_request_fds[1]);

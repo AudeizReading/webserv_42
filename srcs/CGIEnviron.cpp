@@ -45,6 +45,10 @@ void				CGIEnviron::_setHeaderEnv()
 				{
 					this->_boundary = tmp.substr(tmp.find_first_of("=") + 1);
 				}
+				PRINT(http_val);
+				PRINT(http_key);
+				PRINT(tmp);
+				PRINT(this->_boundary);
 			}
 		}
 		this->_env.insert(value_type(("HTTP_" + http_key), header_begin->second));

@@ -78,7 +78,6 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 else # other methods that we do not handle
 {
 	&cgi_response_header(403, "Forbidden");
-	print STDOUT "Hello ".@_;
 	exit 1;
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
