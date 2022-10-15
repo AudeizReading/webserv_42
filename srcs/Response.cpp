@@ -43,7 +43,7 @@ void Response::create()
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 		{
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
-			*this = Response_Forbidden(*_request, *_server, *_location, _server->get_error_page(E_FORBIDDEN));
+			*this = Response_Forbidden(*_request, *_server, *_location);
 			return ;
 		}
 		/*
@@ -63,7 +63,7 @@ void Response::create()
 			{
 				std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
-				*this = Response_Internal_Server_Error(*_request, *_server, *_location, _server->get_error_page(E_SERVER_ERROR));
+				*this = Response_Internal_Server_Error(*_request, *_server, *_location);
 				return ;
 			}
 			std::cerr << "[CONTINUE] " << _content_path << std::endl;
@@ -87,7 +87,7 @@ void Response::create()
 		}
 		else
 		{
-			*this = Response_Not_Found(*_request, *_server, *_location, _server->get_error_page(E_NOT_FOUND));
+			*this = Response_Not_Found(*_request, *_server, *_location);
 			return ;
 		}
 	}
