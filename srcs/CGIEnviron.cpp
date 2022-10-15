@@ -104,11 +104,11 @@ void				CGIEnviron::_setEnv()
 			{QUERY_STRING, query_string},\
 			{CONTENT_LENGTH, content_length}, \
 			{CONTENT_TYPE, this->_header["Content-Type"]}, \
-			{GATEWAY_INTERFACE, "\033[43;30m MUST CGI/1.1\033[0m"}, \
-			{SERVER_SOFTWARE, "\033[43;30m MUST webserv\033[0m"}, \
+			{GATEWAY_INTERFACE, "CGI/1.1"}, \
+			{SERVER_SOFTWARE, "webserv"}, \
 			{SERVER_NAME, server_name}, \
 			{SERVER_PROTOCOL, this->_request.get_http_version()}, \
-			{SERVER_PORT, "\033[43;30m MUST 4242\033[0m"}, \
+			{SERVER_PORT, port}, \
 			{PATH_INFO, path_info}, \
 			{PATH_TRANSLATED, path_translated}, \
 			{DOCUMENT_ROOT, root}, \
