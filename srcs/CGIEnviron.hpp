@@ -60,6 +60,7 @@ class CGIEnviron {
 
 		Request::map_ss	_header;
 		map_ss			_env;
+		std::string		_boundary;
 
 		CGIEnviron(void);
 		CGIEnviron(const CGIEnviron &src);
