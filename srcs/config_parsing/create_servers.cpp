@@ -21,8 +21,8 @@
 
 static bool	_location_URI_comp(Location const& a, Location const& b)
 {
-	return (std::count(a.URI().begin(), a.URI().end(), '/')
-		< std::count(b.URI().begin(), b.URI().end(), '/'));
+	return (std::count(a.get_URI().begin(), a.get_URI().end(), '/')
+		< std::count(b.get_URI().begin(), b.get_URI().end(), '/'));
 }
 
 // Why can't this take advantage of RVO/copy elision ? I might need to read more docs.

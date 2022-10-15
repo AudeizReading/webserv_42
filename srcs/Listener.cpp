@@ -77,8 +77,8 @@ Location const&	Listener::_get_matching_Location(Request const& req, Server cons
 		it != serv.get_locations().end();
 		++it)
 	{
-		std::cerr << _CYN << "Location URI: " << it->URI() << RESET << '\n'; // DEBUG
-		if (req_location_URI.find(it->URI()) != std::string::npos)
+		std::cerr << _CYN << "Location URI: " << it->get_URI() << RESET << '\n'; // DEBUG
+		if (req_location_URI.find(it->get_URI()) != std::string::npos)
 			target = &*(it);
 	}
 	return *target;
@@ -116,7 +116,7 @@ void	Listener::_send(int fd, Request request)
 
 		const Location&	location = _get_matching_Location(request, *server);
 
-		std::cerr << "[listener] matched location: " << location.URI() << std::endl;
+		std::cerr << "[listener] matched location: " << location.get_URI() << std::endl;
 
 		if (!location.allows_method(request.get_method()))
 			response = new Response_Method_Not_Allowed(request, *server, location);

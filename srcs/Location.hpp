@@ -37,10 +37,10 @@ class Location
 		bool	allows_dir_listing() const;
 		bool	has_redirect() const;
 
-		std::string const&	root() const;
-		std::string const&	URI() const;
-		std::string const&	index() const;
-		std::string const&	redirect() const;
+		std::string const&	get_root() const;
+		std::string const&	get_URI() const;
+		std::string const&	get_index() const;
+		std::string const&	get_redirect() const;
 
 		std::string			get_path() const;
 

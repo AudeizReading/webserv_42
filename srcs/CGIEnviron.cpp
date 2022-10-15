@@ -51,7 +51,7 @@ void				CGIEnviron::_setEnv()
 
 	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
 	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
-	std::string	root = _location.root() + _location.URI();
+	std::string	root = _location.get_root() + _location.get_URI();
 	// Il me semble que SERVER_NAME doit être le champ "Host" de la requête.
 	std::string	server_name = "TESTME";
 

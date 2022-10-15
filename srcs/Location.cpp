@@ -79,19 +79,19 @@ bool	Location::has_redirect() const
 	return _redirect.size();
 }
 
-std::string const&	Location::root() const
+std::string const&	Location::get_root() const
 {
 	return _root;
 }
-std::string const&	Location::URI() const
+std::string const&	Location::get_URI() const
 {
 	return _URI;
 }
-std::string const&	Location::index() const
+std::string const&	Location::get_index() const
 {
 	return _index;
 }
-std::string const&	Location::redirect() const
+std::string const&	Location::get_redirect() const
 {
 	return _redirect;
 }
