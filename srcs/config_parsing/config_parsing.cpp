@@ -77,9 +77,31 @@ static void	_insert_default_locations(TOML::Value& http)
 		{
 			TOML::Value new_group = TOML::make_group("");
 			new_group.group_addValue( TOML::make_string("URI", "/") );
-			new_group.group_addValue( TOML::make_string("root", "/var/www") );
+			new_group.group_addValue( TOML::make_string("root", "./demo/www") );
 			it->group_addValue( TOML::make_array("location", TOML::T_GROUP) );
 			(*it)["location"].groupArray_addValue(new_group);
+		}
+	}
+}
+
+static void	_location_fields_autoformat(TOML::Value::array_type& servers)
+{
+	for (TOML::Value::array_type::iterator i = servers.begin(); i != servers.end(); ++i)
+	{
+		for (TOML::Value::array_type::iterator j = (*i)["location"].Array().begin();
+			j != (*i)["location"].Array().end();
+			++j)
+		{
+			(*j)["URI"].Str() = strtrim_right((*j)["URI"].Str(), "/");
+			if ((*j)["URI"].Str().empty())
+				(*j)["URI"].Str() = "/";
+			
+			(*j)["root"].Str() = strtrim_right((*j)["root"].Str(), "/");
+			if ((*j)["root"].Str().empty())
+				(*j)["root"].Str() = "/";
+			
+			// std::cerr << YELB << "URI: \"" << (*j)["URI"].Str() << '\"' << RESET << std::endl;
+			// std::cerr << YELB << "root: \"" << (*j)["root"].Str() << '\"' << RESET << std::endl << std::endl;
 		}
 	}
 }
@@ -99,6 +121,7 @@ TOML::Document	parse_config_file(const char *path)
 		check_mandatory_directives(config);
 		check_optional_directives(config);
 		_insert_default_locations(config["http"]);
+		_location_fields_autoformat(config["http"]["server"].Array());
 	}
 	catch(const std::exception& e)
 	{

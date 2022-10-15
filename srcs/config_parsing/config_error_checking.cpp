@@ -13,9 +13,22 @@
 #include "webserv.hpp"
 #include <toml_parser.hpp>
 
-static bool	exists_and_has_type(TOML::Value const& group, const char *key, TOML::Type type)
+static bool	_exists_and_has_type(TOML::Value const& group, const char *key, TOML::Type type)
 {
 	return (group.has(key) && group[key].type() == type);
+}
+
+static bool	_is_valid_URI(std::string const& uri)
+{
+	for (std::string::const_iterator it = uri.begin(); it != uri.end(); ++it)
+	{
+		if (!(('a' <= *it && *it <= 'z') || ('A' <= *it && *it <= 'Z') || ('0' <= *it && *it <= '9')
+			|| *it == '-' || *it == '_' || *it == '/' || *it == '.'))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void	check_mandatory_directives(TOML::Document const& doc)
@@ -45,9 +58,10 @@ void	check_mandatory_directives(TOML::Document const& doc)
 				j != locations.end();
 				++j)
 			{
-				if (!exists_and_has_type(*j, "URI", TOML::T_STRING))
+				if ( !_exists_and_has_type(*j, "URI", TOML::T_STRING)
+					|| !_is_valid_URI((*j)["URI"].Str()) )
 					throw std::runtime_error("missing or illegal `URI' directive in location");
-				if (!exists_and_has_type(*j, "root", TOML::T_STRING))
+				if (!_exists_and_has_type(*j, "root", TOML::T_STRING))
 					throw std::runtime_error("missing or illegal `root' directive in location");
 			}
 		}
