@@ -160,23 +160,6 @@ void	Listener::start_listener()
 	if (_fd < 0)
 		throw std::runtime_error(strerror(errno));
 
-	int flags = fcntl(_fd, F_GETFL, 0);
-	//flags |= O_NONBLOCK; //TODO: C'est utile ??
-	// la 404 (page trop grande) ne fonctionne pas si on met ça
-	std::cout << flags << std::endl;
-	std::cout << "O_RDONLY: " << (flags & O_RDONLY) << std::endl;
-	std::cout << "O_WRONLY: " << (flags & O_WRONLY) << std::endl;
-	std::cout << "O_RDWR: " << (flags & O_RDWR) << std::endl;
-	std::cout << "O_CREAT: " << (flags & O_CREAT) << std::endl;
-	std::cout << "O_EXCL: " << (flags & O_EXCL) << std::endl;
-	std::cout << "O_NOCTTY: " << (flags & O_NOCTTY) << std::endl;
-	std::cout << "O_TRUNC: " << (flags & O_TRUNC) << std::endl;
-	std::cout << "O_APPEND: " << (flags & O_APPEND) << std::endl;
-	std::cout << "O_ASYNC: " << (flags & O_ASYNC) << std::endl;
-	std::cout << "O_NONBLOCK: " << (flags & O_NONBLOCK) << std::endl;
-	if (fcntl(_fd, F_SETFL, flags) < 0)
-		throw std::runtime_error(strerror(errno));
-
 	/*
 	* SOL_SOCKET: La doc indique directement SOL_SOCKET.
 	* SO_REUSEADDR: Allows the socket to be bound to an address that is already in use.
