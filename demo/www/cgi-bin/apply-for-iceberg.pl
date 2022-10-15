@@ -29,6 +29,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	print STDOUT "\t<ul>\r\n";
 	&cgi_print_array_html(%_GET);
 	&cgi_print_array_html(%_POST);
+	&cgi_print_array_html(%ENV);
 	print STDOUT "\t</ul>\r\n";
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
 	&cgi_print_html_body_end();
@@ -77,6 +78,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 else # other methods that we do not handle
 {
 	&cgi_response_header(403, "Forbidden");
+	print STDOUT "Hello ".@_;
 	exit 1;
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------

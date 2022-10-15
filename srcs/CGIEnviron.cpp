@@ -54,18 +54,27 @@ void				CGIEnviron::_setEnv()
 	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
 	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
 	std::string	root = _location.get_root() + '/';
-	// Il me semble que SERVER_NAME doit être le champ "Host" de la requête.
-	std::string	server_name = "TESTME";
+	
+	std::string	server_name = "TESTME";  // -> @pbremond J'ai besoin du hostname du server (dans mon env perso, je ne peux pas recup la valeur depuis HOST, car deja faudrait que je la getenv et hsmits nous a dit que ct pas une fonction fiable, plus dedans j'ai la valeur localhost:4242, c'est pas ce qu'on veut, on l'avait apl Groenland, SERVER_NAME@ip_server, voila quoi correspond le SERVER_NAME dont j'ai besoin
 
 	std::string	port = _server.get_port_str();
 
-//	std::string	remote_host = _request.get_?();
-//	std::string	remote_addr = _request.get_?();
-//	std::string	remote_user = _request.get_?();
+//	std::string	remote_host = _request.get_?(); //@pbremond ici, j'ai besoin du nom du client (comme pour le serveur)
+//	std::string	remote_addr = _request.get_?(); //@pbremond ici, j'ai besoin de l'ip du client
 
 	std::string	script_name = root + location;
 	// path_info : This is the path part after the script name (yes it can) -> considered as infos on the path by rfc
 	std::string	path_info = location.substr(location.find_last_of(".") + ext.size() + 1);
+	std::string	query_string = this->_request.get_query();
+
+	// if the location has not the path info
+	if (path_info.size() == 0 && query_string.find_first_of("/")) // it is the query string that has the path_info
+	{
+		path_info = query_string.substr(query_string.find_first_of("/"));
+		// on reaffecte seulement si path info n'est pas en fait une query string (/var=value/var2=value2/)
+		if (path_info != query_string)
+			query_string = query_string.substr(0, query_string.find_first_of("/"));
+	}
 	// path_translated : This is DOCUMENT_ROOT + PATH_INFO
 	std::string	path_translated = root + path_info;
 
@@ -73,11 +82,12 @@ void				CGIEnviron::_setEnv()
 	std::string	content = this->_request.get_content();
 	std::string	content_length = std::to_string(content.length());
 
+	// Retraitement de la query string pouvant contenir le path_info
 	this->_setHeaderEnv();
 
 	std::string	cgi_env[][2] = {\
 			{REQUEST_METHOD, this->_request.get_method()},\
-			{QUERY_STRING, this->_request.get_query()},\
+			{QUERY_STRING, query_string},\
 			{CONTENT_LENGTH, content_length}, \
 			{CONTENT_TYPE, this->_header["Content-Type"]}, \
 			{GATEWAY_INTERFACE, "\033[43;30m MUST CGI/1.1\033[0m"}, \
