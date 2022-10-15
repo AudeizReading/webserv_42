@@ -41,7 +41,9 @@ void				CGIEnviron::_setHeaderEnv()
 
 void				CGIEnviron::_setEnv()
 {
-	std::string	location = _request.get_location();
+	// Extrait la bonne location HTTP, en tenant compte du rerootage demandé par le sujet.
+	// Exemple: dans notre config, "/img/foo/image.png" devient "/foo/image.png"
+	std::string	location = _request.get_location().substr(_location.get_URI().length());
 	std::string	ext = location.substr(location.find_last_of(".") + 1);
 
 	if (*location.begin() == '/')
@@ -51,7 +53,7 @@ void				CGIEnviron::_setEnv()
 
 	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
 	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
-	std::string	root = _location.get_root() + _location.get_URI();
+	std::string	root = _location.get_root() + '/';
 	// Il me semble que SERVER_NAME doit être le champ "Host" de la requête.
 	std::string	server_name = "TESTME";
 
