@@ -12,7 +12,7 @@
 
 #include "CGIEnviron.hpp"
 
-CGIEnviron::CGIEnviron(const Request& req, const Server& serv, const Location& location) : _request(req), _server(serv), _location(location), _header(this->_request.get_header()), _env() {
+CGIEnviron::CGIEnviron(const Request& req, const Server& serv, const Location& location) : _request(req), _server(serv), _location(location), _header(this->_request.get_header()), _env(), _boundary() {
 	this->_setGlobalEnv();
 }
 
@@ -34,6 +34,18 @@ void				CGIEnviron::_setHeaderEnv()
 		std::transform(http_key.begin(), http_key.end(), http_key.begin(), toupper);
 		std::replace(http_key.begin(), http_key.end(), '-', '_');
 
+		// On cherche le token de delimitations des fichiers binaires 
+		if (http_key == "CONTENT_TYPE" && (http_val.find("multipart/form-data") != std::string::npos))
+		{
+			if (http_val.find_first_of(";") != std::string::npos)
+			{
+				std::string tmp = http_val.substr(http_val.find_first_of(";") + 2);
+				if (tmp.find("boundary") != std::string::npos)
+				{
+					this->_boundary = tmp.substr(tmp.find_first_of("=") + 1);
+				}
+			}
+		}
 		this->_env.insert(value_type(("HTTP_" + http_key), header_begin->second));
 		this->_env.insert(value_type((http_key), header_begin->second));
 	}
@@ -53,7 +65,8 @@ void				CGIEnviron::_setEnv()
 
 	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
 	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
-	std::string	root = _location.get_root() + '/';
+	std::string	root = _location.get_root() + '/'; 
+	//std::string	root = _location.get_root() + _location.URI();
 	
 	std::string	server_name = "TESTME";  // -> @pbremond J'ai besoin du hostname du server (dans mon env perso, je ne peux pas recup la valeur depuis HOST, car deja faudrait que je la getenv et hsmits nous a dit que ct pas une fonction fiable, plus dedans j'ai la valeur localhost:4242, c'est pas ce qu'on veut, on l'avait apl Groenland, SERVER_NAME@ip_server, voila quoi correspond le SERVER_NAME dont j'ai besoin
 
@@ -68,7 +81,7 @@ void				CGIEnviron::_setEnv()
 	std::string	query_string = this->_request.get_query();
 
 	// if the location has not the path info
-	if (path_info.size() == 0 && query_string.find_first_of("/")) // it is the query string that has the path_info
+	if (path_info.size() == 0 && query_string.size() > 0 && query_string.find_first_of("/") != std::string::npos )// it is the query string that has the path_info
 	{
 		path_info = query_string.substr(query_string.find_first_of("/"));
 		// on reaffecte seulement si path info n'est pas en fait une query string (/var=value/var2=value2/)
@@ -100,8 +113,7 @@ void				CGIEnviron::_setEnv()
 			{DOCUMENT_ROOT, root}, \
 			{SCRIPT_NAME, script_name}, \
 			{REMOTE_HOST, "\033[44;37m MUST -> has to be taken from request?\033[0m"}, \
-			{REMOTE_ADDR, "\033[44;37m MUST -> has to be taken from request?\033[0m"}, \
-			{REMOTE_USER, "\033[44;37m-> mandatory if client's request ask for auth\033[0m"}, \
+			{REMOTE_ADDR, "\033[44;37m MUST -> has to be taken from request?\033[0m"} \
 	};
 
 	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
