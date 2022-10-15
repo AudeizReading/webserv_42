@@ -129,7 +129,7 @@ bool				CGIManager::exec()
 			{
 				if (_request_data_length > 0)
 				{
-					PRINT(_request_data);
+					PRINT(_request_data.find(this->_environ.getBoundary()));
 					::close(_cgi_request_fds[0]);
 					::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
 					::close(_cgi_request_fds[1]);

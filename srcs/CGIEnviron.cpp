@@ -20,6 +20,7 @@ CGIEnviron::~CGIEnviron(void) {
 }
 
 CGIEnviron::map_ss	CGIEnviron::getEnv()		const { return this->_env; }
+std::string			CGIEnviron::getBoundary()	const { return this->_boundary; }
 
 void				CGIEnviron::_setHeaderEnv()
 {
