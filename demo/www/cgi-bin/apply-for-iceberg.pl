@@ -3,6 +3,7 @@
 # --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
+	&cgi_print_html_double_elt("p", "iCa passe ou bien?");
 	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
 	# check for upload file
 	#  $buffer = $ENV{'QUERY_STRING'};
