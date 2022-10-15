@@ -172,7 +172,7 @@ void				CGIManager::_launchExec() const
 	// Si on fait ca comme ca, ca veut pas s'exec, j'ai une erreur operation not permitted, mais dans l'ideal pour un multi cgi faudrait passer l'interpreteur a la place du path de perl
 //	if (::execl("/usr/bin/perl", env["SCRIPT_NAME"].c_str(), NULL) == -1)
 	CGIEnviron::map_ss	env = this->_environ.getEnv();
-	if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), NULL) == -1)
+	if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), env["PATH_INFO"].c_str(), NULL) == -1)
 	{
 		exit(errno);
 	}
