@@ -32,8 +32,7 @@ private:
 	std::vector<std::string>			_server_names;
 	int									_port;
 	std::vector<Location>				_locations;
-	std::map<std::string, std::string>	_error_pages;
-	// TODO: Error pages
+	std::map<int, std::string>			_error_pages;
 	// TODO: CGI
 
 public:
@@ -41,6 +40,7 @@ public:
 	template <class InputIt>
 	Server(std::string const& name, std::string const& listen_address, unsigned int max_body_size, int port,
 			std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
+			std::map<int, std::string> error_pages,
 
 			typename ft::enable_if<
 				!ft::is_fundamental<InputIt>::value, int
@@ -55,8 +55,11 @@ public:
 	int				get_port() 			const;
 	std::string		get_port_str()		const;
 
-	std::vector<Location> const&	get_locations() const;
-	std::vector<std::string> const&	get_server_names() const;
+	std::vector<Location> const&		get_locations() const;
+	std::vector<std::string> const&		get_server_names() const;
+	std::map<int, std::string> const&	get_error_pages() const;
+	std::string							get_error_page(std::string const& code) const;
+	std::string							get_error_page(int code) const;
 
 	bool	has_server_name(std::string const& name) const;
 };
@@ -66,11 +69,12 @@ public:
 template <class InputIt>
 Server::Server(std::string const& name, std::string const& listen_address, unsigned int max_body_size, int port,
 		std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
+		std::map<int, std::string> error_pages,
 
 		typename ft::enable_if<
 			!ft::is_fundamental<InputIt>::value, int
 		>::type)
-: _name(name), _max_body_size(max_body_size), _port(port), _locations(locations)
+: _name(name), _max_body_size(max_body_size), _port(port), _locations(locations), _error_pages(error_pages)
 {
 	_server_names.assign(serv_names.first, serv_names.second);
 

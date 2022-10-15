@@ -12,6 +12,7 @@
 
 #include "webserv.hpp"
 #include <toml_parser.hpp>
+#include <http_error_codes.hpp>
 
 static bool	_exists_and_has_type(TOML::Value const& group, const char *key, TOML::Type type)
 {
@@ -75,10 +76,41 @@ static void	_check_optional_location_directives(TOML::Value::array_type const& l
 	}
 }
 
+static bool	_is_supported_error_code(std::string const& key)
+{
+	const std::string	supported_errors[] = SUPPORTED_ERROR_CODES;
+
+	for (unsigned int i = 0; i < sizeof(supported_errors) / sizeof(supported_errors[0]); ++i)
+	{
+		if (key == "error_" + supported_errors[i])
+			return true;
+	}
+	return false;
+}
+
+// Checks the error codes of given server for unsupported codes, and inaccessible files.
+static void	_check_error_codes(TOML::Value const& server)
+{
+	for (TOML::Value::const_group_iterator it = server.group_begin(); it != server.group_end(); ++it)
+	{
+		std::FILE	*tmp;
+
+		if (it->key().find("error_") == std::string::npos)
+			continue;
+		if (!_is_supported_error_code(it->key()))
+			throw std::runtime_error("unsupported " + it->key() + " directive in server block");
+		else if (it->type() != TOML::T_STRING)
+			throw std::runtime_error("illegal type for " + it->key() + " directive");
+		else if ((tmp = std::fopen(it->Str().c_str(), "r")) == NULL)
+			throw std::runtime_error("cannot open " + it->Str());
+		fclose(tmp);
+	}
+}
+
 void	check_optional_directives(TOML::Document const& doc)
 {
-	const char			*serv_keys[] = {"listen_addr",	"server_name",	"client_max_body_size",	"listen_backlog",	"error_400", 	"error_403",	"error_404"};
-	const TOML::Type	serv_types[] = {TOML::T_STRING,	TOML::T_ARRAY,	TOML::T_INT,			TOML::T_INT,		TOML::T_STRING,	TOML::T_STRING,	TOML::T_STRING};
+	const char			*serv_keys[] = {"listen_addr",	"server_name",	"client_max_body_size",	"listen_backlog"};
+	const TOML::Type	serv_types[] = {TOML::T_STRING,	TOML::T_ARRAY,	TOML::T_INT,			TOML::T_INT		};
 
 	const TOML::Value::array_type&	serv_array = doc["http"]["server"].Array();
 	for (TOML::Document::array_type::const_iterator it = serv_array.begin();
@@ -90,6 +122,8 @@ void	check_optional_directives(TOML::Document const& doc)
 			if (it->has(serv_keys[i]) && (*it)[serv_keys[i]].type() != serv_types[i])
 				throw std::runtime_error(std::string("illegal `") + serv_keys[i] + "' directive in server block");
 		
+		_check_error_codes(*it);
+
 		// Check type of array for server_name.
 		if (it->has("server_name") && (*it)["server_name"].Array().type() != TOML::T_STRING)
 			throw std::runtime_error("illegal `server_name' directive in server block");
