@@ -4,5 +4,5 @@ Cache-Length: 0
 Cache-Type: text/html
 Content-Type: text/html
 Date: Wed, 28 Sep 122 11:51:59 GMT
-Server: 42_AGP_webserv
+Server: Groenland
 

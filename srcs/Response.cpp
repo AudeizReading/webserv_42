@@ -20,7 +20,7 @@
 #include "CGIManager.hpp"
 #include "Queryparser.hpp"
 
-Response::Response(Request const& request, Server const& serv, Location const& location): _request(&request), _server(&serv), _location(&location)
+Response::Response(Request const& request, Server const& server, Location const& location): _request(&request), _server(&server), _location(&location)
 {
 
 }
@@ -100,7 +100,7 @@ void Response::create()
 		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT";
 
 	_header.insert(Queryparser::pair_ss("Date", date.str()));
-	_header.insert(Queryparser::pair_ss("Server", "42_AGP_webserv"));
+	_header.insert(Queryparser::pair_ss("Server", _server->get_name()));
 	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
 	std::stringstream	length;
 	length << _content.length();

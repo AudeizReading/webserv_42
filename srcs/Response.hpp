@@ -38,7 +38,7 @@ protected:
 	virtual void _init() = 0;
 
 public:
-	Response(Request const& request, Server const& serv, Location const& location);
+	Response(Request const& request, Server const& server, Location const& location);
 
 	virtual ~Response();
 

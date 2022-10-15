@@ -39,7 +39,7 @@ private:
 public:
 	// Not using a reference on locations is intentional. That SHOULD let us use copy elision.
 	template <class InputIt>
-	Server(std::string const& listen_address, unsigned int max_body_size, int port,
+	Server(std::string const& name, std::string const& listen_address, unsigned int max_body_size, int port,
 			std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
 
 			typename ft::enable_if<
@@ -61,14 +61,16 @@ public:
 	bool	has_server_name(std::string const& name) const;
 };
 
+// IMPLEMENTATION
+
 template <class InputIt>
-Server::Server(std::string const& listen_address, unsigned int max_body_size, int port,
+Server::Server(std::string const& name, std::string const& listen_address, unsigned int max_body_size, int port,
 		std::pair<InputIt, InputIt> serv_names, std::vector<Location> locations,
 
 		typename ft::enable_if<
 			!ft::is_fundamental<InputIt>::value, int
 		>::type)
-: _name("HELLO WORD"), _max_body_size(max_body_size), _port(port), _locations(locations)
+: _name(name), _max_body_size(max_body_size), _port(port), _locations(locations)
 {
 	_server_names.assign(serv_names.first, serv_names.second);
 

@@ -98,6 +98,7 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 		}
 		servers.push_back(
 			Server(
+				it->at_or("name",					TOML::make_string("Groenland"))	.Str(),
 				it->at_or("listen_addr",			TOML::make_string("0.0.0.0"))	.Str(),
 				it->at_or("client_max_body_size",	TOML::make_int(1048576))		.Int(),
 				(*it)["listen_port"].Int(),
