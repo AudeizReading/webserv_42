@@ -10,7 +10,7 @@
 /*  */
 /*  */
 
-#include <string>
+#include <webserv_utils.hpp>
 
 std::string	strtrim_right(std::string const& str, const char *charset)
 {
@@ -30,4 +30,17 @@ std::string	strtrim_left(std::string const& str, const char *charset)
 		return "";
 	else
 		return str.substr(tgt);
+}
+
+bool	is_valid_URI(std::string const& uri)
+{
+	for (std::string::const_iterator it = uri.begin(); it != uri.end(); ++it)
+	{
+		if (!(('a' <= *it && *it <= 'z') || ('A' <= *it && *it <= 'Z') || ('0' <= *it && *it <= '9')
+			|| *it == '-' || *it == '_' || *it == '/' || *it == '.'))
+		{
+			return false;
+		}
+	}
+	return true;
 }
