@@ -25,10 +25,10 @@
 // 	_parse();
 // }
 
-Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0),
-	_plaintext(plaintext), _client_addr(client_in_addr)
+Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0), _parsed(0),
+	_plaintext(""), _client_addr(client_in_addr)
 {
-	_parse();
+	append_plaintext(plaintext);
 }
 
 void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)
@@ -59,8 +59,9 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		throw std::runtime_error("Bad Request: Forbidden previous folder");
 }
 
-void Request::_parse()
+void Request::parse()
 {
+	_parsed = 1;
 	try
 	{
 		std::string::const_iterator		it = _plaintext.begin();
@@ -102,6 +103,16 @@ void Request::_parse()
 	}
 }
 
+void	Request::append_plaintext(std::string const& buffer)
+{
+	_plaintext += buffer;
+	if (_plaintext.find("\r\n\r\n") != std::string::npos)
+	{
+		parse();
+		// TODO: On pourrait déjà envoyer une bad request ici
+	}
+}
+
 Queryparser::Firstline Request::_get_first_line() const
 {
 	try
@@ -127,6 +138,11 @@ Request::~Request()
 int	Request::is_complete() const
 {
 	return (_complete != 0);
+}
+
+int	Request::is_parsed() const
+{
+	return (_parsed != 0);
 }
 
 std::string	Request::get_location() const

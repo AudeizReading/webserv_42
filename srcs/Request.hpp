@@ -25,6 +25,7 @@ public:
 
 private:
 	int				_complete;
+	int				_parsed;
 	std::string		_plaintext;
 
 	std::string		_method;
@@ -36,8 +37,6 @@ private:
 
 	in_addr			_client_addr;
 
-	void		_parse();
-
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
 	
 	Queryparser ::Firstline _get_first_line() const;
@@ -48,7 +47,12 @@ public:
 
 	~Request();
 
+	void		parse();
+
+	void		append_plaintext(std::string const& buffer);
+
 	int			is_complete() const;
+	int			is_parsed() const;
 
 	std::string	get_location() const;
 	std::string	get_query() const;

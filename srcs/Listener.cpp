@@ -273,14 +273,14 @@ void	Listener::start_listener()
 					throw "WRONG"; // TODO: ERROR ?
 
 				std::cout << BRED"[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << RESET << std::endl;
-				Listener::map_is::iterator search = _requests.find(event_fd);
+				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
-					_requests.insert(Listener::pair_is(event_fd, std::string(buffer)));
+					_requests.insert(Listener::pair_ir(event_fd, Request(buffer, address.sin_addr)));
 					search = _requests.find(event_fd);
 				}
 				else
-					search->second += buffer;
+					search->second.append_plaintext(buffer);
 
 				if (size < PIPE_BUF)
 				{
@@ -289,7 +289,7 @@ void	Listener::start_listener()
 					std::cout << _RED << "[listener] Client address: "
 						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
 						<< RESET << std::endl;
-					_send(event_fd, Request(search->second, address.sin_addr));
+					_send(event_fd, search->second);
 					_requests.erase(event_fd);
 				}
 			}

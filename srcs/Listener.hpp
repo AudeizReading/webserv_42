@@ -24,15 +24,15 @@
 class Listener
 {
 public:
-	typedef std::map<int, std::string>			map_is;
-	typedef std::pair<int, std::string>			pair_is;
+	typedef std::map<int, Request>			map_ir;
+	typedef std::pair<int, Request>			pair_ir;
 
 private:
 	int						_fd;
 	int						_port;
 	int						_listen_backlog;
 	std::vector<Server>		_servers;
-	map_is					_requests;
+	map_ir					_requests;
 
 	void				_send(int fd, Request request);
 	const Server*		_get_matching_Server(Request const& req) const;
