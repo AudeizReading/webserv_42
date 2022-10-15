@@ -13,9 +13,9 @@
 #include "Response_4XX.hpp"
 
 #define _DEFINE_RESPONSE(_Name, _Page, _Status, _StatusCode) \
-		_Name::_Name(Request const& request, Server const& serv, Location const& location): Response(request, serv, location) \
+		_Name::_Name(Request const& request): Response(request) \
 		{ \
-			_content_path = serv.get_error_page(_StatusCode); \
+			_content_path = request.get_server()->get_error_page(_StatusCode); \
 			create(); \
 		} \
 		_Name::~_Name() { } \
@@ -30,10 +30,9 @@ _DEFINE_RESPONSE(Response_Internal_Server_Error,	"res/error/500.html", "500 Inte
 // ------------------------------------- Manual Definitions ------------------------------------- //
 // ============================================================================================== //
 
-Response_Method_Not_Allowed::Response_Method_Not_Allowed(Request const& request, Server const& serv,
-	Location const& location) : Response(request, serv, location)
+Response_Method_Not_Allowed::Response_Method_Not_Allowed(Request const& request) : Response(request)
 {
-	_content_path = serv.get_error_page(E_METHOD_NOT_ALLOWED);
+	_content_path = request.get_server()->get_error_page(E_METHOD_NOT_ALLOWED);
 	create();
 }
 Response_Method_Not_Allowed::~Response_Method_Not_Allowed()
@@ -43,5 +42,5 @@ Response_Method_Not_Allowed::~Response_Method_Not_Allowed()
 void	Response_Method_Not_Allowed::_init()
 {
 	_status = "405 Method Not Allowed";
-	_header.insert(Queryparser::pair_ss("Allow", _location->get_allowed_methods()));
+	_header.insert(Queryparser::pair_ss("Allow", _request->get_server_location()->get_allowed_methods()));
 }

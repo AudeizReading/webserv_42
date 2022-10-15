@@ -34,9 +34,11 @@ private:
 	std::vector<Server>		_servers;
 	map_ir					_requests;
 
-	void				_send(int fd, Request request);
-	const Server*		_get_matching_Server(Request const& req) const;
-	const Location&		_get_matching_Location(Request const& req, Server const& serv) const;
+	void				answer(int fd, Request &request);
+	void				bind_request(Request &request);
+
+	Server const*		get_matching_Server(Request const& req) const;
+	Location const*		get_matching_Location(Request const& req, Server const& serv) const;
 
 public:
 	template <class InputIt>

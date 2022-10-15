@@ -22,6 +22,8 @@
 #include <toml_parser.hpp>
 #include "Location.hpp"
 
+class Location;
+
 class Server
 {
 private:

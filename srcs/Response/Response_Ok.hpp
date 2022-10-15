@@ -20,7 +20,7 @@ protected:
 	virtual void _init();
 
 public:
-	Response_Ok(Request const& request, Server const& serv, Location const& location);
+	Response_Ok(Request const& request);
 
 	~Response_Ok();
 };

@@ -20,7 +20,7 @@
 #include "CGIManager.hpp"
 #include "Queryparser.hpp"
 
-Response::Response(Request const& request, Server const& server, Location const& location): _request(&request), _server(&server), _location(&location)
+Response::Response(Request const& request): _request(&request)
 {
 
 }
@@ -30,6 +30,12 @@ void Response::create()
 	std::string					ext;
 
 	_init();
+
+	if (!_request->get_server_location()->allows_method(_request->get_method()))
+	{
+		*this = Response_Method_Not_Allowed(*_request);
+		return ;
+	}
 
 	_content_type = "text/html";
 	if (_content_path != "" && _content == "")
@@ -43,7 +49,7 @@ void Response::create()
 		if (good && _content_path.find("/.", 0) != std::string::npos)
 		{
 			// On peut considérer que c'est un manque de sécu, de ne pas mettre 404 ici.
-			*this = Response_Forbidden(*_request, *_server, *_location);
+			*this = Response_Forbidden(*_request);
 			return ;
 		}
 		/*
@@ -53,7 +59,7 @@ void Response::create()
 			// CGI Handling
 			try 
 			{
-				CGIManager cgi(*_request, *_server, *_location);
+				CGIManager cgi(*_request, *_request->get_server(), *_request->get_server_location());
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
 				
@@ -63,7 +69,7 @@ void Response::create()
 			{
 				std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
-				*this = Response_Internal_Server_Error(*_request, *_server, *_location);
+				*this = Response_Internal_Server_Error(*_request);
 				return ;
 			}
 			std::cerr << "[CONTINUE] " << _content_path << std::endl;
@@ -87,7 +93,7 @@ void Response::create()
 		}
 		else
 		{
-			*this = Response_Not_Found(*_request, *_server, *_location);
+			*this = Response_Not_Found(*_request);
 			return ;
 		}
 	}
@@ -100,7 +106,7 @@ void Response::create()
 		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT";
 
 	_header.insert(Queryparser::pair_ss("Date", date.str()));
-	_header.insert(Queryparser::pair_ss("Server", _server->get_name()));
+	_header.insert(Queryparser::pair_ss("Server", _request->get_server()->get_name()));
 	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
 	std::stringstream	length;
 	length << _content.length();
@@ -165,7 +171,6 @@ Response	&Response::operator=(Response const &src)
 {
 	this->_plaintext	= src._plaintext;
 	this->_request		= src._request;
-	this->_location		= src._location;
 	this->_status		= src._status;
 	this->_content_path	= src._content_path;
 	this->_content_type	= src._content_type;

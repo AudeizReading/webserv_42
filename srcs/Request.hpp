@@ -17,6 +17,12 @@
 #include <netinet/in.h>
 #include "Queryparser.hpp"
 
+#include "Server.hpp"
+#include "Location.hpp"
+
+class Server;
+class Location;
+
 class Request
 {
 public:
@@ -26,6 +32,7 @@ public:
 private:
 	int				_complete;
 	int				_parsed;
+	int				_bind;
 	std::string		_plaintext;
 
 	std::string		_method;
@@ -34,6 +41,9 @@ private:
 	std::string		_content;
 
 	map_ss			_header;
+
+	const Server	*_server;
+	const Location	*_server_location;
 
 	in_addr			_client_addr;
 
@@ -47,21 +57,30 @@ public:
 
 	~Request();
 
-	void		parse();
+	void			parse();
 
-	void		append_plaintext(std::string const& buffer);
+	void			append_plaintext(std::string const& buffer);
 
-	int			is_complete() const;
-	int			is_parsed() const;
+	int				is_complete() const;
+	int				is_parsed() const;
+	int				is_bind() const;
 
-	std::string	get_location() const;
-	std::string	get_query() const;
-	std::string	get_content() const;
-	std::string	get_method() const;
-	std::string	get_http_version() const;
+	void			binded();
+
+	std::string		get_location() const;
+	std::string		get_query() const;
+	std::string		get_content() const;
+	std::string		get_method() const;
+	std::string		get_http_version() const;
+
+	Server const*	get_server() const;
+	void			set_server(Server const* src);
+
+	Location const*	get_server_location() const;
+	void			set_server_location(Location const* src);
 
 	map_ss &		get_header();
 	map_ss const&	get_header() const;
 
-	in_addr		get_client_addr() const;
+	in_addr			get_client_addr() const;
 };

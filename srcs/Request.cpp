@@ -28,6 +28,8 @@
 Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0), _parsed(0),
 	_plaintext(""), _client_addr(client_in_addr)
 {
+	_server = NULL;
+	_server_location = NULL;
 	append_plaintext(plaintext);
 }
 
@@ -145,6 +147,16 @@ int	Request::is_parsed() const
 	return (_parsed != 0);
 }
 
+int	Request::is_bind() const
+{
+	return (_bind != 0);
+}
+
+void	Request::binded()
+{
+	_bind = 1;
+}
+
 std::string	Request::get_location() const
 {
 	return (_location);
@@ -160,16 +172,6 @@ std::string	Request::get_content() const
 	return (_content);
 }
 
-Request::map_ss&	Request::get_header()
-{
-	return (_header);
-}
-
-Request::map_ss const&	Request::get_header() const
-{
-	return (_header);
-}
-
 std::string	Request::get_method() const
 {
 	return (_method);
@@ -180,6 +182,40 @@ std::string	Request::get_http_version() const
 	Queryparser::Firstline	firstline = this->_get_first_line();
 
 	return (firstline.http_version);
+}
+
+Server const*	Request::get_server() const
+{
+	if (!_server)
+		throw std::runtime_error("Server request not binded!");
+	return (_server);
+}
+
+void	Request::set_server(Server const* src)
+{
+	_server = src;
+}
+
+Location const*	Request::get_server_location() const
+{
+	if (!_server_location)
+		throw std::runtime_error("Server location request not binded!");
+	return (_server_location);
+}
+
+void	Request::set_server_location(Location const* src)
+{
+	_server_location = src;
+}
+
+Request::map_ss&	Request::get_header()
+{
+	return (_header);
+}
+
+Request::map_ss const&	Request::get_header() const
+{
+	return (_header);
 }
 
 in_addr		Request::get_client_addr() const

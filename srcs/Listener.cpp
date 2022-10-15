@@ -36,7 +36,7 @@
 #define I_LOVE_ICEBERG 1
 
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
-const Server*	Listener::_get_matching_Server(Request const& req) const
+Server const*	Listener::get_matching_Server(Request const& req) const
 {
 	std::vector<const Server*>	candidates; // Servers that match the given client address
 
@@ -65,7 +65,7 @@ const Server*	Listener::_get_matching_Server(Request const& req) const
 }
 
 // TESTME !!!
-Location const&	Listener::_get_matching_Location(Request const& req, Server const& serv) const
+Location const*	Listener::get_matching_Location(Request const& req, Server const& serv) const
 {
 	std::string req_location_URI = req.get_location();
 	
@@ -81,10 +81,10 @@ Location const&	Listener::_get_matching_Location(Request const& req, Server cons
 		if (req_location_URI.find(it->get_URI()) != std::string::npos)
 			target = &*(it);
 	}
-	return *target;
+	return target;
 }
 
-void	Listener::_send(int fd, Request request)
+void	Listener::answer(int fd, Request &request)
 {
 	std::cout << "[listener] recv socket#" << fd << std::endl;
 	Response					*response;
@@ -93,35 +93,16 @@ void	Listener::_send(int fd, Request request)
 
 	if (!request.is_complete())
 	{
-		response = new Response_Bad_Request(request, _servers[0], _servers[0].get_locations()[0]); // TESTME
+		request.set_server(&_servers[0]);
+		request.set_server_location(&_servers[0].get_locations()[0]);
+		response = new Response_Bad_Request(request); // TESTME
 	}
 	else
 	{
 		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 			std::cout << "[listener] socket partial#" << fd << std::endl;
-		
-		const Server	*server = _get_matching_Server(request);
-		if (server == NULL)	// No server found: forbidden access.
-		{
-			response = new Response_Forbidden(request, _servers[0], _servers[0].get_locations()[0]);
-			send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
-			delete response;
-			close(fd);
-			return ;
-		}
-		// FIXME: Forbidden function inet_ntoa
-		std::cerr << "[listener] matched server "
-			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << ' '
-			<< "with first server_name: " << server->get_server_names()[0] << std::endl;
 
-		const Location&	location = _get_matching_Location(request, *server);
-
-		std::cerr << "[listener] matched location: " << location.get_URI() << std::endl;
-
-		if (!location.allows_method(request.get_method()))
-			response = new Response_Method_Not_Allowed(request, *server, location);
-		else
-			response = new Response_Ok(request, *server, location);
+		response = new Response_Ok(request);
 
 		std::cerr << "\e[30;48;5;245m\n";
 		if (response->get_ctype().rfind("text/", 0) == 0)
@@ -146,6 +127,24 @@ void	Listener::_send(int fd, Request request)
 
 	std::cout << "[listener] close socket#" << fd << std::endl;
 	close(fd);
+}
+
+void	Listener::bind_request(Request &request)
+{
+	const Server	*server = get_matching_Server(request);
+	if (server != NULL)
+	{
+		// FIXME: Forbidden function inet_ntoa
+		std::cerr << "[listener] matched server "
+			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << ' '
+			<< "with first server_name: " << server->get_server_names()[0] << std::endl;
+		request.set_server(server);
+
+		const Location	*location = get_matching_Location(request, *server);
+		std::cerr << "[listener] matched location: " << location->get_URI() << std::endl;
+		request.set_server_location(location);
+	}
+	request.binded();
 }
 
 void	Listener::start_listener()
@@ -280,7 +279,25 @@ void	Listener::start_listener()
 					search = _requests.find(event_fd);
 				}
 				else
+				{
 					search->second.append_plaintext(buffer);
+				}
+
+				Request &request = search->second;
+				if (!request.is_bind() && request.is_complete())
+				{
+					bind_request(request);
+					if (request.get_server() == NULL)	// No server found: forbidden access.
+					{ // TODO: Paul need to fix this
+						request.set_server(&_servers[0]);
+						request.set_server_location(&_servers[0].get_locations()[0]);
+						Response *response = new Response_Forbidden(request);
+						send(event_fd, response->c_str(), response->length(), MSG_DONTWAIT);
+						delete response;
+						close(event_fd);
+						return ;
+					}
+				}
 
 				if (size < PIPE_BUF)
 				{
@@ -289,7 +306,7 @@ void	Listener::start_listener()
 					std::cout << _RED << "[listener] Client address: "
 						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
 						<< RESET << std::endl;
-					_send(event_fd, search->second);
+					answer(event_fd, request);
 					_requests.erase(event_fd);
 				}
 			}

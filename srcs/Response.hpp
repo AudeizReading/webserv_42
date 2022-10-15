@@ -13,8 +13,6 @@
 #pragma once
 
 #include "Request.hpp"
-#include "Server.hpp"
-#include "Location.hpp"
 #include <http_error_codes.hpp>
 
 class Response
@@ -28,8 +26,6 @@ private:
 
 protected:
 	const Request*		_request;
-	const Server*		_server;
-	const Location*		_location;
 	std::string			_status;
 	std::string			_content_path;
 	std::string			_content_type;
@@ -39,7 +35,7 @@ protected:
 	virtual void _init() = 0;
 
 public:
-	Response(Request const& request, Server const& server, Location const& location);
+	Response(Request const& request);
 
 	virtual ~Response();
 
