@@ -37,7 +37,7 @@ void Response_Ok::_init()
 		moi = Response_Not_Found(*_request, *_server, *_location);
 		return ;
 	}
-	_content_path = _location->get_path();
+	_content_path = _location->get_root();
 	if (_content_path.back() != '/')
 		_content_path += '/';
 

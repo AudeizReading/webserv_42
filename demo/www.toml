@@ -46,6 +46,11 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		index = "img/issberg.png"
 
 		[[http.server.location]]
+		URI = "foo/bar/fizz"
+		root = "./demo/www"
+		index = "index.html"
+
+		[[http.server.location]]
 		URI = "/something_old"
 		root = "/var/www"
 		redirect = "./demo/www"					# Optional. Defaults to "", i.e. no redirect.
@@ -58,7 +63,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		URI = "/"								# Mandatory parameter.
 		root = "./demo/www"						# Mandatory parameter.
 		index = "index.html"					# Optional. Defaults to "index.html".
-		allowed_methods = ["POST", "HEAD"]		# Optional. Defaults to allow POST, GET, and DELETE.
+		# allowed_methods = ["POST", "HEAD"]		# Optional. Defaults to allow POST, GET, and DELETE.
 		dir_listing = true						# Optional. Defaults to false.
 		# include = ["fast_cgi.toml"]
 
