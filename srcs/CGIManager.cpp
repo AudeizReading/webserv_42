@@ -166,7 +166,11 @@ void				CGIManager::_launchExec() const
 {
 	// do not forget to check the PATH rights (only exec has to be set)
 	// what about arguments for the script perl what are they? -> they are the filename to be upload if I have understand well
-	if (::execl(::getenv("SCRIPT_NAME"), ::getenv("SCRIPT_NAME"), NULL) == -1)
+
+	// Si on fait ca comme ca, ca veut pas s'exec, j'ai une erreur operation not permitted, mais dans l'ideal pour un multi cgi faudrait passer l'interpreteur a la place du path de perl
+//	if (::execl("/usr/bin/perl", env["SCRIPT_NAME"].c_str(), NULL) == -1)
+	CGIEnviron::map_ss	env = this->_environ.getEnv();
+	if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), env["PATH_INFO"].c_str(), NULL) == -1)
 	{
 		exit(errno);
 	}
