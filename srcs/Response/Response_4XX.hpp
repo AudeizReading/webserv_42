@@ -10,6 +10,8 @@
 /*  */
 /*  */
 
+#pragma once
+
 #include "../Response.hpp"
 
 #define _PROTO_RESPONSE(_Name) \

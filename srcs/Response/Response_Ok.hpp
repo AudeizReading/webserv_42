@@ -10,6 +10,8 @@
 /*  */
 /*  */
 
+#pragma once
+
 #include "../Response.hpp"
 
 class Response_Ok: public Response
