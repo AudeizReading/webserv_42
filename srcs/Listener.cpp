@@ -165,9 +165,10 @@ void	Listener::start_listener()
 	*
 	* doc: https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
 	*/
-	unsigned re_use_addr = 1;
-	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
-		throw std::runtime_error(strerror(errno));
+	// TODO: Pas à faire ? ==> Comportement indéterminé !
+	// unsigned re_use_addr = 1;
+	// if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
+	// 	throw std::runtime_error(strerror(errno));
 
 	/*
 	* En fonction du premier argument de socket, la doc nous guide vers sockaddr_in
