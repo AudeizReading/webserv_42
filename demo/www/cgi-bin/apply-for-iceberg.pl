@@ -3,6 +3,7 @@
 # --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
+	&cgi_print_html_double_elt("p", "iCa passe ou bien?");
 	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
 	# check for upload file
 	#  $buffer = $ENV{'QUERY_STRING'};
@@ -67,10 +68,25 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	&cgi_print_html_double_elt("h1", "Résultat de la requete GET");
 	&cgi_print_html_double_elt("h2", $output_mess);
 	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
+	# il faut que ca recup le truc
 	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
 	print STDOUT "\t<ul>\r\n";
 	&cgi_print_array_html(%_GET);
+	&cgi_print_array_html(%ENV);
 	print STDOUT "\t</ul>\r\n";
+	print STDOUT "$ENV{'PATH_INFO'}\r\n";
+	if (defined($ENV{'PATH_INFO'})) # Is there a path_info where searching datas ?
+	{
+		# attention PATH_INFO est bloquer lors des requetes GET cf upload.html
+		$directory = $ENV{'PATH_TRANSLATED'};
+
+		opendir(DIRECTORY_FD, $directory) || die "$ENV{'PATH_TRANSLATED'} couldn't be opened: $!";
+		@FILES = grep(/\.png|jp.g$/i, readdir DIRECTORY_FD);
+		print STDOUT "\t<ul>\r\n";
+		&cgi_print_array_html(%FILES);
+		print STDOUT "\t</ul>\r\n";
+		closedir(DIRECTORY_FD);
+	}
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
@@ -132,7 +148,7 @@ sub cgi_print_html_head
 
 sub cgi_print_html_body_begin
 {
-	print STDOUT "<body bgcolor=\"#FFBFFF\">\r\n";
+	print STDOUT "<body bgcolor=\"lightblue\">\r\n";
 }
 
 sub cgi_print_html_end
