@@ -35,12 +35,23 @@
 
 #define I_LOVE_ICEBERG 1
 
+Listener::Listener(int listen_port, int listen_backlog,
+		vector_s::const_iterator servers_first,
+		vector_s::const_iterator servers_last
+	): _fd(INT_MIN), _port(listen_port), _listen_backlog(listen_backlog)
+{
+	_servers.assign(servers_first, servers_last);
+	// assert(_port >= 0 && _port <= 65535);
+	if (_port < 0 || _port > 65535)
+		throw std::runtime_error("Cannot create Listener: illegal port number");
+}
+
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
 Server const*	Listener::get_matching_Server(Request const& req) const
 {
 	std::vector<const Server*>	candidates; // Servers that match the given client address
 
-	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
+	for (vector_s::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
 	{
 		if (it->get_listen_addr().s_addr == 0 // Means 0.0.0.0, i.e. listen to everyone
 			|| it->get_listen_addr().s_addr == req.get_client_addr().s_addr)
