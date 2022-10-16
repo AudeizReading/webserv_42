@@ -73,7 +73,7 @@ void				CGIEnviron::_setEnv()
 	std::string	root = _location.get_root() + '/'; 
 	//std::string	root = _location.get_root() + _location.URI();
 	
-	std::string	server_name = "TESTME";  // -> @pbremond J'ai besoin du hostname du server (dans mon env perso, je ne peux pas recup la valeur depuis HOST, car deja faudrait que je la getenv et hsmits nous a dit que ct pas une fonction fiable, plus dedans j'ai la valeur localhost:4242, c'est pas ce qu'on veut, on l'avait apl Groenland, SERVER_NAME@ip_server, voila quoi correspond le SERVER_NAME dont j'ai besoin
+	std::string	server_name = _header["Host"];
 
 	std::string	port = _server.get_port_str();
 
