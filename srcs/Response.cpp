@@ -110,8 +110,8 @@ void Response::create()
 	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
 	std::stringstream	length;
 	length << _content.length();
-	_header.insert(Queryparser::pair_ss("Cache-Length", length.str()));
-	_header.insert(Queryparser::pair_ss("Cache-Type", _content_type));
+	_header.insert(Queryparser::pair_ss("Content-Length", length.str()));
+	_header.insert(Queryparser::pair_ss("Content-Type", _content_type));
 
 	if (ext == "ico" || ext == "png" || ext == "jpg") // Mise en cache
 	{
