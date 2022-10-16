@@ -29,9 +29,8 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		# root = "./demo/www"
 
 	[[http.server]]							# Is first server for this port, so is default.
-	listen_port = 4242
-	server_name = ["c4r2p6.42nice.fr", "www.c4r2p6.42nice.fr",
-					"c4r2p6"]
+	listen_port = 4243
+	listen_addr = "127.0.0.1"
 
 		[[http.server.location]]
 		URI = "/"								# Mandatory parameter.
@@ -62,7 +61,6 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 	[[http.server]]
 	listen_port = 4242
-	server_name = ["localhost"]
 
 		[[http.server.location]]
 		URI = "/"								# Mandatory parameter.
@@ -88,7 +86,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		redirect = "./demo/www"					# Optional. Defaults to "", i.e. no redirect.
 
 	[[http.server]]
-	listen_port = 4242
+	listen_port = 4244
 	# This server has no server_name, so it's defaulted to [""].
 	# Instead of the default server, this server should thus
 	# match all requests with no "Host" field.
@@ -102,24 +100,28 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		index = "index.html"
 
 	[[http.server]]
+	name = "blue"
 	listen_port = 8080
 	server_name = ["localhost"]
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/blue"
 	[[http.server]]
+	name = "green"
 	listen_port = 8080
 	server_name = ["127.0.0.1"]
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/green"
 	[[http.server]]
+	name = "red"
 	listen_port = 8080
 	server_name = ["0.0.0.0"]
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/red"
 	[[http.server]]
+	name = "black"
 	listen_port = 8080
 		[[http.server.location]]
 		URI = "/"
