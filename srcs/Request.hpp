@@ -30,9 +30,9 @@ public:
 	typedef std::pair<std::string, std::string>			pair_ss;
 
 private:
-	int				_complete;
-	int				_parsed;
-	int				_bind;
+	bool			_complete;
+	bool			_parsed;
+	bool			_bind;
 	std::string		_plaintext;
 
 	std::string		_method;
@@ -61,9 +61,9 @@ public:
 
 	void			append_plaintext(std::string const& buffer);
 
-	int				is_complete() const;
-	int				is_parsed() const;
-	int				is_bind() const;
+	bool			is_complete() const;
+	bool			is_parsed() const;
+	bool			is_bind() const;
 
 	void			binded();
 

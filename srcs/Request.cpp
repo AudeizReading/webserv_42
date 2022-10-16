@@ -137,19 +137,19 @@ Request::~Request()
 
 }
 
-int	Request::is_complete() const
+bool	Request::is_complete() const
 {
-	return (_complete != 0);
+	return (_complete);
 }
 
-int	Request::is_parsed() const
+bool	Request::is_parsed() const
 {
-	return (_parsed != 0);
+	return (_parsed);
 }
 
-int	Request::is_bind() const
+bool	Request::is_bind() const
 {
-	return (_bind != 0);
+	return (_bind);
 }
 
 void	Request::binded()
