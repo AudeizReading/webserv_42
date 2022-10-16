@@ -56,7 +56,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 {
 	# il faut aussi recup PATH_INFO dans le cas d'une req GET
-    $output_mess="QUERY_STRING (Methode GET)";
+	# $output_mess="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
 	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
 
@@ -65,13 +65,38 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
 	&cgi_print_html_body_begin();
-	&cgi_print_html_double_elt("h1", "Résultat de la requete GET");
-	&cgi_print_html_double_elt("h2", $output_mess);
-	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
-	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
-	print STDOUT "\t<ul>\r\n";
-	&cgi_print_array_html(%_GET);
-	print STDOUT "\t</ul>\r\n";
+	&cgi_print_html_double_elt("h1", "Notre collection d'icebergs");
+	#	&cgi_print_html_double_elt("h2", $output_mess);
+	#	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
+	# il faut que ca recup le truc
+	#	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
+	#	print STDOUT "\t<ul>\r\n";
+	#	&cgi_print_array_html(%_GET);
+	#	&cgi_print_array_html(%ENV);
+	#	print STDOUT "\t</ul>\r\n";
+	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
+	{
+		# attention PATH_INFO est bloquer lors des requetes GET cf upload.html
+		$directory = $ENV{'PATH_TRANSLATED'};
+		if (defined($_GET{'path_info'}))
+		{
+			# ./demo/www//upload -> resultat obtenu, et suffisant pour opendir
+			$directory = $ENV{'PATH_TRANSLATED'}.$_GET{'path_info'};
+		}
+		
+		$absolute_path = $ENV{'PATH_TRANSLATED'}."cgi-bin/".$_GET{'path_info'};
+		opendir(DIRECTORY_FD, $directory) || die "$directory couldn't be opened: $!";
+		@FILES = grep(/\.png|jpe?g$/i, readdir DIRECTORY_FD);
+		print STDOUT "\t<ul>\r\n";
+		foreach $file (@FILES)
+		{
+			# ici mettre path /upload/$file pour que ca route derriere le cgi
+			# faire un systeme de pagination si trop de photos
+			print "<img src=\"$_GET{'path_info'}/$file\"/>";
+		}
+		print STDOUT "\t</ul>\r\n";
+		closedir(DIRECTORY_FD);
+	}
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
@@ -79,7 +104,6 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 else # other methods that we do not handle
 {
 	&cgi_response_header(403, "Forbidden");
-	print STDOUT "Hello ".@_;
 	exit 1;
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
@@ -134,7 +158,7 @@ sub cgi_print_html_head
 
 sub cgi_print_html_body_begin
 {
-	print STDOUT "<body bgcolor=\"#FFBFFF\">\r\n";
+	print STDOUT "<body bgcolor=\"lightblue\">\r\n";
 }
 
 sub cgi_print_html_end

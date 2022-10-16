@@ -76,4 +76,5 @@ class CGIEnviron {
 		~CGIEnviron(void);
 
 		map_ss		getEnv() const;
+		std::string	getBoundary()	const;
 };
