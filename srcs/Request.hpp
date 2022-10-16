@@ -72,12 +72,15 @@ public:
 	std::string		get_content() const;
 	std::string		get_method() const;
 	std::string		get_http_version() const;
+	std::string		get_buffer() const;
 
 	Server const*	get_server() const;
 	void			set_server(Server const* src);
 
 	Location const*	get_server_location() const;
 	void			set_server_location(Location const* src);
+
+	void			set_s_sloc(Server const* serv, Location const* sloc);
 
 	map_ss &		get_header();
 	map_ss const&	get_header() const;

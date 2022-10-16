@@ -12,7 +12,7 @@
 
 #pragma once
 
-#define SUPPORTED_ERROR_CODES	{ "400", "403", "404", "405", "500" }
+#define SUPPORTED_ERROR_CODES	{ "400", "403", "404", "405", "413", "431", "500" }
 
 #define E_BAD_REQUEST			400
 #define E_FORBIDDEN				403

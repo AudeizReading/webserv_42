@@ -18,6 +18,7 @@
 
 #include "Server.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 
 #define DEFAULT_PORT	5000
 #define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
@@ -39,6 +40,7 @@ private:
 	map_ir					_requests;
 
 	void				answer(int fd, Request &request);
+	void				_send(int fd, Response* response);
 	void				bind_request(Request &request);
 
 	Server const*		get_matching_Server(Request const& req) const;

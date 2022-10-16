@@ -12,9 +12,10 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 	[[http.server]]
 	listen_port = 8081						# Mandatory parameter.
 	listen_addr = "127.0.0.1"				# Optional. Defaults to "0.0.0.0", meaning accepts requests from anyone.
-	server_name = ["localhost"]				# Optional. Defaults to [""], i.e. no "Host" field.
-	client_max_body_size = 1048576			# Optional. Defaults to 1 MiB (1048576 bytes).
-	# listen_backlog = 32						# Optional. Defaults to 128.
+	#server_name = ["localhost"]				# Optional. Defaults to [""], i.e. no "Host" field.
+	client_max_body_size = 41943040			# 40Mo
+	# client_max_body_size = 4194304		# Optional. Defaults to 4 MiB (4194304 bytes).
+	# listen_backlog = 32					# Optional. Defaults to 128.
 
 	error_404 = "test/test_page.html"
 	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/XXX.html".
@@ -31,6 +32,9 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 	[[http.server]]							# Is first server for this port, so is default.
 	listen_port = 4243
 	listen_addr = "127.0.0.1"
+	client_max_body_size = 41943040
+	#server_name = ["c4r2p6.42nice.fr", "www.c4r2p6.42nice.fr",
+	#				"c4r2p6"], il faut mettre l'ip bind à c4r2p6
 
 		[[http.server.location]]
 		URI = "/"								# Mandatory parameter.
@@ -61,6 +65,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 	[[http.server]]
 	listen_port = 4242
+	client_max_body_size = 41943040
 
 		[[http.server.location]]
 		URI = "/"								# Mandatory parameter.

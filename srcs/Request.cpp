@@ -184,6 +184,11 @@ std::string	Request::get_http_version() const
 	return (firstline.http_version);
 }
 
+std::string	Request::get_buffer() const
+{
+	return (_plaintext);
+}
+
 Server const*	Request::get_server() const
 {
 	if (!_server)
@@ -206,6 +211,12 @@ Location const*	Request::get_server_location() const
 void	Request::set_server_location(Location const* src)
 {
 	_server_location = src;
+}
+
+void	Request::set_s_sloc(Server const* serv, Location const* sloc)
+{
+	set_server(serv);
+	set_server_location(sloc);
 }
 
 Request::map_ss&	Request::get_header()

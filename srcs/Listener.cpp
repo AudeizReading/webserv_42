@@ -25,8 +25,6 @@
 
 #include "webserv.hpp"
 #include "Listener.hpp"
-#include "Request.hpp"
-#include "Response.hpp"
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
 
@@ -34,6 +32,8 @@
 #include <cassert>
 
 #define I_LOVE_ICEBERG 1
+
+#define MAX_REQ_HEADER_BUFFER 24576
 
 Listener::Listener(std::string const& listen_addr, int listen_port, int listen_backlog,
 		vector_s::const_iterator servers_first,
@@ -99,11 +99,7 @@ void	Listener::answer(int fd, Request &request)
 	std::string					test[fd];
 
 	if (!request.is_complete())
-	{
-		request.set_server(&_servers[0]);
-		request.set_server_location(&_servers[0].get_locations()[0]);
-		response = new Response_Bad_Request(request); // TESTME
-	}
+		response = new Response_Bad_Request(request);
 	else
 	{
 		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
@@ -128,11 +124,22 @@ void	Listener::answer(int fd, Request &request)
 
 	// TODO: What if send() fails ? Or only sends some of the data ?
 	// Aparently the subject forbids checking errno here...
-	send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
+	_send(fd, response);
+}
+
+void	Listener::_send(int fd, Response* response)
+{
+	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
+
+	int size = send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
+	if (size < response->length())
+		std::cout << "THIS APPPEND OMG, TELL GUILLAUME " << size << "/" << response->length()
+			<< "OMG\nOMG\nOMG\nOMG\nOMG\n" << std::endl;
 
 	delete response;
 
 	std::cout << "[listener] close socket#" << fd << std::endl;
+	_requests.erase(fd);
 	close(fd);
 }
 
@@ -287,6 +294,7 @@ void	Listener::start_listener()
 				{
 					_requests.insert(Listener::pair_ir(event_fd, Request(buffer, address.sin_addr)));
 					search = _requests.find(event_fd);
+					search->second.set_s_sloc(&_servers[0], &_servers[0].get_locations()[0]);
 				}
 				else
 				{
@@ -294,19 +302,32 @@ void	Listener::start_listener()
 				}
 
 				Request &request = search->second;
-				if (!request.is_bind() && request.is_complete())
+				if (request.is_parsed())
 				{
-					bind_request(request);
-					if (request.get_server() == NULL)
+					if (!request.is_complete())
 					{
-						request.set_server(&_servers[0]);
-						request.set_server_location(&_servers[0].get_locations()[0]);
-						Response *response = new Response_Method_Not_Allowed(request);
-						send(event_fd, response->c_str(), response->length(), MSG_DONTWAIT);
-						delete response;
-						close(event_fd);
-						return ;
+						_send(event_fd, new Response_Bad_Request(request));
+						continue;
 					}
+					else if (!request.is_bind())
+					{
+						bind_request(request);
+						if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
+						{
+							_send(event_fd, new Response_Internal_Server_Error(request));
+							continue;
+						}
+					}
+					if (request.get_buffer().length() > request.get_server()->get_max_body_size())
+					{
+						_send(event_fd, new Response_Payload_Too_Large(request));
+						continue;
+					}
+				}
+				else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
+				{
+					_send(event_fd, new Response_Request_Header_Too_Large(request));
+					continue;
 				}
 
 				if (size < PIPE_BUF)
@@ -317,7 +338,6 @@ void	Listener::start_listener()
 						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
 						<< RESET << std::endl;
 					answer(event_fd, request);
-					_requests.erase(event_fd);
 				}
 			}
 			else
