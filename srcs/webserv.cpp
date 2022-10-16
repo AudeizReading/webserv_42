@@ -20,10 +20,12 @@
 #include <stdio.h>
 #include <pthread.h>
 
+int looking_for_iceberg = 1;
+
 void signal_handler(int signal)
 {
 	(void) signal;
-	exit(0);
+	looking_for_iceberg = 0;
 }
 
 static void	*init_thread(void *listener)
@@ -61,7 +63,7 @@ int	webserv(int argc, char *argv[])
 		pthread_detach(threads[i]);
 	}
 
-	while (1) {}
+	while (looking_for_iceberg) {}
 
 	return (0);
 }
