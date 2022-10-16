@@ -12,6 +12,20 @@
 
 #include "Server.hpp"
 
+Server::Server(std::string const& name, std::string const& listen_address, unsigned int max_body_size, int port,
+		std::pair<vector_str::iterator, vector_str::iterator> serv_names, std::vector<Location> locations,
+		std::map<int, std::string> error_pages)
+: _name(name), _max_body_size(max_body_size), _port(port), _locations(locations), _error_pages(error_pages)
+{
+	_server_names.assign(serv_names.first, serv_names.second);
+
+	// Checking this is necessary because inet_addr() is a depreciated piece of... cake.
+	// See https://linux.die.net/man/3/inet_addr
+	_listen_addr.s_addr = inet_addr(listen_address.c_str());
+	if (_listen_addr.s_addr == INADDR_NONE && listen_address != "255.255.255.255")
+		throw std::runtime_error("Invalid listen_addr IP in server block");
+}
+
 Server::~Server()
 {
 }
@@ -49,7 +63,8 @@ std::vector<Location> const&	Server::get_locations() const
 {
 	return _locations;
 }
-std::vector<std::string> const&	Server::get_server_names() const
+
+Server::vector_str const&	Server::get_server_names() const
 {
 	return _server_names;
 }
