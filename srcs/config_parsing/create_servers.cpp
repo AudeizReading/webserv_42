@@ -120,8 +120,8 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 			Server(
 				it->at_or("name",					TOML::make_string("Groenland"))	.Str(),
 				it->at_or("listen_addr",			TOML::make_string("0.0.0.0"))	.Str(),
-				it->at_or("client_max_body_size",	TOML::make_int(1048576))		.Int(),
 				(*it)["listen_port"].Int(),
+				it->at_or("client_max_body_size",	TOML::make_int(1048576))		.Int(),
 				std::make_pair(server_names.begin(), server_names.end()),
 				_get_locations_from_server((*it)["location"].Array()), // "location" is guaranteed to exist at this point
 				_get_error_pages(*it)
@@ -157,10 +157,9 @@ std::vector<Listener>	create_Listeners(TOML::Document const& conf)
 	// Create a Listener for each different port in servers
 	for (std::vector<Server>::const_iterator it = servers.begin(); it != servers.end();)
 	{
-		const int	port = it->get_port();
 		std::vector<Server>::const_iterator	different_port
 			= std::find_first_of(it, VEC_CEND(Server, servers), it, it + 1, _Server_different_port);
-		listeners.push_back(Listener(port, LISTEN_BACKLOG, it, different_port));
+		listeners.push_back(Listener(it->get_addr(), it->get_port(), LISTEN_BACKLOG, it, different_port));
 		it = different_port;
 	}
 	return listeners;

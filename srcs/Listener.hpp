@@ -32,6 +32,7 @@ public:
 
 private:
 	int						_fd;
+	std::string				_addr; 
 	int						_port;
 	int						_listen_backlog;
 	vector_s				_servers;
@@ -44,7 +45,7 @@ private:
 	Location const*		get_matching_Location(Request const& req, Server const& serv) const;
 
 public:
-	Listener(int listen_port, int listen_backlog, vector_s::const_iterator servers_first, vector_s::const_iterator servers_last);
+	Listener(std::string const& listen_addr, int listen_port, int listen_backlog, vector_s::const_iterator servers_first, vector_s::const_iterator servers_last);
 
 	void	start_listener();
 

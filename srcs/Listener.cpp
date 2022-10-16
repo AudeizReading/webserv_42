@@ -35,42 +35,38 @@
 
 #define I_LOVE_ICEBERG 1
 
-Listener::Listener(int listen_port, int listen_backlog,
+Listener::Listener(std::string const& listen_addr, int listen_port, int listen_backlog,
 		vector_s::const_iterator servers_first,
 		vector_s::const_iterator servers_last
-	): _fd(INT_MIN), _port(listen_port), _listen_backlog(listen_backlog)
+	): _fd(INT_MIN), _addr(listen_addr), _port(listen_port), _listen_backlog(listen_backlog)
 {
 	_servers.assign(servers_first, servers_last);
+	for (vector_s::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
+	{
+		if (inet_addr(_addr.c_str()) != inet_addr(it->get_addr().c_str()))
+			throw std::runtime_error("Cannot create Listener: port is binded with a different address");
+	}
+	if (inet_addr(_addr.c_str()) < 0)
+		throw std::runtime_error("Cannot create Listener: invalid address");
 	// assert(_port >= 0 && _port <= 65535);
 	if (_port < 0 || _port > 65535)
-		throw std::runtime_error("Cannot create Listener: illegal port number");
+		throw std::runtime_error("Cannot create Listener: invalid port number");
 }
 
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
 Server const*	Listener::get_matching_Server(Request const& req) const
 {
-	std::vector<const Server*>	candidates; // Servers that match the given client address
-
-	for (vector_s::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
-	{
-		if (it->get_listen_addr().s_addr == 0 // Means 0.0.0.0, i.e. listen to everyone
-			|| it->get_listen_addr().s_addr == req.get_client_addr().s_addr)
-			candidates.push_back(&(*it));
-	}
-	if (candidates.empty())
-		return NULL;
-
 	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
 	std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
 	if (host.find(':') != std::string::npos)
 		host.erase(host.find(':'));
 
 	// Go through candidate servers, and find the one with the matching server_name
-	const Server	*target = candidates.front(); // If no server_name matches, get the first server
-	for (std::vector<const Server*>::iterator it = candidates.begin(); it != candidates.end(); ++it)
+	Server const	*target = &*_servers.begin(); // If no server_name matches, get the first server
+	for (vector_s::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
 	{
-		if ((*it)->has_server_name(host)) // Should I break here ?
-			target = *it;
+		if (it->has_server_name(host)) // Should I break here ?
+			target = &*it;
 	}
 	return target;
 }
@@ -145,9 +141,8 @@ void	Listener::bind_request(Request &request)
 	const Server	*server = get_matching_Server(request);
 	if (server != NULL)
 	{
-		// FIXME: Forbidden function inet_ntoa
 		std::cerr << "[listener] matched server "
-			<< inet_ntoa(server->get_listen_addr()) << ':' << server->get_port() << ' '
+			<< server->get_addr() << ':' << server->get_port() << ' '
 			<< "with first server_name: " << server->get_server_names()[0] << std::endl;
 		request.set_server(server);
 
@@ -203,13 +198,11 @@ void	Listener::start_listener()
 
 	address.sin_family = AF_INET;
 	address.sin_port = htons(_port);
-	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_addr.s_addr = inet_addr(_addr.c_str());
 
 	std::cout << "[listener] bind socket#" << _fd << " to port " << _port << std::endl;
 	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0)
 		throw std::runtime_error(strerror(errno));
-	// NOTE: @gphilipp sizeof() is a compile time macro, there's no need to create a variable
-	// containing its return value
 
 	std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
 	if (listen(_fd, _listen_backlog) < 0)
@@ -304,11 +297,11 @@ void	Listener::start_listener()
 				if (!request.is_bind() && request.is_complete())
 				{
 					bind_request(request);
-					if (request.get_server() == NULL)	// No server found: forbidden access.
-					{ // TODO: Paul need to fix this
+					if (request.get_server() == NULL)
+					{
 						request.set_server(&_servers[0]);
 						request.set_server_location(&_servers[0].get_locations()[0]);
-						Response *response = new Response_Forbidden(request);
+						Response *response = new Response_Method_Not_Allowed(request);
 						send(event_fd, response->c_str(), response->length(), MSG_DONTWAIT);
 						delete response;
 						close(event_fd);
