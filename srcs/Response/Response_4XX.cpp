@@ -45,5 +45,5 @@ Response_Method_Not_Allowed::~Response_Method_Not_Allowed()
 void	Response_Method_Not_Allowed::_init()
 {
 	_status = "405 Method Not Allowed";
-	_header.insert(Queryparser::pair_ss("Allow", _request->get_server_location()->get_allowed_methods()));
+	_header.insert(Response::pair_ss("Allow", _request->get_server_location()->get_allowed_methods()));
 }

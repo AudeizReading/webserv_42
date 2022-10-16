@@ -76,6 +76,10 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		# include = ["fast_cgi.toml"]
 
 		[[http.server.location]]
+		URI = "/perdu"
+		redirect = "https://perdu.com/"
+
+		[[http.server.location]]
 		URI = "/img"							# Points to /var/www/img, see NGINX doc
 		root = "./demo/www/img"
 		index = "issberg.png"

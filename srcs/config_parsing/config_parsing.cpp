@@ -96,9 +96,12 @@ static void	_location_fields_autoformat(TOML::Value::array_type& servers)
 			if ((*j)["URI"].Str().empty())
 				(*j)["URI"].Str() = "/";
 			
-			(*j)["root"].Str() = strtrim_right((*j)["root"].Str(), "/");
-			if ((*j)["root"].Str().empty())
-				(*j)["root"].Str() = "/";
+			if (!(*j).has("redirect"))
+			{
+				(*j)["root"].Str() = strtrim_right((*j)["root"].Str(), "/");
+				if ((*j)["root"].Str().empty())
+					(*j)["root"].Str() = "/";
+			}
 			
 			// std::cerr << YELB << "URI: \"" << (*j)["URI"].Str() << '\"' << RESET << std::endl;
 			// std::cerr << YELB << "root: \"" << (*j)["root"].Str() << '\"' << RESET << std::endl << std::endl;

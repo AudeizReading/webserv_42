@@ -20,11 +20,6 @@
 #include "webserv.hpp"
 #include "Request.hpp"
 
-// Request::Request(std::string plaintext): _complete(0), _plaintext(plaintext)
-// {
-// 	_parse();
-// }
-
 Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0), _parsed(0),
 	_plaintext(""), _client_addr(client_in_addr)
 {

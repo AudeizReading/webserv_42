@@ -40,7 +40,7 @@ private:
 	map_ir					_requests;
 
 	void				answer(int fd, Request &request);
-	void				_send(int fd, Response* response);
+	bool				_send(int fd, Response* response);
 	void				bind_request(Request &request);
 
 	Server const*		get_matching_Server(Request const& req) const;

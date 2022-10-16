@@ -1,7 +1,7 @@
-HTTP/1.1 200 OK
+HTTP/1.1 302 Found
 Cache-Control: no-cache
 Content-Length: 0
 Content-Type: text/html
-Date: Wed, 28 Sep 122 11:51:59 GMT
+Location: https://perdu.com/
 Server: Groenland
 

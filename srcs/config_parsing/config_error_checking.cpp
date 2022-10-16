@@ -49,7 +49,7 @@ void	check_mandatory_directives(TOML::Document const& doc)
 				if ( !_exists_and_has_type(*j, "URI", TOML::T_STRING)
 					|| !is_valid_URI((*j)["URI"].Str()) )
 					throw std::runtime_error("missing or illegal `URI' directive in location");
-				if (!_exists_and_has_type(*j, "root", TOML::T_STRING))
+				if (!_exists_and_has_type(*j, "root", TOML::T_STRING) && !_exists_and_has_type(*j, "redirect", TOML::T_STRING))
 					throw std::runtime_error("missing or illegal `root' directive in location");
 			}
 		}

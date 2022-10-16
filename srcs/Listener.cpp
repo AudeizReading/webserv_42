@@ -27,6 +27,7 @@
 #include "Listener.hpp"
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
+#include "Response/Response_Redirect.hpp"
 
 #include <arpa/inet.h>
 #include <cassert>
@@ -106,29 +107,27 @@ void	Listener::answer(int fd, Request &request)
 			std::cout << "[listener] socket partial#" << fd << std::endl;
 
 		response = new Response_Ok(request);
-
-		std::cerr << "\e[30;48;5;245m\n";
-		if (response->get_ctype().rfind("text/", 0) == 0)
-			// Redirect STDERR to file to get primitive log
-			// Leave as it for log in console
-			if (response->length() < 1400)
-				std::cerr << *response;
-			else
-				std::cerr << "<response length: " << response->length() << ">";
-		else
-			std::cerr << "<response: " << response->get_ctype() << ">";
-		std::cerr << RESET << std::endl;
 	}
-
-	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
 
 	// TODO: What if send() fails ? Or only sends some of the data ?
 	// Aparently the subject forbids checking errno here...
 	_send(fd, response);
 }
 
-void	Listener::_send(int fd, Response* response)
+bool	Listener::_send(int fd, Response* response)
 {
+	std::cerr << "\e[30;48;5;245m\n";
+	if (response->get_ctype().rfind("text/", 0) == 0)
+		// Redirect STDERR to file to get primitive log
+		// Leave as it for log in console
+		if (response->length() < 1400)
+			std::cerr << *response;
+		else
+			std::cerr << "<response length: " << response->length() << ">";
+	else
+		std::cerr << "<response: " << response->get_ctype() << ">";
+	std::cerr << RESET << std::endl;
+
 	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
 
 	int size = send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
@@ -141,6 +140,7 @@ void	Listener::_send(int fd, Response* response)
 	std::cout << "[listener] close socket#" << fd << std::endl;
 	_requests.erase(fd);
 	close(fd);
+	return (true);
 }
 
 void	Listener::bind_request(Request &request)
@@ -301,34 +301,27 @@ void	Listener::start_listener()
 					search->second.append_plaintext(buffer);
 				}
 
+				bool C = false;
 				Request &request = search->second;
 				if (request.is_parsed())
 				{
 					if (!request.is_complete())
-					{
-						_send(event_fd, new Response_Bad_Request(request));
-						continue;
-					}
+						C = _send(event_fd, new Response_Bad_Request(request));
 					else if (!request.is_bind())
 					{
 						bind_request(request);
 						if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
-						{
-							_send(event_fd, new Response_Internal_Server_Error(request));
-							continue;
-						}
+							C = _send(event_fd, new Response_Internal_Server_Error(request));
+						else if (request.get_server_location()->get_redirect() != "")
+							C = _send(event_fd, new Response_Redirect(request));
 					}
-					if (request.get_buffer().length() > request.get_server()->get_max_body_size())
-					{
-						_send(event_fd, new Response_Payload_Too_Large(request));
-						continue;
-					}
+					else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
+						C = _send(event_fd, new Response_Payload_Too_Large(request));
 				}
 				else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
-				{
-					_send(event_fd, new Response_Request_Header_Too_Large(request));
+					C = _send(event_fd, new Response_Request_Header_Too_Large(request));
+				if (C)
 					continue;
-				}
 
 				if (size < PIPE_BUF)
 				{

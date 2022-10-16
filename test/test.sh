@@ -77,6 +77,8 @@ test_diff "http://127.0.0.1:4242/cgi-bin/test/no-header.pl" "cgi_no-header" "./d
 test_diff "http://127.0.0.1:4242/cgi-bin/test/full-header.pl" "cgi_full-header" "./diff/cgi_full-header.txt" "-I"
 test_diff "http://127.0.0.1:4242/cgi-bin/test/partial-header.pl" "cgi_partial-header" "./diff/cgi_partial-header.txt" "-I"
 
+test_diff "http://127.0.0.1:4242/perdu/" "redirection" "./diff/redirection.txt" "-I"
+
 test_diff "http://localhost:8081/fdshfjkds" "custom_err_page"	"test_page.html"
 
 pkill -2 webserv

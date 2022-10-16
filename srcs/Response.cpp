@@ -108,9 +108,6 @@ void Response::create()
 	_header.insert(Queryparser::pair_ss("Date", date.str()));
 	_header.insert(Queryparser::pair_ss("Server", _request->get_server()->get_name()));
 	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
-	std::stringstream	length;
-	length << _content.length();
-	_header.insert(Queryparser::pair_ss("Content-Length", length.str()));
 	_header.insert(Queryparser::pair_ss("Content-Type", _content_type));
 
 	if (ext == "ico" || ext == "png" || ext == "jpg") // Mise en cache
@@ -154,6 +151,9 @@ void Response::create()
 	std::stringstream			response;
 
 	response << get_status() << "\r\n";
+	std::stringstream	length;
+	length << _content.length();
+	_header.insert(Queryparser::pair_ss("Content-Length", length.str()));
 	Request::map_ss::iterator	it2;
 	for (it2 = _header.begin(); it2 != _header.end(); it2++)
 		response << it2->first << ": " << it2->second << "\r\n";
