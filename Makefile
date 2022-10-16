@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/14 11:42:13 by alellouc         ###   ########.fr        #
+#    Updated: 2022/10/16 08:57:55 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -65,7 +65,7 @@ NAME = webserv
 
 CXX  = clang++
 
-CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast
+CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast -std=c++98
 
 LDLIBS = -I$(TOML_PARSER) -Iincludes
 
