@@ -176,10 +176,15 @@ void	Listener::start_listener()
 	*
 	* doc: https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
 	*/
-	// TODO: Pas à faire ? ==> Comportement indéterminé !
+	// SO_REUSEADDR => Comportement indéterminé !, vaut mieux désactiver le TIME_WAIT avec SO_LINGER = OFF
 	// unsigned re_use_addr = 1;
 	// if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &re_use_addr, sizeof(re_use_addr)) < 0)
 	// 	throw std::runtime_error(strerror(errno));
+
+	// Disable TIME_WAIT
+	struct linger so_linger = { 0, 0 }; // l_onoff = 0 -> OFF, l_linger = 0sec (no timeout because OFF)
+	if (setsockopt(_fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0)
+		throw std::runtime_error(strerror(errno));
 
 	/*
 	* En fonction du premier argument de socket, la doc nous guide vers sockaddr_in
