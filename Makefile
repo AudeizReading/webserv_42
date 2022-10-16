@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/16 10:10:42 by alellouc         ###   ########.fr        #
+#    Updated: 2022/10/16 18:22:10 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,18 +33,21 @@ SRC =	srcs/main.cpp \
 
 # <!-- pre='./' path='srcs/' match='*.hpp' exclude='srcs/Response.hpp' pos='1' template='		{0} \' -->
 HDEP1 = srcs/Response.hpp \
-		srcs/Response/Response_4XX.hpp \
 		srcs/Response/Response_Ok.hpp \
+		srcs/Response/Response_4XX.hpp \
 		srcs/CGIEnviron.hpp \
-		srcs/CGIManager.hpp \
-		srcs/Listener.hpp \
-		srcs/Queryparser.hpp \
-		srcs/Request.hpp \
 		srcs/Server.hpp \
+		srcs/Queryparser.hpp \
+		srcs/Listener.hpp \
+		srcs/Request.hpp \
 		srcs/Location.hpp \
+		srcs/CGIManager.hpp \
 
  # <!-- pre='./' path='includes/' match='*.hpp' pos='1' template='		{0} \' -->
 HDEP =	$(HDEP1) \
+ 		includes/http_error_codes.hpp \
+ 		includes/webserv.hpp \
+ 		includes/webserv_utils.hpp \
 		includes/webserv.hpp \
 
 TOML_PARSER = lib/toml_parser
@@ -104,6 +107,7 @@ $(NAME)_bonus: $(NAME)
 	cp $(NAME) $(NAME)_bonus
 
 run: all
+	@$(pkill -2 $(NAME) || 1)
 	./$(NAME) $(CONF_FILE)
 
 # Usage: make debug && lldb minishell_debug -o run
