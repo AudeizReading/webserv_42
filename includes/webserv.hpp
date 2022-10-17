@@ -16,10 +16,15 @@
 #include <string>
 #include <exception>
 #include <cassert>
+#include <map>
 
 #include <toml_parser.hpp>
 
 #include <webserv_utils.hpp>
+
+typedef std::map<std::string, std::string>			t_map_ss;
+
+extern t_map_ss	*mime_types;
 
 int				webserv(int argc, char *argv[]);
 

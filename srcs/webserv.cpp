@@ -20,7 +20,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
-int looking_for_iceberg = 1;
+int			looking_for_iceberg = 1;
+t_map_ss	*mime_types = NULL;
 
 void signal_handler(int signal)
 {
@@ -32,6 +33,23 @@ static void	*init_thread(void *listener)
 {
 	reinterpret_cast<Listener *>(listener)->start_listener();
 	return (0);
+}
+
+static bool create_dico_mimetypes(TOML::Document config)
+{
+	if (!config.has("mime_types"))
+	{
+		std::cerr << "Error: add mime_types dico." << std::endl;
+		return (false);
+	}
+
+	TOML::Document	conf = config.at("mime_types");
+
+	mime_types = new t_map_ss();
+	for (TOML::Document::iterator it = conf.begin(); it != conf.end(); ++it)
+		// TODO: Parse forbidden char ???
+		mime_types->insert(std::pair<std::string, std::string>(it->key(), it->Str()));
+	return (true);
 }
 
 // NOTE: argc and argv are offset by -1. argv[0] is the first argument,
@@ -48,6 +66,9 @@ int	webserv(int argc, char *argv[])
 	std::cout << "Config file: " << argv[0] << std::endl;
 	TOML::Document	config = parse_config_file(argv[0]);
 	std::cout << F_BGRN("Config parsed :)") << std::endl;
+
+	if (!create_dico_mimetypes(config.at("http")))
+		return (1);
 
 	std::vector<Listener>	listeners = create_Listeners(config);
 	std::cout << "Number of listeners: " << listeners.size() << std::endl;

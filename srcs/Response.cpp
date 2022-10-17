@@ -15,6 +15,8 @@
 #include <fstream>
 #include <ctime>
 
+#include <webserv.hpp>
+
 #include "Response.hpp"
 #include "Response/Response_4XX.hpp"
 #include "CGIManager.hpp"
@@ -80,14 +82,8 @@ void Response::create()
 			content << file.rdbuf();
 			_content = content.str();
 
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-			// TODO: Support more MIME types
-			if (ext == "ico")
-				_content_type = "image/vnd.microsoft.icon";
-			else if (ext == "png")
-				_content_type = "image/png";
-			else if (ext == "html")
-				_content_type = "text/html";
+			if (mime_types->find(ext) != mime_types->end())
+				_content_type = mime_types->at(ext);
 			else
 				_content_type = "text/plain";
 		}
