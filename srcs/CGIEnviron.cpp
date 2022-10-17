@@ -73,7 +73,7 @@ void				CGIEnviron::_setEnv()
 	std::string	root = _location.get_root() + '/'; 
 	//std::string	root = _location.get_root() + _location.URI();
 	
-	std::string	server_name = _header["Host"];
+//	std::string	server_name = _header["Host"];
 
 	std::string	port = _server.get_port_str();
 
@@ -110,7 +110,7 @@ void				CGIEnviron::_setEnv()
 			{CONTENT_TYPE, this->_header["Content-Type"]}, \
 			{GATEWAY_INTERFACE, "CGI/1.1"}, \
 			{SERVER_SOFTWARE, "webserv"}, \
-			{SERVER_NAME, server_name}, \
+			{SERVER_NAME, this->_header["Host"]}, \
 			{SERVER_PROTOCOL, this->_request.get_http_version()}, \
 			{SERVER_PORT, port}, \
 			{PATH_INFO, path_info}, \

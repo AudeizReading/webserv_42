@@ -3,7 +3,7 @@
 # --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
-	&cgi_print_html_double_elt("p", "iCa passe ou bien?");
+	&cgi_print_html_double_elt("p", "Ca passe ou bien?");
 	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
 	# check for upload file
 	#  $buffer = $ENV{'QUERY_STRING'};
@@ -55,8 +55,6 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 {
-	# il faut aussi recup PATH_INFO dans le cas d'une req GET
-	# $output_mess="QUERY_STRING (Methode GET)";
     $buffer = $ENV{'QUERY_STRING'};
 	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
 
@@ -66,17 +64,10 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	&cgi_print_html_head();
 	&cgi_print_html_body_begin();
 	&cgi_print_html_double_elt("h1", "Notre collection d'icebergs");
-	#	&cgi_print_html_double_elt("h2", $output_mess);
-	#	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
-	# il faut que ca recup le truc
-	#	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
-	#	print STDOUT "\t<ul>\r\n";
-	#	&cgi_print_array_html(%_GET);
-	#	&cgi_print_array_html(%ENV);
-	#	print STDOUT "\t</ul>\r\n";
+
+	&cgi_debug(0, %_GET);
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
 	{
-		# attention PATH_INFO est bloquer lors des requetes GET cf upload.html
 		$directory = $ENV{'PATH_TRANSLATED'};
 		if (defined($_GET{'path_info'}))
 		{
@@ -130,9 +121,8 @@ sub split_cgi_array
 # print any array nom
 sub cgi_print_array_html
 {
-	local (%array);
+	local (%array) = @_;
 
-	%array = @_;
 	foreach $match (keys (%array)) {
 		print STDOUT "\t\t<li><b>$match: </b>".$array{$match}."</li>\n";
 	}
@@ -200,3 +190,14 @@ sub	cgi_response_header
 	#print "Content_length : ".$ENV{'CONTENT_LENGTH'}."\n"; # Pas obligatoire, vaut mieux rien mettre
 }
 
+sub	cgi_debug
+{
+	local ($need_env, %array) = @_;
+	print STDOUT "<p>DEBUG<br/>\t<ul>\r\n";
+	&cgi_print_array_html(%array);
+	if ($need_env > 0)
+	{
+		&cgi_print_array_html(%ENV);
+	}
+	print STDOUT "\t</ul></p>\r\n";
+}
