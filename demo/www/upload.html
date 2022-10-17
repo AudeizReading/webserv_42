@@ -33,21 +33,32 @@
 	document.getElementById('delete-form').addEventListener('submit', function (event) {
 		const data = new URLSearchParams(new FormData(document.getElementById('delete-form')))
 
-		const selectedFile = document.getElementById('delfile').files[0].name;
-		data.append("filename", selectedFile);
-		let mesEntetes = new Headers();
-		mesEntetes.append('Content-Type', 'multipart/form-data');
-		
+		const output = document.querySelector('.output');
 
+		let nb_files = document.getElementById('delfile').files.length;
+		data.append("nb_files: ", nb_files);
+
+		const nb_files_int = parseInt(nb_files, 10);
+		let i=0;
+		while (i < nb_files_int)
+		{
+			file = document.getElementById('delfile').files[i].name;
+			data.append("filename" + i.toString(), file);
+			i++;
+		}
+
+		let delete_header = new Headers();
+		delete_header.append('Content-Type', 'multipart/form-data');
+		
 		fetch(document.getElementById('delete-form').action, {
-			headers: mesEntetes,
+			headers: delete_header,
 		    method: 'DELETE',
 		    body: data,
 		}).then(function(response) {
 			return response.text()
 		})
 		.then((data) => {
-			document.getElementById('output').textContent += "Request sent"
+			document.getElementById('output').textContent += "Request sent";
 			//document.getElementById('output').textContent += data
 		})
 

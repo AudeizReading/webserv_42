@@ -169,10 +169,19 @@ void				CGIManager::_launchExec() const
 	// do not forget to check the PATH rights (only exec has to be set)
 	// what about arguments for the script perl what are they? -> they are the filename to be upload if I have understand well
 
-	// Si on fait ca comme ca, ca veut pas s'exec, j'ai une erreur operation not permitted, mais dans l'ideal pour un multi cgi faudrait passer l'interpreteur a la place du path de perl
-//	if (::execl("/usr/bin/perl", env["SCRIPT_NAME"].c_str(), NULL) == -1)
 	CGIEnviron::map_ss	env = this->_environ.getEnv();
-	if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), NULL) == -1)
+
+	std::string abs_path = env["SCRIPT_NAME"].substr(0, env["SCRIPT_NAME"].find_last_of("/"));
+	std::string script = env["SCRIPT_NAME"].substr(env["SCRIPT_NAME"].find_last_of("/") + 1);
+	
+	if (::chdir(abs_path.c_str()) == -1)
+	{
+		exit(errno);
+	}
+	// Ca marche comme ca avec /usr/bin/perl, il faut bien chdir dans le directory ou se situe le script apl
+	// Reste plus qu'a set ca via une variable que le Server ou autre enverrait au CGI
+	if (::execl("/usr/bin/perl", "/usr/bin/perl", script.c_str(), NULL) == -1)
+	//if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), NULL) == -1)
 //	if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), env["PATH_INFO"].c_str(), NULL) == -1)
 	{
 		exit(errno);

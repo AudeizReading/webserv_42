@@ -38,8 +38,6 @@ void				CGIEnviron::_setHeaderEnv()
 		// On cherche le token de delimitations des fichiers binaires 
 		if (http_key == "CONTENT_TYPE" && (http_val.find("multipart/form-data") != std::string::npos))
 		{
-			PRINT(http_val);
-			PRINT(http_key);
 			if (http_val.find_first_of(";") != std::string::npos)
 			{
 				std::string tmp = http_val.substr(http_val.find_first_of(";") + 2);
@@ -73,10 +71,7 @@ void				CGIEnviron::_setEnv()
 	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
 	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
 	std::string	root = _location.get_root() + '/'; 
-	//std::string	root = _location.get_root() + _location.URI();
 	
-//	std::string	server_name = _header["Host"];
-
 	std::string	port = _server.get_port_str();
 
 //	std::string	remote_host = _request.get_?(); //@pbremond ici, j'ai besoin du nom du client (comme pour le serveur)
