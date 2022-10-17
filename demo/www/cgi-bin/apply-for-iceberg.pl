@@ -53,11 +53,56 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 		%_POST=&split_cgi_array($buffer);
 	}
+	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
+	{
+		#$directory = $ENV{'PATH_TRANSLATED'};
+		$directory = "..".$ENV{'PATH_INFO'};
+		if (defined($_GET{'path_info'}))
+		{
+			# ./demo/www//upload -> resultat obtenu, et suffisant pour opendir
+			#$directory = $ENV{'PATH_TRANSLATED'}.$_GET{'path_info'};
+			# avec le chdir du CGIManager, il faut aussi changer le path d'acces, nous sommes dans le rep cgi-bin
+			$directory = "..".$_GET{'path_info'};
+		}
+	}
+	$absolute_path = $ENV{'DOCUMENT_ROOT'}.$ENV{'PATH_INFO'};
+
+	&cgi_print_html_double_elt("p", "directory: $directory");
+	&cgi_print_html_double_elt("p", "absolute path: $absolute_path");
+	&cgi_print_html_double_elt("p", "ENV{'PATH_TRANSLATED'}: $ENV{'PATH_TRANSLATED'}");
+	&cgi_print_html_double_elt("p", "_GET{'path_info'}: $_GET{'path_info'}");
+	&cgi_print_html_double_elt("p", "_POST{'path_info'}: $_POST{'path_info'}");
+	&cgi_print_html_double_elt("p", "ENV{'PATH_INFO'}: $ENV{'PATH_INFO'}");
+
+	#opendir(DIRECTORY_FD, $directory) || die "$directory couldn't be opened: $!";
+	#	@FILES = grep(/\.png|jpe?g$/i, readdir DIRECTORY_FD);
+	if (defined($_POST{'filename'}))
+	{
+		$_FILES{'filename'} = $_POST{'filename'};
+		&cgi_print_html_double_elt("p", "filename: ".$_FILES{'filename'});
+		$num=0;
+		&cgi_print_html_double_elt("p", "filename".$num.": ".$_FILES{'filename'});
+	}
+	else
+	{
+		if (defined($_POST{'nb_files'}))
+		{
+			foreach $file (values (%_POST))
+			{
+				&cgi_print_html_double_elt("p", "filename (avant de check le modele multi):".$file);
+				if ($_POST{$file} =~ m/jp?g|png$/)
+				{
+					&cgi_print_html_double_elt("p", "filename (multi):".$file);
+				}
+			}
+		}
+	}
+	print STDOUT "\t<ul>\r\n";
 	&cgi_print_html_double_elt("h1", "Résultat de la requete DELETE");
 	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
 	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
-	&cgi_debug(0, %_GET);
-	&cgi_debug(1, %_POST);
+	#	&cgi_debug(0, %_GET);
+	&cgi_debug(0, %_POST);
 	# recuperer le nom du fichier a delete
 	# ouvrir le rep upload
 	# chercher le fichier
@@ -82,7 +127,8 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	#&cgi_debug(0, %_GET);
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
 	{
-		$directory = $ENV{'PATH_TRANSLATED'};
+		$directory = "../".$ENV{'PATH_INFO'};
+		#$directory = $ENV{'PATH_TRANSLATED'};
 		if (defined($_GET{'path_info'}))
 		{
 			# ./demo/www//upload -> resultat obtenu, et suffisant pour opendir
