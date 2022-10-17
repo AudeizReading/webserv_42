@@ -37,80 +37,55 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
-	# TODO: delete content
-	&cgi_response_header(200, "OK");
-	&cgi_print_html_dtd();
-	&cgi_print_html_begin();
-	&cgi_print_html_head();
-	&cgi_print_html_body_begin();
-
 	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
 	if ($ENV{'CONTENT_LENGTH'} > 0)
 	{
-		print "We are waiting for ".$ENV{'CONTENT_LENGTH'}." octets.\r\n";
-		print "We are waiting for ".$ENV{'CONTENT_TYPE'}.".\r\n";
-
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 		%_POST=&split_cgi_array($buffer);
 	}
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
 	{
-		#$directory = $ENV{'PATH_TRANSLATED'};
 		$directory = "..".$ENV{'PATH_INFO'};
 		if (defined($_GET{'path_info'}))
 		{
-			# ./demo/www//upload -> resultat obtenu, et suffisant pour opendir
-			#$directory = $ENV{'PATH_TRANSLATED'}.$_GET{'path_info'};
-			# avec le chdir du CGIManager, il faut aussi changer le path d'acces, nous sommes dans le rep cgi-bin
 			$directory = "..".$_GET{'path_info'};
 		}
+		elsif (defined($_POST{'path_info'}))
+		{
+			$directory = "..".$_POST{'path_info'};
+		}
 	}
-	$absolute_path = $ENV{'DOCUMENT_ROOT'}.$ENV{'PATH_INFO'};
 
-	&cgi_print_html_double_elt("p", "directory: $directory");
-	&cgi_print_html_double_elt("p", "absolute path: $absolute_path");
-	&cgi_print_html_double_elt("p", "ENV{'PATH_TRANSLATED'}: $ENV{'PATH_TRANSLATED'}");
-	&cgi_print_html_double_elt("p", "_GET{'path_info'}: $_GET{'path_info'}");
-	&cgi_print_html_double_elt("p", "_POST{'path_info'}: $_POST{'path_info'}");
-	&cgi_print_html_double_elt("p", "ENV{'PATH_INFO'}: $ENV{'PATH_INFO'}");
-
-	#opendir(DIRECTORY_FD, $directory) || die "$directory couldn't be opened: $!";
-	#	@FILES = grep(/\.png|jpe?g$/i, readdir DIRECTORY_FD);
-	if (defined($_POST{'filename'}))
+	# recuperer le nom du fichier a delete
+	if (defined($_POST{'filename'})) # only 1 file
 	{
-		$_FILES{'filename'} = $_POST{'filename'};
-		&cgi_print_html_double_elt("p", "filename: ".$_FILES{'filename'});
-		$num=0;
-		&cgi_print_html_double_elt("p", "filename".$num.": ".$_FILES{'filename'});
+		$file = $_POST{'filename'};
+		#delete here
+		if ( -e "../$file" and -f "../$file")
+		{
+			#delete here
+			unlink("../$file") || warn "../$file couldn't be deleted: $!";
+			&cgi_print_html_double_elt("p", "The file ../$file has been deleted"); 
+		}
 	}
-	else
+	else # multi file
 	{
 		if (defined($_POST{'nb_files'}))
 		{
-			foreach $file (values (%_POST))
+			@_keys = grep(/filename/, (keys (%_POST)));
+			foreach $file (@_keys)
 			{
-				&cgi_print_html_double_elt("p", "filename (avant de check le modele multi):".$file);
-				if ($_POST{$file} =~ m/jp?g|png$/)
+				if ( -e "$directory/$_POST{$file}" and -f "$directory/$_POST{$file}")
 				{
-					&cgi_print_html_double_elt("p", "filename (multi):".$file);
+					#delete here
+					unlink("$directory/$_POST{$file}");
+					&cgi_print_html_double_elt("p", "The file $directory/$_POST{$file} has been deleted"); 
 				}
 			}
 		}
 	}
-	print STDOUT "\t<ul>\r\n";
-	&cgi_print_html_double_elt("h1", "Résultat de la requete DELETE");
-	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
-	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
-	#	&cgi_debug(0, %_GET);
-	&cgi_debug(0, %_POST);
-	# recuperer le nom du fichier a delete
-	# ouvrir le rep upload
-	# chercher le fichier
-	# delete le fichier
-	# afficher le resultat de l'operation -> le snippet javascript sur l'output peut le gerer plus facilement
-	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
-	&cgi_print_html_body_end();
-	&cgi_print_html_end();
+
+	&cgi_response_header(200, "OK");
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 {
@@ -141,6 +116,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		opendir(DIRECTORY_FD, $directory) || die "$directory couldn't be opened: $!";
 		@FILES = grep(/\.png|jpe?g$/i, readdir DIRECTORY_FD);
 		print STDOUT "\t<ul>\r\n";
+		$i = 0;
 		foreach $file (@FILES)
 		{
 			# ici mettre path /upload/$file pour que ca route derriere le cgi
@@ -148,7 +124,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 			print "<img src=\"$_GET{'path_info'}/$file\"/>";
 
 			# proposition for deleting this file
-			print "<form id=\"delete-form\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
+			print "<form id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
 			print "<p>";
 			print "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>";
 			print "</p>";
@@ -161,14 +137,14 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 			print "</form>";
 
 			print "<script>";
-			print "document.getElementById('delete-form').addEventListener('submit', function (event) {\r\n";
-			print "	const data = new URLSearchParams(new FormData(document.getElementById('delete-form')));\r\n";
+			print "document.getElementById('delete-form$i').addEventListener('submit', function (event) {\r\n";
+			print "	const data = new URLSearchParams(new FormData(document.getElementById('delete-form$i')));\r\n";
 			#
 			print "data.append(\"filename\", \"$_GET{'path_info'}/$file\")\r\n";
 			print "let nb_files = 1;\r\n";
-			print "data.append(\"nb_files: \", nb_files.toString());\r\n";
+			print "data.append(\"nb_files\", nb_files.toString());\r\n";
 
-			print "fetch(document.getElementById('delete-form').action, {\r\n";
+			print "fetch(document.getElementById('delete-form$i').action, {\r\n";
 			print "	method: 'DELETE',\r\n";
 			print "	body: data,\r\n";
 			print "	}).then(function(response) {\r\n";
@@ -176,12 +152,14 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 			print "	})\r\n";
 			print "	.then((data) => {\r\n";
 			print "		document.getElementById('output').textContent = \"Request sent\";\r\n";
+			print "location.reload();\r\n";
 			#print "		document.getElementById('output').textContent = data;\r\n";
 			print "	})\r\n";
 			print "		event.preventDefault()\r\n";
 			print 	"event.preventDefault()";
 			print 	"})\r\n";
 			print "	</script>\r\n";
+			++$i;
 		}
 		print STDOUT "\t</ul>\r\n";
 		closedir(DIRECTORY_FD);

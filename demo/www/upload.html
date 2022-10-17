@@ -56,7 +56,8 @@
 			return response.text()
 		})
 		.then((data) => {
-			document.getElementById('output').textContent += "Request sent";
+			document.getElementById('output').textContent += "Request sent ";
+			location.reload();
 			//document.getElementById('output').textContent += data
 		})
 
