@@ -42,7 +42,7 @@ void Response_Ok::_init()
 		_content_path += '/';
 
 	std::cerr << _GRN
-		<< "Request location: " << _request->get_location() << '\n'
+		<< "Request location: " << _request->get_location() << ", "
 		<< "File: " << file << RESET << std::endl;
 
 	if (!file.empty())

@@ -77,7 +77,7 @@ Location const*	Listener::get_matching_Location(Request const& req, Server const
 {
 	std::string req_location_URI = req.get_location();
 	
-	std::cerr << BCYN << "Request URI:  " << req_location_URI << RESET << std::endl; // DEBUG
+	std::cerr << BCYN << "Request URI:  " << req_location_URI << RESET << ", "; // DEBUG
 
 	// Locations are sorted from least to most complete.
 	const Location*	target = &serv.get_locations().front();
@@ -85,16 +85,17 @@ Location const*	Listener::get_matching_Location(Request const& req, Server const
 		it != serv.get_locations().end();
 		++it)
 	{
-		std::cerr << _CYN << "Location URI: " << it->get_URI() << RESET << '\n'; // DEBUG
+		std::cerr << _CYN << "Location URI: " << it->get_URI() << RESET << ", "; // DEBUG
 		if (req_location_URI.find(it->get_URI()) != std::string::npos)
 			target = &*(it);
 	}
+	std::cerr << std::endl;
 	return target;
 }
 
 void	Listener::answer(int fd, Request &request)
 {
-	std::cout << "[listener] recv socket#" << fd << std::endl;
+	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
 	Response					*response;
 	std::string					length = request.get_header()["Content-Length"];
 	std::string					test[fd];
@@ -278,17 +279,14 @@ void	Listener::start_listener()
 				}
 			}
 			else if (event.filter & EVFILT_READ)
-			// On utilise `==` https://stackoverflow.com/a/12165298/
 			{
-			//	std::cerr << "\033[32;1m[SOCKET]: " << __FILE__ << " " << __LINE__ << "\r\naddress.sin_port: " << address.sin_port << "\r\n address.sin_addr.s_addr: " << address.sin_addr.s_addr << "\033[0m" << std::endl;
 				char buffer[PIPE_BUF + 1] = {0};
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
-				// TODO: Limit client body size.
-				std::cout << "[listener] read " << size << "/" << PIPE_BUF << " bytes for event#" << event_fd << std::endl;
+				// std::cerr << "[listener] read " << size << "/" << PIPE_BUF << " bytes for event#" << event_fd << std::endl;
 				if (size < 0)
 					throw "WRONG"; // TODO: ERROR ?
 
-				std::cout << BRED"[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << RESET << std::endl;
+				// std::cerr << BRED"[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << RESET << std::endl;
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
@@ -325,7 +323,6 @@ void	Listener::start_listener()
 
 				if (size < PIPE_BUF)
 				{
-					std::cout << "[listener] ok recv event#" << event_fd << std::endl;
 					char	addr_str[INET_ADDRSTRLEN];
 					std::cout << _RED << "[listener] Client address: "
 						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
