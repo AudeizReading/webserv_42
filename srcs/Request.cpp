@@ -104,10 +104,7 @@ void	Request::append_plaintext(std::string const& buffer)
 {
 	_plaintext += buffer;
 	if (_plaintext.find("\r\n\r\n") != std::string::npos)
-	{
 		parse();
-		// TODO: On pourrait déjà envoyer une bad request ici
-	}
 }
 
 Queryparser::Firstline Request::_get_first_line() const

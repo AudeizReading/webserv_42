@@ -220,8 +220,7 @@ void	Listener::start_listener()
 		 * with an indication of ECONNREFUSED. Alternatively, if the underlying protocol supports
 		 * retransmission, the request may be ignored so that retries may succeed.
 		 */
-		// TODO: No throw?
-		std::cout << "pas obligé de throw ici :/ " << std::endl;
+		std::cout << "[listener] Cannot listen, please retry" << std::endl;
 		throw std::runtime_error(strerror(errno));
 	}
 
@@ -250,7 +249,6 @@ void	Listener::start_listener()
 
 			if (event.flags & EV_EOF)
 			{
-				// TODO: ERROR?
 				std::cout << "[listener] client has disconnected for event#" << event_fd << std::endl;
 				close(event_fd);
 			}
@@ -264,7 +262,6 @@ void	Listener::start_listener()
 							<< " for socket#" << event_fd << std::endl;
 				if (new_socket < 0)
 				{
-					// TODO: ERROR?
 					std::cout << "[listener] accept socket error for event#" << event_fd << std::endl;
 					perror("[listener] -- accept socket error");
 					continue;
@@ -273,7 +270,6 @@ void	Listener::start_listener()
 				EV_SET(&change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
 				if (kevent(kq, &change_event, 1, NULL, 0, NULL) < 0)
 				{
-					// TODO: ERROR?
 					std::cout << "[listener] kevent error for event#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
 				}
@@ -284,7 +280,11 @@ void	Listener::start_listener()
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
 				// std::cerr << "[listener] read " << size << "/" << PIPE_BUF << " bytes for event#" << event_fd << std::endl;
 				if (size < 0)
-					throw "WRONG"; // TODO: ERROR ?
+				{
+					std::cout << "[listener] recv error for event#" << event_fd << std::endl;
+					perror("[listener] -- recv error");
+					continue;
+				}
 
 				// std::cerr << BRED"[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << RESET << std::endl;
 				Listener::map_ir::iterator search = _requests.find(event_fd);
