@@ -14,11 +14,10 @@
 			<input type="reset" name="reset" value="Reset" />
 		</p>
 	</form>
-	<!-- Ici ca renvoie vers une requete GET. Les requetes DELETE ne sont pas gerees par les balises HTML, Il faudrait le faire manuellement, jsp ou mais le cgi peut pas gerer ca a lui seul-->
 	<hr>
 	<form id="delete-form" method="DELETE" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Deletion files(s)">
 		<p>
-			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
+			<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
 		</p>
 		<p>
 			<input type="hidden" name="path_info" value="/upload"/>
@@ -34,21 +33,28 @@
 	document.getElementById('delete-form').addEventListener('submit', function (event) {
 		const data = new URLSearchParams(new FormData(document.getElementById('delete-form')))
 
+		const selectedFile = document.getElementById('delfile').files[0].name;
+		data.append("filename", selectedFile);
+		let mesEntetes = new Headers();
+		mesEntetes.append('Content-Type', 'multipart/form-data');
+		
+
 		fetch(document.getElementById('delete-form').action, {
+			headers: mesEntetes,
 		    method: 'DELETE',
 		    body: data,
 		}).then(function(response) {
 			return response.text()
 		})
 		.then((data) => {
-			document.getElementById('output').textContent = data
+			document.getElementById('output').textContent += "Request sent"
+			//document.getElementById('output').textContent += data
 		})
 
 		event.preventDefault()
 	})
 	</script>
 	<hr>
-	<!-- Impossible de recuperer le path_info /upload de cette facon la par une requete GET, c'est remplacer par la query string generee par submit -->
 	<form method="GET" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Gallery">
 		<p>
 			<input type="hidden" name="path_info" value="/upload"/>

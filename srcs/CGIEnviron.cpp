@@ -38,6 +38,8 @@ void				CGIEnviron::_setHeaderEnv()
 		// On cherche le token de delimitations des fichiers binaires 
 		if (http_key == "CONTENT_TYPE" && (http_val.find("multipart/form-data") != std::string::npos))
 		{
+			PRINT(http_val);
+			PRINT(http_key);
 			if (http_val.find_first_of(";") != std::string::npos)
 			{
 				std::string tmp = http_val.substr(http_val.find_first_of(";") + 2);

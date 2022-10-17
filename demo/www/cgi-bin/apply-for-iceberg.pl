@@ -44,10 +44,19 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
 	&cgi_print_html_body_begin();
+		read(STDIN, $buffer, 4096);
+		$output_mess="STDIN (Methode POST)" ;
+		%_POST=&split_cgi_array($buffer);
 	&cgi_print_html_double_elt("h1", "Résultat de la requete DELETE");
 	&cgi_print_html_double_elt("h2", $output_mess);
 	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
 	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
+	&cgi_debug(0, %ENV);
+	# recuperer le nom du fichier a delete
+	# ouvrir le rep upload
+	# chercher le fichier
+	# delete le fichier
+	# afficher le resultat de l'operation
 	&cgi_print_html_double_elt("p", "Not handled Yet");
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
 	&cgi_print_html_body_end();
@@ -65,7 +74,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	&cgi_print_html_body_begin();
 	&cgi_print_html_double_elt("h1", "Notre collection d'icebergs");
 
-	&cgi_debug(0, %_GET);
+	#&cgi_debug(0, %_GET);
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
 	{
 		$directory = $ENV{'PATH_TRANSLATED'};
