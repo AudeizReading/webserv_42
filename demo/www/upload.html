@@ -5,7 +5,7 @@
 	<title>Upload</title>
 </head>
 <body style="background-color: lightblue;">
-	<form method="POST" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data">
+	<form method="POST" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Upload file(s)">
 		<p>
 			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
 		</p>
@@ -14,12 +14,11 @@
 			<input type="reset" name="reset" value="Reset" />
 		</p>
 	</form>
-	<!-- Ici ca renvoie vers une requete GET. Les requetes DELETE ne sont pas gerees par les balises HTML, Il faudrait le faire manuellement, jsp ou mais le cgi peut pas gerer ca a lui seul-->
 	<hr>
-	<form id="delete-form" method="DELETE" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data">
-		<!--<p>
-			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
-		</p>-->
+	<form id="delete-form" method="DELETE" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Deletion files(s)">
+		<p>
+			<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
+		</p>
 		<p>
 			<input type="hidden" name="path_info" value="/upload"/>
 		</p>
@@ -34,22 +33,38 @@
 	document.getElementById('delete-form').addEventListener('submit', function (event) {
 		const data = new URLSearchParams(new FormData(document.getElementById('delete-form')))
 
+		let nb_files = document.getElementById('delfile').files.length;
+		data.append("nb_files", nb_files);
+
+		const nb_files_int = parseInt(nb_files, 10);
+		let i=0;
+		while (i < nb_files_int)
+		{
+			file = document.getElementById('delfile').files[i].name;
+			data.append("filename" + i.toString(), file);
+			i++;
+		}
+
+		let delete_header = new Headers();
+		delete_header.append('Content-Type', 'multipart/form-data');
+		
 		fetch(document.getElementById('delete-form').action, {
+			headers: delete_header,
 		    method: 'DELETE',
 		    body: data,
 		}).then(function(response) {
 			return response.text()
 		})
 		.then((data) => {
-			document.getElementById('output').textContent = data
+			document.getElementById('output').textContent += "Request sent";
+			//document.getElementById('output').textContent += data
 		})
 
 		event.preventDefault()
 	})
 	</script>
 	<hr>
-	<!-- Impossible de recuperer le path_info /upload de cette facon la par une requete GET, c'est remplacer par la query string generee par submit -->
-	<form method="GET" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data">
+	<form method="GET" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Gallery">
 		<p>
 			<input type="hidden" name="path_info" value="/upload"/>
 		</p>
@@ -58,5 +73,9 @@
 			<input type="reset" name="reset" value="Reset" />
 		</p>
 	</form>
+	<p>
+		<a href="../index.html" alt="Are you lost?">Are you lost?</a>
+	</p>
 </body>
+</script>
 </html>
