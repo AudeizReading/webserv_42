@@ -91,7 +91,7 @@ std::string Queryparser::parse_otherline(std::string &str, std::string::const_it
 			key += (i == 0 || *(it - 1) == '-') ? toupper(*it) : tolower(*it);
 		}
 		if (*(++it) == ' ') it++;
-		for (int i = 0; it < end && *it != '\r'; it++, i++)
+		for (int i = 0; it < end && *it != '\r' && *it != '\n'; it++, i++)
 			val += *it;
 		header.insert(Queryparser::pair_ss(key, val));
 		if (*it != '\r' || *(it + 1) != '\n')
