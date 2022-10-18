@@ -1,5 +1,6 @@
 #!/usr/bin/perl 
 
+use POSIX;
 # --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
@@ -115,6 +116,65 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		$absolute_path = $ENV{'PATH_TRANSLATED'}."cgi-bin/".$_GET{'path_info'};
 		opendir(DIRECTORY_FD, $directory) || die "$directory couldn't be opened: $!";
 		@FILES = grep(/\.png|jpe?g$/i, readdir DIRECTORY_FD);
+
+		$nb_files = $#FILES + 1;
+		$nb_files_per_page = 1;
+		$nb_pages = ceil($nb_files / $nb_files_per_page);
+
+		&cgi_print_html_double_elt("p", "nb de FILES: $nb_files, nb de pages: $nb_pages");
+
+		$page = 1;
+
+		# Affichage des liens
+		print STDOUT "\t<p>\r\n";
+		if (defined($_GET{'page'}) and $_GET{'page'} != 1) # display link for previous page
+		{
+			$page = $_GET{'page'} + 0;
+			$i = $page - 1;
+			print "<a href=\"/cgi-bin/apply-for-iceberg.pl?page=$i&path_info=$_GET{'path_info'}\">Previous</a>";
+		}
+		print STDOUT "Page: |";
+		for ($i = 1; $i <= $nb_pages; ++$i) # display links for page between first and last
+		{
+			if ($i == $page) # no link on the actual page
+			{
+				print " $i |";
+			}
+			else
+			{
+				print "<a href=\"/cgi-bin/apply-for-iceberg.pl?page=$i&path_info=$_GET{'path_info'}\"> $i |</a>";
+			}
+		}
+		if ($nb_pages != 1 and $nb_pages > 1) # display next link
+		{
+			if (!defined($_GET{'page'}))
+			{
+				$i += 2;
+			}
+			elsif (defined($_GET{'page'}) and $_GET{'page'} != $nb_pages)
+			{
+				$i = $_GET{'page'} + 1;
+			}
+			print "<a href=\"/cgi-bin/apply-for-iceberg.pl?page=$i&path_info=$_GET{'path_info'}\">Next</a>";
+		}
+		print STDOUT "\t</p>\r\n";
+
+		$first_file = ($page - 1) * $nb_files_per_page;
+		for ($i = 0; $i < $nb_files_per_page; ++$i) # display links for page between first and last
+		{
+			my $j;
+			if (!defined($_GET{'page'}))
+			{
+				$j = $i;
+			}
+			elsif (defined($_GET{'page'}))
+			{
+				$j = $i + ($nb_files_per_page * $page);
+			}
+			#&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$_GET{'path_info'}/$FILES[$j]\"/>");
+			# do not know why all the routes I get are / ?
+		}
+
 		print STDOUT "\t<ul>\r\n";
 		$i = 0;
 		foreach $file (@FILES)
@@ -122,13 +182,12 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 			# ici mettre path /upload/$file pour que ca route derriere le cgi
 			# faire un systeme de pagination si trop de photos
 			&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$_GET{'path_info'}/$file\"/>"); 
-			#print "<img src=\"$_GET{'path_info'}/$file\"/>";
 
-			# proposition for deleting this file
 			print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
-			print "<p>";
-			print "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>";
-			print "</p>";
+			&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>"); 
+			#print "<p>";
+			#print "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>";
+			#print "</p>";
 			print "<p>";
 			print "<input type=\"submit\" name=\"submit\" value=\"Delete an Iceberg\" />";
 			print "<input type=\"reset\" name=\"reset\" value=\"Reset\" />";
@@ -220,7 +279,7 @@ sub cgi_print_html_head
 	print STDOUT "<head>\r\n";
 	print STDOUT "\t<meta charset=\"UTF-8\">\r\n";
 	print STDOUT "\t<title>$ENV{'REQUEST_METHOD'}</title>\r\n";
-	print STDOUT "<link href=\"../main-style.css\" rel=\"stylesheet\" type=\"text/css\">";
+	print STDOUT "<link href=\"../main-style.css\" rel=\"stylesheet\" type=\"text/css\">"; # maybe the link could vary
 	print STDOUT "</head>\r\n";
 }
 
