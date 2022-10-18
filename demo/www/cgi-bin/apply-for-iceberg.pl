@@ -97,7 +97,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
 	&cgi_print_html_body_begin();
-	&cgi_print_html_double_elt("h1", "Notre collection d'icebergs");
+	&cgi_print_html_double_elt("h1", "Our icebergs' collection");
 
 	#&cgi_debug(0, %_GET);
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
@@ -121,15 +121,16 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		{
 			# ici mettre path /upload/$file pour que ca route derriere le cgi
 			# faire un systeme de pagination si trop de photos
-			print "<img src=\"$_GET{'path_info'}/$file\"/>";
+			&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$_GET{'path_info'}/$file\"/>"); 
+			#print "<img src=\"$_GET{'path_info'}/$file\"/>";
 
 			# proposition for deleting this file
-			print "<form id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
+			print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
 			print "<p>";
 			print "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>";
 			print "</p>";
 			print "<p>";
-			print "<input type=\"submit\" name=\"submit\" value=\"Supprimer un iceberg\" />";
+			print "<input type=\"submit\" name=\"submit\" value=\"Delete an Iceberg\" />";
 			print "<input type=\"reset\" name=\"reset\" value=\"Reset\" />";
 			print "</p>";
 			print "<pre id=\"output\" style=\"max-height:300px;\">";
@@ -219,12 +220,13 @@ sub cgi_print_html_head
 	print STDOUT "<head>\r\n";
 	print STDOUT "\t<meta charset=\"UTF-8\">\r\n";
 	print STDOUT "\t<title>$ENV{'REQUEST_METHOD'}</title>\r\n";
+	print STDOUT "<link href=\"../main-style.css\" rel=\"stylesheet\" type=\"text/css\">";
 	print STDOUT "</head>\r\n";
 }
 
 sub cgi_print_html_body_begin
 {
-	print STDOUT "<body bgcolor=\"lightblue\">\r\n";
+	print STDOUT "<body>\r\n";
 }
 
 sub cgi_print_html_end

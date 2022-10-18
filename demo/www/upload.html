@@ -3,14 +3,15 @@
 <head>
 	<meta charset="UTF-8" />
 	<title>Upload</title>
+	<link href="main-style.css" rel="stylesheet" type="text/css">
 </head>
-<body style="background-color: lightblue;">
+<body>
 	<form method="POST" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Upload file(s)">
 		<p>
 			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
 		</p>
 		<p>
-			<input type="submit" name="submit" value="Réserver un iceberg" />
+			<input type="submit" name="submit" value="Book an iceberg" />
 			<input type="reset" name="reset" value="Reset" />
 		</p>
 	</form>
@@ -23,7 +24,7 @@
 			<input type="hidden" name="path_info" value="/upload"/>
 		</p>
 		<p>
-			<input type="submit" name="submit" value="Supprimer un iceberg" />
+			<input type="submit" name="submit" value="Delete an iceberg" />
 			<input type="reset" name="reset" value="Reset" />
 		</p>
 		<pre id="output" style="max-height:300px;">
@@ -70,7 +71,7 @@
 			<input type="hidden" name="path_info" value="/upload"/>
 		</p>
 		<p>
-			<input type="submit" name="submit" value="Obtenir un iceberg" />
+			<input type="submit" name="submit" value="Get an iceberg" />
 			<input type="reset" name="reset" value="Reset" />
 		</p>
 	</form>
