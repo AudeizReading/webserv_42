@@ -57,7 +57,7 @@ void				CGIEnviron::_setHeaderEnv()
 }
 
 void				CGIEnviron::_setEnv()
-525dcfbd69ec7c4ff4fe271b3d7bcf69d49b9342{
+{
 	// Extrait la bonne location HTTP, en tenant compte du rerootage demandé par le sujet.
 	// Exemple: dans notre config, "/img/foo/image.png" devient "/foo/image.png"
 	std::string	location = _request.get_location().substr(_location.get_URI().length());
