@@ -95,10 +95,8 @@ std::string Queryparser::parse_otherline(std::string &str, std::string::const_it
 		for (int i = 0; it < end && *it != '\r' && *it != '\n'; it++, i++)
 			val += *it;
 		header.insert(Queryparser::pair_ss(key, val));
-		if (*it != '\r' || *(it + 1) != '\n') {
-			std::cerr << _YEL "Querryparser:\n[" << str << "]"RESET << std::endl;
+		if (*it != '\r' || *(it + 1) != '\n')
 			throw std::runtime_error("Bad Request: Missparsed header");
-		}
 	}
 	if (*it != '\r' || *(it + 1) != '\n')
 		throw std::runtime_error("Bad Request: Missparsed end of header");
