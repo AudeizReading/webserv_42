@@ -34,6 +34,7 @@ private:
 	bool			_parsed;
 	bool			_bind;
 	std::string		_plaintext;
+	std::string::difference_type	_content_start;
 
 	std::string		_method;
 	std::string		_location;

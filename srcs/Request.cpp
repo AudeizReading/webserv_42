@@ -65,6 +65,7 @@ void Request::parse()
 
 		_parse_firstline(_plaintext, it);
 		_content = Queryparser::parse_otherline(_plaintext, it, _header);
+		_content_start = it - _plaintext.begin();
 
 		std::cerr << "\e[30;48;5;245m\n";
 
@@ -103,8 +104,10 @@ void Request::parse()
 void	Request::append_plaintext(std::string const& buffer)
 {
 	_plaintext += buffer;
-	if (_plaintext.find("\r\n\r\n") != std::string::npos)
+	if (!_parsed && _plaintext.find("\r\n\r\n") != std::string::npos)
 		parse();
+	if (_parsed)
+		_content = _plaintext.substr(_content_start);
 }
 
 Queryparser::Firstline Request::_get_first_line() const

@@ -93,28 +93,6 @@ Location const*	Listener::_get_matching_Location(Request const& req, Server cons
 	return target;
 }
 
-void	Listener::answer(int fd, Request &request)
-{
-	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
-	Response					*response;
-	std::string					length = request.get_header()["Content-Length"];
-	std::string					test[fd];
-
-	if (!request.is_complete())
-		response = new Response_Bad_Request(request);
-	else
-	{
-		if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
-			std::cout << "[listener] socket partial#" << fd << std::endl;
-
-		response = new Response_Ok(request);
-	}
-
-	// TODO: What if send() fails ? Or only sends some of the data ?
-	// Aparently the subject forbids checking errno here...
-	_send(fd, response);
-}
-
 bool	Listener::_send(int fd, Response* response)
 {
 	std::cerr << "\e[30;48;5;245m\n";
@@ -131,10 +109,19 @@ bool	Listener::_send(int fd, Response* response)
 
 	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
 
-	int size = send(fd, response->c_str(), response->length(), MSG_DONTWAIT);
-	if (size < response->length())
-		std::cout << "THIS APPPEND OMG, TELL GUILLAUME " << size << "/" << response->length()
-			<< "OMG\nOMG\nOMG\nOMG\nOMG\n" << std::endl;
+	std::string	will_be_send = *response;
+	long size = 0;
+
+	do
+	{
+		will_be_send = will_be_send.substr(size);
+		size = send(fd, will_be_send.c_str(), will_be_send.length(), MSG_DONTWAIT);
+		std::cout << "[listener] send size: " << size << " to socket#" << fd << std::endl;
+	}
+	while (size > -1 && static_cast<unsigned long>(size) < will_be_send.length());
+
+	if (size < 0)
+		std::cout << "Cannot send!" << std::endl;
 
 	delete response;
 
@@ -312,6 +299,7 @@ void	Listener::start_listener()
 
 				bool C = false;
 				Request &request = search->second;
+				std::string length = "";
 				if (request.is_parsed())
 				{
 					if (!request.is_complete())
@@ -334,15 +322,21 @@ void	Listener::start_listener()
 				if (C)
 					continue;
 
-				if (size < PIPE_BUF)
-				{
-					request.parse(); // TODO: Do better (save iterator of the beginning of content)
-					char	addr_str[INET_ADDRSTRLEN];
-					std::cout << _RED << "[listener] Client address: "
-						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
-						<< RESET << std::endl;
-					answer(event_fd, request);
-				}
+				if (request.is_complete())
+					length = request.get_header()["Content-Length"];
+
+				if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+					continue;
+
+				request.parse();
+
+				char	addr_str[INET_ADDRSTRLEN];
+				std::cout << _RED << "[listener] Client address: "
+					<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
+					<< RESET << std::endl;
+
+				std::cout << "[listener] ok answer at socket#" << event_fd << std::endl;
+				_send(event_fd, new Response_Ok(request));
 			}
 			else
 			{
