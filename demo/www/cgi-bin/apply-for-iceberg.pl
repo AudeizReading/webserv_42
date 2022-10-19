@@ -6,8 +6,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 {
 	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
 	# check for upload file
-	#  $buffer = $ENV{'QUERY_STRING'};
-	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
+	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 	if ($ENV{'CONTENT_LENGTH'} > 0)
 	{
 		print "We are waiting for ".$ENV{'CONTENT_LENGTH'}." octets.\r\n";
@@ -15,7 +14,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 		$output_mess="STDIN (Methode POST)" ;
-		%_POST=&split_cgi_array($buffer);
+		%_POST=&cgi_parse_request_string($buffer);
 	}
 
 	&cgi_response_header(200, "OK");
@@ -38,11 +37,11 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 {
-	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
+	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 	if ($ENV{'CONTENT_LENGTH'} > 0)
 	{
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-		%_POST=&split_cgi_array($buffer);
+		%_POST=&cgi_parse_request_string($buffer);
 	}
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
 	{
@@ -91,7 +90,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 {
     $buffer = $ENV{'QUERY_STRING'};
-	%_GET = &split_cgi_array($ENV{'QUERY_STRING'});
+	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 
 	&cgi_response_header(200, "OK");
 	&cgi_print_html_dtd();
@@ -117,111 +116,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		opendir(DIRECTORY_FD, $directory) || die "$directory couldn't be opened: $!";
 		@FILES = grep(/\.png|jpe?g$/i, readdir DIRECTORY_FD);
 
-		$nb_files = $#FILES + 1;
-		$nb_files_per_page = 1;
-		$nb_pages = ceil($nb_files / $nb_files_per_page);
-
-		&cgi_print_html_double_elt("p", "nb de FILES: $nb_files, nb de pages: $nb_pages");
-
-		$page = 1;
-
-		# Affichage des liens
-		print STDOUT "\t<p>\r\n";
-		if (defined($_GET{'page'}) and $_GET{'page'} != 1) # display link for previous page
-		{
-			$page = $_GET{'page'} + 0;
-			$i = $page - 1;
-			print "<a href=\"/cgi-bin/apply-for-iceberg.pl?page=$i&path_info=$_GET{'path_info'}\">Previous</a>";
-		}
-		print STDOUT "Page: |";
-		for ($i = 1; $i <= $nb_pages; ++$i) # display links for page between first and last
-		{
-			if ($i == $page) # no link on the actual page
-			{
-				print " $i |";
-			}
-			else
-			{
-				print "<a href=\"/cgi-bin/apply-for-iceberg.pl?page=$i&path_info=$_GET{'path_info'}\"> $i |</a>";
-			}
-		}
-		if ($nb_pages != 1 and $nb_pages > 1) # display next link
-		{
-			if (!defined($_GET{'page'}))
-			{
-				$i += 2;
-			}
-			elsif (defined($_GET{'page'}) and $_GET{'page'} != $nb_pages)
-			{
-				$i = $_GET{'page'} + 1;
-			}
-			print "<a href=\"/cgi-bin/apply-for-iceberg.pl?page=$i&path_info=$_GET{'path_info'}\">Next</a>";
-		}
-		print STDOUT "\t</p>\r\n";
-
-		$first_file = ($page - 1) * $nb_files_per_page;
-		for ($i = 0; $i < $nb_files_per_page; ++$i) # display links for page between first and last
-		{
-			my $j;
-			if (!defined($_GET{'page'}))
-			{
-				$j = $i;
-			}
-			elsif (defined($_GET{'page'}))
-			{
-				$j = $i + ($nb_files_per_page * $page);
-			}
-			#&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$_GET{'path_info'}/$FILES[$j]\"/>");
-			# do not know why all the routes I get are / ?
-		}
-
-		print STDOUT "\t<ul>\r\n";
-		$i = 0;
-		foreach $file (@FILES)
-		{
-			# ici mettre path /upload/$file pour que ca route derriere le cgi
-			# faire un systeme de pagination si trop de photos
-			&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$_GET{'path_info'}/$file\"/>"); 
-
-			print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
-			&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>"); 
-			#print "<p>";
-			#print "<input type=\"hidden\" name=\"path_info\" filename=\"$_GET{'path_info'}/$file\" value=\"/upload\"/>";
-			#print "</p>";
-			print "<p>";
-			print "<input type=\"submit\" name=\"submit\" value=\"Delete an Iceberg\" />";
-			print "<input type=\"reset\" name=\"reset\" value=\"Reset\" />";
-			print "</p>";
-			print "<pre id=\"output\" style=\"max-height:300px;\">";
-			print "</pre>";
-			print "</form>";
-
-			print "<script>";
-			print "document.getElementById('delete-form$i').addEventListener('submit', function (event) {\r\n";
-			print "	const data = new URLSearchParams(new FormData(document.getElementById('delete-form$i')));\r\n";
-			#
-			print "data.append(\"filename\", \"$_GET{'path_info'}/$file\")\r\n";
-			print "let nb_files = 1;\r\n";
-			print "data.append(\"nb_files\", nb_files.toString());\r\n";
-
-			print "fetch(document.getElementById('delete-form$i').action, {\r\n";
-			print "	method: 'DELETE',\r\n";
-			print "	body: data,\r\n";
-			print "	}).then(function(response) {\r\n";
-			print "		return response.text()\r\n";
-			print "	})\r\n";
-			print "	.then((data) => {\r\n";
-			print "		document.getElementById('output').textContent = \"Request sent\";\r\n";
-			print "location.reload();\r\n";
-			#print "		document.getElementById('output').textContent = data;\r\n";
-			print "	})\r\n";
-			print "		event.preventDefault()\r\n";
-			print 	"event.preventDefault()";
-			print 	"})\r\n";
-			print "	</script>\r\n";
-			++$i;
-		}
-		print STDOUT "\t</ul>\r\n";
+		&cgi_display_files($_GET{'path_info'}, @FILES);
 		closedir(DIRECTORY_FD);
 	}
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
@@ -237,19 +132,19 @@ else # other methods that we do not handle
 
 # split by & and =, put this in a sort of map
 # works with GET and also POST and ENV
-sub split_cgi_array
+sub cgi_parse_request_string
 {
-	local (@pairs, $pair, $name, $value, %form, $arg);
+	my (@pairs, $pair, $name, $value, %form, $arg);
 
-	($arg)=@_;
+	($arg) = @_;
 	@pairs = split(/&/, $arg);
 
-    foreach $pair (@pairs) 
-    {
-        ($name, $value) = split(/=/, $pair);
-        $value =~ tr/+/ /;
-        $value =~ s/%(..)/pack("C", hex($1))/eg;
-        $form{$name} = $value;
+	foreach $pair (@pairs) 
+	{
+		($name, $value) = split(/=/, $pair);
+		$value =~ tr/+/ /;
+		$value =~ s/%(..)/pack("C", hex($1))/eg;
+		$form{$name} = $value;
 	}
 	%form;
 }
@@ -300,13 +195,24 @@ sub cgi_print_html_body_end
 
 sub cgi_print_html_double_elt
 {
-	local ($elt, $value)=@_;
+	my ($elt, $value) = @_;
+
 	print STDOUT "<".$elt.">".$value."</".$elt.">\r\n";
+}
+
+sub cgi_print_html_input_submit_reset
+{
+	my ($value) = @_;
+
+	print "<p>";
+	print "<input type=\"submit\" name=\"submit\" value=\"$value\" />";
+	print "<input type=\"reset\" name=\"reset\" value=\"Reset\" />";
+	print "</p>";
 }
 
 sub	cgi_response_header
 {
-	local ($code_response, $message_response)=@_;
+	my ($code_response, $message_response) = @_;
 
 	# Use a partial custom header functionnality
 	print $ENV{'SERVER_PROTOCOL'}." ".$code_response." ".$message_response."\r\n";
@@ -329,7 +235,8 @@ sub	cgi_response_header
 
 sub	cgi_debug
 {
-	local ($need_env, %array) = @_;
+	my ($need_env, %array) = @_;
+
 	print STDOUT "<p>DEBUG<br/>\t<ul>\r\n";
 	&cgi_print_array_html(%array);
 	if ($need_env > 0)
@@ -337,4 +244,61 @@ sub	cgi_debug
 		&cgi_print_array_html(%ENV);
 	}
 	print STDOUT "\t</ul></p>\r\n";
+}
+
+sub cgi_delete_request_javascript
+{
+	my ($i, $path_info, $file) = @_;
+
+	print "<script>";
+	print "document.getElementById('delete-form$i').addEventListener('submit', function (event) {\r\n";
+	print "	const data = new URLSearchParams(new FormData(document.getElementById('delete-form$i')));\r\n";
+	#
+	print "data.append(\"filename\", \"$path_info/$file\")\r\n";
+	print "let nb_files = 1;\r\n";
+	print "data.append(\"nb_files\", nb_files.toString());\r\n";
+
+	print "fetch(document.getElementById('delete-form$i').action, {\r\n";
+	print "	method: 'DELETE',\r\n";
+	print "	body: data,\r\n";
+	print "	}).then(function(response) {\r\n";
+	print "		return response.text()\r\n";
+	print "	})\r\n";
+	print "	.then((data) => {\r\n";
+	print "		document.getElementById('output').textContent = \"Request sent\";\r\n";
+	print "location.reload();\r\n";
+	#print "		document.getElementById('output').textContent = data;\r\n";
+	print "	})\r\n";
+	print "		event.preventDefault()\r\n";
+	print 	"event.preventDefault()";
+	print 	"})\r\n";
+	print "	</script>\r\n";
+
+}
+
+sub cgi_display_files
+{
+	my ($path_info, @files) = @_;
+	my $i = 0;
+
+	print STDOUT "\t<ul>\r\n";
+	foreach $file (@files)
+	{
+		# ici mettre path /upload/$file pour que ca route derriere le cgi
+		# faire un systeme de pagination si trop de photos
+		&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$path_info/$file\"/>"); 
+
+		print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
+		&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$path_info/$file\" value=\"/upload\"/>"); 
+		&cgi_print_html_input_submit_reset("Delete an Iceberg");
+
+		# where the javascript sinppet displays its output
+		print "<pre id=\"output\" style=\"max-height:300px;\">";
+		print "</pre>";
+		print "</form>";
+
+		&cgi_delete_request_javascript($i, $path_info, $file);
+		++$i;
+	}
+	print STDOUT "\t</ul>\r\n";
 }
