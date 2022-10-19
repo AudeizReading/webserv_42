@@ -21,7 +21,7 @@
 #include "Request.hpp"
 
 Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0), _parsed(0),
-	_plaintext(""), _client_addr(client_in_addr)
+	_bind(false), _plaintext(""), _client_addr(client_in_addr)
 {
 	_server = NULL;
 	_server_location = NULL;
@@ -147,7 +147,7 @@ bool	Request::is_bind() const
 	return (_bind);
 }
 
-void	Request::binded()
+void	Request::do_bind()
 {
 	_bind = 1;
 }

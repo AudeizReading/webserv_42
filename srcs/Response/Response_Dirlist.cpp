@@ -12,19 +12,20 @@
 
 #include <iostream>
 
-#include "Response_Ok.hpp"
+#include "Response_Dirlist.hpp"
 #include "Response_4XX.hpp"
 
-Response_Ok::Response_Ok(Request const& request): Response(request)
+Response_Dirlist::Response_Dirlist(Request const& request, std::string const& content): Response(request)
 {
+	_content = content;
 	create();
 }
 
-Response_Ok::~Response_Ok()
+Response_Dirlist::~Response_Dirlist()
 {
 }
 
-void Response_Ok::_init()
+void Response_Dirlist::_init()
 {
 	const std::string&	req_location = _request->get_location();
 	const Location&		serv_loc = *_request->get_server_location();

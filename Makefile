@@ -20,11 +20,13 @@ SRC =	srcs/main.cpp \
 		srcs/Response/Response_4XX.cpp \
 		srcs/Response/Response_Redirect.cpp \
 		srcs/Response/Response_Ok.cpp \
+		srcs/Response/Response_Dirlist.cpp \
 		srcs/utils.cpp \
 		srcs/CGIManager.cpp \
 		srcs/Request.cpp \
 		srcs/webserv.cpp \
 		srcs/Location.cpp \
+		srcs/dir_listing/dir_lister.cpp \
 		srcs/Queryparser.cpp \
 		srcs/Response.cpp \
 		srcs/Listener.cpp \
@@ -37,6 +39,7 @@ HDEP1 = srcs/Response.hpp \
 		srcs/Response/Response_Redirect.hpp \
 		srcs/Response/Response_Ok.hpp \
 		srcs/Response/Response_4XX.hpp \
+		srcs/Response/Response_Dirlist.hpp \
 		srcs/CGIEnviron.hpp \
 		srcs/Server.hpp \
 		srcs/Queryparser.hpp \
@@ -70,7 +73,7 @@ NAME = webserv
 
 CXX  = clang++
 
-CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast --std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -Wold-style-cast --std=c++98 -g
 
 LDLIBS = -I$(TOML_PARSER) -Iincludes
 

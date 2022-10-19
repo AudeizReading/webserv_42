@@ -11,6 +11,7 @@
 /*  */
 
 #include "Queryparser.hpp"
+#include <webserv.hpp>
 
 Queryparser::Firstline Queryparser::parse_req_firstline(const std::string &str, std::string::const_iterator &it)
 {
@@ -94,8 +95,10 @@ std::string Queryparser::parse_otherline(std::string &str, std::string::const_it
 		for (int i = 0; it < end && *it != '\r' && *it != '\n'; it++, i++)
 			val += *it;
 		header.insert(Queryparser::pair_ss(key, val));
-		if (*it != '\r' || *(it + 1) != '\n')
+		if (*it != '\r' || *(it + 1) != '\n') {
+			std::cerr << _YEL "Querryparser:\n[" << str << "]"RESET << std::endl;
 			throw std::runtime_error("Bad Request: Missparsed header");
+		}
 	}
 	if (*it != '\r' || *(it + 1) != '\n')
 		throw std::runtime_error("Bad Request: Missparsed end of header");
@@ -180,4 +183,3 @@ void	Queryparser::querystring_parser(Queryparser::multimap_ss &data, const std::
 		}
 	}
 }
-

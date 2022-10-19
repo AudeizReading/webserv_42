@@ -1,7 +1,3 @@
-# This is the prototype/proposal of what will be the expected standard of the confirguration file.
-# One we all agree on this, we'll all have to stick to its formatting. No deviating.
-# I'll start work on parsing everything on monday, after we discuss this and agree on a final design.
-
 # Document config;
 # auto servers = config["http"]["server"].Array()
 # servers[0].at_or("listen_addr", make_string(""))

@@ -135,15 +135,15 @@ static bool	_Server_port_compare(Server const& a, Server const& b)
 	return a.get_port() < b.get_port();
 }
 
-static bool	_Server_different_port(Server const& a, Server const& b)
+static bool	_Server_different_port_and_addr(Server const& a, Server const& b)
 {
-	return a.get_port() != b.get_port();
+	return a.get_port() != b.get_port() || a.get_addr() != b.get_addr();
 }
 
 #define CEND(__type, x)		(__type::const_iterator(x.end()))
 #define VEC_CEND(__T, x)	(std::vector<__T>::const_iterator(x.end()))
 
-// Should return a vector of Listeners, each fully configured AND error checked
+// Returns a vector of Listeners, each fully configured AND error checked
 // TOML::Document as an input is already parsed and error checked for missing/incorrect directives
 std::vector<Listener>	create_Listeners(TOML::Document const& conf)
 {
@@ -157,10 +157,10 @@ std::vector<Listener>	create_Listeners(TOML::Document const& conf)
 	// Create a Listener for each different port in servers
 	for (std::vector<Server>::const_iterator it = servers.begin(); it != servers.end();)
 	{
-		std::vector<Server>::const_iterator	different_port
-			= std::find_first_of(it, VEC_CEND(Server, servers), it, it + 1, _Server_different_port);
-		listeners.push_back(Listener(it->get_addr(), it->get_port(), LISTEN_BACKLOG, it, different_port));
-		it = different_port;
+		std::vector<Server>::const_iterator	different_listen
+			= std::find_first_of(it, VEC_CEND(Server, servers), it, it + 1, _Server_different_port_and_addr);
+		listeners.push_back(Listener(it->get_addr(), it->get_port(), LISTEN_BACKLOG, it, different_listen));
+		it = different_listen;
 	}
 	return listeners;
 }

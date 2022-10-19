@@ -1,0 +1,46 @@
+[http]
+include = ["demo/mime_types.toml"]		# All include directives are optional. Put whatever we need in there.
+
+	[[http.server]]
+	listen_port = 8081						# Mandatory parameter.
+	listen_addr = "127.0.0.1"				# Optional. Defaults to "0.0.0.0", meaning accepts requests from anyone.
+
+	error_404 = "test/test_page.html"
+	error_400 = "./res/error/400.html"		# Optional. Defaults to "res/error/XXX.html".
+											# Directive can be any of webserv supported errors.
+
+	[[http.server]]							# Is first server for this port, so is default.
+	listen_port = 4242
+	listen_addr = "127.0.0.1"
+	server_name = ["c2r3p6.42nice.fr", "www.c2r3p6.42nice.fr",
+					"c2r3p6"]
+
+		[[http.server.location]]
+		URI = "/"								# Mandatory parameter.
+		root = "./demo/www"						# Mandatory parameter.
+		index = "index.htdml"					# Optional. Defaults to "index.html".
+		dir_listing = true						# Optional. Defaults to false.
+		# include = ["fast_cgi.toml"]
+
+		[[http.server.location]]
+		URI = "/img/"
+		root = "./demo/www/img"
+		index = "issberg.pn"
+		dir_listing = true
+
+		[[http.server.location]]
+		URI = "foo/bar/fizz"
+		root = "./demo/www"
+		index = "index.hml"
+
+	[[http.server]]
+	listen_port = 4242
+	listen_addr = "127.0.0.1"
+	server_name = [""]
+
+	[[http.server]]
+	listen_port = 4242
+	server_name = [""]
+	[[http.server]]
+	listen_port = 4242
+	server_name = [""]

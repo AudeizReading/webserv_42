@@ -14,6 +14,8 @@
 
 #include <map>
 #include <vector>
+#include <sys/stat.h>
+
 #include <toml_parser.hpp>
 
 #include "Server.hpp"
@@ -39,11 +41,14 @@ private:
 	vector_s				_servers;
 	map_ir					_requests;
 
+	void				answer(int fd, Request const& request);
 	bool				_send(int fd, Response* response);
 	void				_bind_request(Request &request);
 
 	Server const*		_get_matching_Server(Request const& req) const;
 	Location const*		_get_matching_Location(Request const& req, Server const& serv) const;
+
+	bool				redirect_if_dir_request(Request const& req, int event_fd);
 
 public:
 	Listener(std::string const& listen_addr, int listen_port, int listen_backlog, vector_s::const_iterator servers_first, vector_s::const_iterator servers_last);

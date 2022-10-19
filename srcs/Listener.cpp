@@ -28,6 +28,7 @@
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
 #include "Response/Response_Redirect.hpp"
+#include "Response/Response_Dirlist.hpp"
 
 #include <arpa/inet.h>
 #include <cassert>
@@ -42,16 +43,6 @@ Listener::Listener(std::string const& listen_addr, int listen_port, int listen_b
 	): _fd(INT_MIN), _addr(listen_addr), _port(listen_port), _listen_backlog(listen_backlog)
 {
 	_servers.assign(servers_first, servers_last);
-	for (vector_s::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
-	{
-		if (inet_addr(_addr.c_str()) != inet_addr(it->get_addr().c_str()))
-			throw std::runtime_error("Cannot create Listener: port is binded with a different address");
-	}
-	if (inet_addr(_addr.c_str()) < 0)
-		throw std::runtime_error("Cannot create Listener: invalid address");
-	// assert(_port >= 0 && _port <= 65535);
-	if (_port < 0 || _port > 65535)
-		throw std::runtime_error("Cannot create Listener: invalid port number");
 }
 
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
@@ -91,6 +82,81 @@ Location const*	Listener::_get_matching_Location(Request const& req, Server cons
 	}
 	std::cerr << std::endl;
 	return target;
+}
+
+// Only does something when request doesn't end with '/'.
+// Checks if requested URL is a directory. If so, redirects the client to the
+// directory by appending a '/' at the end of the request's location, with a 301 redirect.
+bool	Listener::redirect_if_dir_request(Request const& req, int event_fd)
+{
+	if (req.get_location().back() == '/')
+		return false;
+
+	Location const&	loc = *req.get_server_location();
+	std::string	URI = req.get_location().substr(loc.get_URI().length());
+
+	// std::cerr << _YEL << "request location: " << req.get_location() << '\n'
+	// 	<< "Matched loc URI: " << loc.get_URI() << '\n'
+	// 	<< "loc root: " << loc.get_root() << '\n'
+	// 	<< "Extracted URI: " << URI << '\n'
+	// 	<< "root + URI: " << loc.get_root() << (URI[0] == '/' ? "" : "/") << URI
+	// 	<< RESET << std::endl;
+
+	std::string	URI_full_path = loc.get_root() + (URI[0] == '/' ? "" : "/") + URI;
+	struct stat	file_stat;
+	std::memset(&file_stat, 0, sizeof(file_stat));
+	stat(URI_full_path.c_str(), &file_stat);
+	if (!S_ISDIR(file_stat.st_mode))
+		return false;
+
+	return _send(event_fd, new Response_Redirect_Permanent(req, req.get_location() + '/'));
+}
+
+void	Listener::answer(int fd, Request const& request)
+{
+	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
+	Response								*response;
+	// Request::map_ss::const_iterator	find_length = request.get_header().find("Content-Length");
+	// const std::string	length = (find_length == request.get_header().end() ? "" : find_length->second);
+
+	// if (!request.is_complete()) // TESTME: Redundant? Test already done before at line 295?
+	// 	response = new Response_Bad_Request(request);
+	// else
+	{
+		// if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+		// 	std::cout << "[listener] socket partial#" << fd << std::endl;
+		std::cout << _CYN << "Request location: " << request.get_location() << std::endl;
+		if (request.get_location().back() == '/') // Client has requested a directory
+		{
+			const Location&		serv_loc = *request.get_server_location();
+			const std::string&	index_file_name = serv_loc.get_index();
+			const std::string	path = serv_loc.get_root() + '/'				// Requested path, when adjusted for location root
+				+ request.get_location().substr(serv_loc.get_URI().length());	// This is terrible, I'm sorry
+
+			// Check if index file exists
+			std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
+			if (file_index != NULL) // If index file exists at requested directory
+			{
+				fclose(file_index);
+				response = new Response_Ok(request);
+			}
+
+			// If index doesn't exist but dir_listing (a.k.a. autoindex) is ON
+			else if (serv_loc.allows_dir_listing() == true)
+				response = new Response_Dirlist(request, get_dir_list_html(path));
+
+			// If index doesn't exist and dir_listing (a.k.a. autoindex) is OFF
+			else
+				response = new Response_Forbidden(request);
+		}
+		else // Client hasn't requested a directory, just a normal file
+		{
+			std::cerr << "oefjdklsfjdkslafhjksafhadsjk" << std::endl;
+			response = new Response_Ok(request);
+		}
+
+	}
+	_send(fd, response);
 }
 
 bool	Listener::_send(int fd, Response* response)
@@ -145,7 +211,7 @@ void	Listener::_bind_request(Request &request)
 		std::cerr << "[listener] matched location: " << location->get_URI() << std::endl;
 		request.set_server_location(location);
 	}
-	request.binded();
+	request.do_bind();
 }
 
 void	Listener::start_listener()
@@ -203,7 +269,7 @@ void	Listener::start_listener()
 	address.sin_port = htons(_port);
 	address.sin_addr.s_addr = inet_addr(_addr.c_str());
 
-	std::cout << "[listener] bind socket#" << _fd << " to port " << _port << std::endl;
+	std::cout << "[listener] bind socket#" << _fd << " to " << _addr << ':' <<_port << std::endl;
 	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0)
 		throw std::runtime_error(strerror(errno));
 
@@ -297,46 +363,50 @@ void	Listener::start_listener()
 					search->second.append_plaintext(buffer);
 				}
 
-				bool C = false;
+				bool was_sent = false;
 				Request &request = search->second;
 				std::string length = "";
 				if (request.is_parsed())
 				{
-					if (!request.is_complete())
-						C = _send(event_fd, new Response_Bad_Request(request));
+					if (!request.is_complete()) {
+						std::cerr << _RED << "Hello I'm here" << RESET << std::endl;
+						was_sent = _send(event_fd, new Response_Bad_Request(request));
+					}
 					else if (!request.is_bind())
 					{
 						_bind_request(request);
 						if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
-							C = _send(event_fd, new Response_Internal_Server_Error(request));
-						else if (request.get_server_location()->get_redirect() != "")
-							C = _send(event_fd, new Response_Redirect(request));
+							was_sent = _send(event_fd, new Response_Internal_Server_Error(request));
+						else if (request.get_server_location()->has_redirect())
+							was_sent = _send(event_fd, new Response_Redirect(request));
+						else if (!request.get_server_location()->allows_method(request.get_method()))
+							was_sent = _send(event_fd, new Response_Method_Not_Allowed(request));
+						else
+							was_sent = redirect_if_dir_request(request, event_fd);
 					}
 					else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
-						C = _send(event_fd, new Response_Payload_Too_Large(request));
-					else if (!request.get_server_location()->allows_method(request.get_method()))
-						C = _send(event_fd, new Response_Method_Not_Allowed(request));
+						was_sent = _send(event_fd, new Response_Payload_Too_Large(request));
 				}
 				else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
-					C = _send(event_fd, new Response_Request_Header_Too_Large(request));
-				if (C)
+					was_sent = _send(event_fd, new Response_Request_Header_Too_Large(request));
+
+				if (was_sent)
 					continue;
 
 				if (request.is_complete())
-					length = request.get_header()["Content-Length"];
+					length = request.get_header()["Content-Length"]; // FIXME: non const method
 
-				if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+				// std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
+				if (size == PIPE_BUF || (length != ""
+						&& request.get_content().length() < static_cast<unsigned long>(stoi(length))))
 					continue;
-
-				request.parse();
 
 				char	addr_str[INET_ADDRSTRLEN];
 				std::cout << _RED << "[listener] Client address: "
 					<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
 					<< RESET << std::endl;
 
-				std::cout << "[listener] ok answer at socket#" << event_fd << std::endl;
-				_send(event_fd, new Response_Ok(request));
+				answer(event_fd, request);
 			}
 			else
 			{

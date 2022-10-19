@@ -14,6 +14,14 @@
 #include <toml_parser.hpp>
 #include <http_error_codes.hpp>
 
+#include <arpa/inet.h>
+
+#define IN_RANGE(n, a, b)		(n >= a && n <= b)
+
+static bool	_exists_and_has_type(TOML::Document const& doc, const char *key, TOML::Type type)
+{
+	return (doc.has(key) && doc[key].type() == type);
+}
 static bool	_exists_and_has_type(TOML::Value const& group, const char *key, TOML::Type type)
 {
 	return (group.has(key) && group[key].type() == type);
@@ -21,11 +29,11 @@ static bool	_exists_and_has_type(TOML::Value const& group, const char *key, TOML
 
 void	check_mandatory_directives(TOML::Document const& doc)
 {
-	if (!doc.has("http") || !doc["http"].isGroup())
-		throw std::runtime_error("Illegal or missing `http' object in configuration file");
+	if (!_exists_and_has_type(doc, "http", TOML::T_GROUP))
+		throw std::runtime_error("Illegal or missing `http' block in configuration file");
 
 	const TOML::Document http(doc["http"]);
-	if (!http.has("server") || !http["server"].isArray()
+	if (!_exists_and_has_type(http, "server", TOML::T_ARRAY)
 		|| http["server"].Array().type() != TOML::T_GROUP)
 		throw std::runtime_error("Illegal or missing `server' block(s) in configuration file");
 	
@@ -34,20 +42,22 @@ void	check_mandatory_directives(TOML::Document const& doc)
 		it != serv_array.end();
 		++it)
 	{
-		if (!it->has("listen_port") || !(*it)["listen_port"].isInt())
+		if (!_exists_and_has_type(*it, "listen_port", TOML::T_INT)
+			|| !IN_RANGE(it->at("listen_port").Int(), 0, 65535))
 			throw std::runtime_error("missing or illegal `listen_port' directive");
+
 		if (it->has("location"))
 		{
-			if (!(*it)["location"].isArray() || (*it)["location"].Array().type() != TOML::T_GROUP)
+			if (!it->at("location").isArray() || it->at("location").Array().type() != TOML::T_GROUP)
 				throw std::runtime_error("illegal `location' directive");
 
-			const TOML::Value::array_type&	locations = (*it)["location"].Array();
+			const TOML::Value::array_type&	locations = it->at("location").Array();
 			for (TOML::Document::array_type::const_iterator j = locations.begin();
 				j != locations.end();
 				++j)
 			{
 				if ( !_exists_and_has_type(*j, "URI", TOML::T_STRING)
-					|| !is_valid_URI((*j)["URI"].Str()) )
+					|| !is_valid_URI(j->at("URI").Str()) )
 					throw std::runtime_error("missing or illegal `URI' directive in location");
 				if (!_exists_and_has_type(*j, "root", TOML::T_STRING) && !_exists_and_has_type(*j, "redirect", TOML::T_STRING))
 					throw std::runtime_error("missing or illegal `root' directive in location");
@@ -88,6 +98,7 @@ static bool	_is_supported_error_code(std::string const& key)
 	return false;
 }
 
+// Goes through server block.
 // Checks the error codes of given server for unsupported codes, and inaccessible files.
 static void	_check_error_codes(TOML::Value const& server)
 {
@@ -122,10 +133,15 @@ void	check_optional_directives(TOML::Document const& doc)
 			if (it->has(serv_keys[i]) && (*it)[serv_keys[i]].type() != serv_types[i])
 				throw std::runtime_error(std::string("illegal `") + serv_keys[i] + "' directive in server block");
 		
+		if (it->has("listen_addr")
+			&& inet_addr(it->at("listen_addr").Str().c_str()) == INADDR_NONE
+			&& it->at("listen_addr").Str() != "255.255.255.255")
+			throw (std::runtime_error("invalid `listen_addr` IPv4 address in server block"));
+
 		_check_error_codes(*it);
 
 		// Check type of array for server_name.
-		if (it->has("server_name") && (*it)["server_name"].Array().type() != TOML::T_STRING)
+		if (it->has("server_name") && it->at("server_name").Array().type() != TOML::T_STRING)
 			throw std::runtime_error("illegal `server_name' directive in server block");
 		
 		// Check each location

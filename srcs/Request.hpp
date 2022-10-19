@@ -65,7 +65,7 @@ public:
 	bool			is_parsed() const;
 	bool			is_bind() const;
 
-	void			binded();
+	void			do_bind();
 
 	std::string		get_location() const;
 	std::string		get_query() const;
