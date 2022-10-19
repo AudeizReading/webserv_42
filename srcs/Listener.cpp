@@ -189,6 +189,14 @@ void	Listener::start_listener()
 	if (setsockopt(_fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0)
 		throw std::runtime_error(strerror(errno));
 
+	// TIMEOUT TO 10sec
+	struct timeval timeout;
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
+
+	if (setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+		throw std::runtime_error(strerror(errno));
+
 	/*
 	* En fonction du premier argument de socket, la doc nous guide vers sockaddr_in
 	* doc: https://man7.org/linux/man-pages/man7/ip.7.html
