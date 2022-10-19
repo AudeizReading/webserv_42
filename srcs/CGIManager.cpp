@@ -120,8 +120,6 @@ bool				CGIManager::exec()
 				::close(STDIN_FILENO);
 				::dup2(_cgi_request_fds[0], STDIN_FILENO);
 
-				::close(_cgi_response_fds[1]);
-				::close(_cgi_request_fds[0]);
 				this->_launchExec();
 				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": problem with the CGI executable\033[0m" << std::endl;
 				return false;

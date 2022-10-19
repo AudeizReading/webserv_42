@@ -35,8 +35,6 @@ void				CGIEnviron::_setHeaderEnv()
 		std::transform(http_key.begin(), http_key.end(), http_key.begin(), toupper);
 		std::replace(http_key.begin(), http_key.end(), '-', '_');
 
-				PRINT(http_key);
-				PRINT(http_val);
 		// On cherche le token de delimitations des fichiers binaires 
 		if (http_key == "CONTENT_TYPE" && (http_val.find("multipart/form-data") != std::string::npos))
 		{
@@ -47,10 +45,10 @@ void				CGIEnviron::_setHeaderEnv()
 				{
 					this->_boundary = tmp.substr(tmp.find_first_of("=") + 1);
 				}
-			//	PRINT(http_val);
-			//	PRINT(http_key);
-			//	PRINT(tmp);
-			//	PRINT(this->_boundary);
+				PRINT(http_val);
+				PRINT(http_key);
+				PRINT(tmp);
+				PRINT(this->_boundary);
 			}
 		}
 		this->_env.insert(value_type(("HTTP_" + http_key), header_begin->second));
