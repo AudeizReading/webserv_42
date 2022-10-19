@@ -81,6 +81,9 @@ test_diff "http://127.0.0.1:4242/perdu/" "redirection" "./diff/redirection.txt" 
 
 test_diff "http://localhost:8081/fdshfjkds" "custom_err_page"	"test_page.html"
 
+post=$(cat ./diff/show-post.txt)
+test_diff "http://127.0.0.1:4242/cgi-bin/test/show-post.pl" "check_post" "./diff/show-post.txt" "-d $post -X POST"
+
 pkill -2 webserv
 
 exit 0
