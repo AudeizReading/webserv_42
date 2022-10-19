@@ -116,45 +116,33 @@ void	Listener::answer(int fd, Request const& request)
 {
 	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
 	Response								*response;
-	// Request::map_ss::const_iterator	find_length = request.get_header().find("Content-Length");
-	// const std::string	length = (find_length == request.get_header().end() ? "" : find_length->second);
-
-	// if (!request.is_complete()) // TESTME: Redundant? Test already done before at line 295?
-	// 	response = new Response_Bad_Request(request);
-	// else
+	std::cout << _CYN << "Request location: " << request.get_location() << std::endl;
+	if (request.get_location().back() == '/') // Client has requested a directory
 	{
-		// if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
-		// 	std::cout << "[listener] socket partial#" << fd << std::endl;
-		std::cout << _CYN << "Request location: " << request.get_location() << std::endl;
-		if (request.get_location().back() == '/') // Client has requested a directory
+		const Location&		serv_loc = *request.get_server_location();
+		const std::string&	index_file_name = serv_loc.get_index();
+		const std::string	path = serv_loc.get_root() + '/'				// Requested path, when adjusted for location root
+			+ request.get_location().substr(serv_loc.get_URI().length());	// This is terrible, I'm sorry
+
+		// Check if index file exists
+		std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
+		if (file_index != NULL) // If index file exists at requested directory
 		{
-			const Location&		serv_loc = *request.get_server_location();
-			const std::string&	index_file_name = serv_loc.get_index();
-			const std::string	path = serv_loc.get_root() + '/'				// Requested path, when adjusted for location root
-				+ request.get_location().substr(serv_loc.get_URI().length());	// This is terrible, I'm sorry
-
-			// Check if index file exists
-			std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
-			if (file_index != NULL) // If index file exists at requested directory
-			{
-				fclose(file_index);
-				response = new Response_Ok(request);
-			}
-
-			// If index doesn't exist but dir_listing (a.k.a. autoindex) is ON
-			else if (serv_loc.allows_dir_listing() == true)
-				response = new Response_Dirlist(request, get_dir_list_html(path));
-
-			// If index doesn't exist and dir_listing (a.k.a. autoindex) is OFF
-			else
-				response = new Response_Forbidden(request);
-		}
-		else // Client hasn't requested a directory, just a normal file
-		{
-			std::cerr << "oefjdklsfjdkslafhjksafhadsjk" << std::endl;
+			fclose(file_index);
 			response = new Response_Ok(request);
 		}
 
+		// If index doesn't exist but dir_listing (a.k.a. autoindex) is ON
+		else if (serv_loc.allows_dir_listing() == true)
+			response = new Response_Dirlist(request, get_dir_list_html(path));
+
+		// If index doesn't exist and dir_listing (a.k.a. autoindex) is OFF
+		else
+			response = new Response_Forbidden(request);
+	}
+	else // Client hasn't requested a directory, just a normal file
+	{
+		response = new Response_Ok(request);
 	}
 	_send(fd, response);
 }
