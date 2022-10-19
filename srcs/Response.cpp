@@ -33,12 +33,6 @@ void Response::create()
 
 	_init();
 
-	if (!_request->get_server_location()->allows_method(_request->get_method()))
-	{
-		*this = Response_Method_Not_Allowed(*_request);
-		return ;
-	}
-
 	_content_type = "text/html";
 	if (_content_path != "" && _content == "")
 	{

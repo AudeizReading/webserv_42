@@ -323,6 +323,8 @@ void	Listener::start_listener()
 					}
 					else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
 						C = _send(event_fd, new Response_Payload_Too_Large(request));
+					else if (!request.get_server_location()->allows_method(request.get_method()))
+						C = _send(event_fd, new Response_Method_Not_Allowed(request));
 				}
 				else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
 					C = _send(event_fd, new Response_Request_Header_Too_Large(request));
