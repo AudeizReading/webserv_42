@@ -323,6 +323,7 @@ void	Listener::start_listener()
 
 				if (size < PIPE_BUF)
 				{
+					request.parse(); // TODO: Do better (save iterator of the beginning of content)
 					char	addr_str[INET_ADDRSTRLEN];
 					std::cout << _RED << "[listener] Client address: "
 						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
