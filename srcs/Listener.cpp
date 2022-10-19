@@ -385,9 +385,14 @@ void	Listener::start_listener()
 					length = request.get_header()["Content-Length"]; // FIXME: non const method
 
 				// std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
+				std::string type = request.get_header()["Content-Type"];
 				if (size == PIPE_BUF || (length != ""
-						&& request.get_content().length() < static_cast<unsigned long>(stoi(length))))
+						&& request.get_content().length() < static_cast<unsigned long>(stoi(length))
+						&& type.find("multipart/form-data; ") == std::string::npos))
 					continue;
+
+				if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+					std::cout << "[listener] socket partial#" << event_fd << std::endl;
 
 				char	addr_str[INET_ADDRSTRLEN];
 				std::cout << _RED << "[listener] Client address: "

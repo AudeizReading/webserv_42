@@ -24,7 +24,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_body_begin();
 	&cgi_print_html_double_elt("h1", "Résultat de la requete POST");
 	&cgi_print_html_double_elt("h2", $output_mess);
-	&cgi_print_html_double_elt("p", "Raw Datas:</br> <b>$buffer</b>");
+	&cgi_print_html_double_elt("div", "<p>Raw Datas:</p> <pre>$buffer</pre>");
 	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
 	print STDOUT "\t<ul>\r\n";
 	&cgi_print_array_html(%_GET);
