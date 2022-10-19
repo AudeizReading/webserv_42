@@ -39,12 +39,11 @@ private:
 	vector_s				_servers;
 	map_ir					_requests;
 
-	void				answer(int fd, Request &request);
 	bool				_send(int fd, Response* response);
-	void				bind_request(Request &request);
+	void				_bind_request(Request &request);
 
-	Server const*		get_matching_Server(Request const& req) const;
-	Location const*		get_matching_Location(Request const& req, Server const& serv) const;
+	Server const*		_get_matching_Server(Request const& req) const;
+	Location const*		_get_matching_Location(Request const& req, Server const& serv) const;
 
 public:
 	Listener(std::string const& listen_addr, int listen_port, int listen_backlog, vector_s::const_iterator servers_first, vector_s::const_iterator servers_last);

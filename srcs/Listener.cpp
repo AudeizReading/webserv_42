@@ -55,7 +55,7 @@ Listener::Listener(std::string const& listen_addr, int listen_port, int listen_b
 }
 
 // Returns the server that matches the request, based on the listen_addr and server_name fields.
-Server const*	Listener::get_matching_Server(Request const& req) const
+Server const*	Listener::_get_matching_Server(Request const& req) const
 {
 	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
 	std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
@@ -73,7 +73,7 @@ Server const*	Listener::get_matching_Server(Request const& req) const
 }
 
 // TESTME !!!
-Location const*	Listener::get_matching_Location(Request const& req, Server const& serv) const
+Location const*	Listener::_get_matching_Location(Request const& req, Server const& serv) const
 {
 	std::string req_location_URI = req.get_location();
 	
@@ -144,9 +144,9 @@ bool	Listener::_send(int fd, Response* response)
 	return (true);
 }
 
-void	Listener::bind_request(Request &request)
+void	Listener::_bind_request(Request &request)
 {
-	const Server	*server = get_matching_Server(request);
+	const Server	*server = _get_matching_Server(request);
 	if (server != NULL)
 	{
 		std::cerr << "[listener] matched server "
@@ -154,7 +154,7 @@ void	Listener::bind_request(Request &request)
 			<< "with first server_name: " << server->get_server_names()[0] << std::endl;
 		request.set_server(server);
 
-		const Location	*location = get_matching_Location(request, *server);
+		const Location	*location = _get_matching_Location(request, *server);
 		std::cerr << "[listener] matched location: " << location->get_URI() << std::endl;
 		request.set_server_location(location);
 	}
@@ -315,7 +315,7 @@ void	Listener::start_listener()
 						C = _send(event_fd, new Response_Bad_Request(request));
 					else if (!request.is_bind())
 					{
-						bind_request(request);
+						_bind_request(request);
 						if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
 							C = _send(event_fd, new Response_Internal_Server_Error(request));
 						else if (request.get_server_location()->get_redirect() != "")
