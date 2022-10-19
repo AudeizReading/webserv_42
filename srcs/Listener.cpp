@@ -247,7 +247,10 @@ void	Listener::start_listener()
 		int							new_events;
 
 		//std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
-		new_events = kevent(kq, NULL, 0, &event, 1, NULL);
+		struct timespec timeout;
+		timeout.tv_sec = 10;
+		timeout.tv_nsec = 0;
+		new_events = kevent(kq, NULL, 0, &event, 1, &timeout);
 		if (new_events < 0)
 			throw std::runtime_error(strerror(errno));
 
@@ -276,7 +279,7 @@ void	Listener::start_listener()
 				}
 
 				EV_SET(&change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
-				if (kevent(kq, &change_event, 1, NULL, 0, NULL) < 0)
+				if (kevent(kq, &change_event, 1, NULL, 0, &timeout) < 0)
 				{
 					std::cout << "[listener] kevent error for event#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
