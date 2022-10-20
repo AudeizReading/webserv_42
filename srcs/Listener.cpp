@@ -146,17 +146,22 @@ bool	Listener::prepare_answer(int fd, Request& request, int size)
 	if (request.is_complete())
 		length = request.get_header()["Content-Length"]; // FIXME: non const method
 
-	// std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
+	//std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
 	std::string type = request.get_header()["Content-Type"];
 	if (size == PIPE_BUF || (length != ""
 			&& request.get_content().length() < static_cast<unsigned long>(stoi(length))
-			&& type.find("multipart/form-data; ") == std::string::npos))
+			&& type.find("multipart/form-data; ") == std::string::npos)
+		|| (type.find("multipart/form-data; ") != std::string::npos
+			&& length != ""
+			&& request.get_content().length() < 0.2 * static_cast<unsigned long>(stoi(length))))
 		return (false);
 
 	if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 		std::cout << "[listener] socket partial#" << fd << std::endl;
 
 	std::cerr << request << std::endl;
+
+	request.do_end();
 
 	answer(fd, request);
 	return (true);
@@ -387,7 +392,6 @@ void	Listener::start_listener()
 			{
 				char buffer[PIPE_BUF + 1] = {0};
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
-				// std::cerr << "[listener] read " << size << "/" << PIPE_BUF << " bytes for event#" << event_fd << std::endl;
 				if (size < 0)
 				{
 					std::cout << "[listener] recv error for event#" << event_fd << std::endl;

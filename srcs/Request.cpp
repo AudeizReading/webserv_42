@@ -121,6 +121,57 @@ void	Request::append_plaintext(std::string const& buffer)
 		_content = _plaintext.substr(_content_start);
 }
 
+void	Request::do_end()
+{
+	// ACTUELLEMENT NON UTILISE mais peut etre utile pour le CGI et avoir une map
+	// de chacun des fichiers envoyées en upload
+	// Necessite de comprendre comment convertir de l'octect-stream (string) en
+	// binary
+
+	std::string					type = _header["Content-Type"];
+
+	if (type.find("multipart/form-data; ") == std::string::npos
+		|| type.find("boundary=") == std::string::npos)
+		return ;
+
+	std::cout << "multipart + boundary detected" << std::endl;
+	vector_str					files;  // TODO: finish this?
+
+	std::string					boundary = "--" + type.substr(type.find("boundary=") + 9);
+	if (boundary == "--")
+		return ;
+
+	std::string					str = _content;
+	std::string::size_type		next_boundary = str.find(boundary);
+
+	if (next_boundary == std::string::npos)
+		std::cout << "no boundary in content :(" << std::endl;
+
+	while (next_boundary != std::string::npos) {
+		std::string::const_iterator
+			it = str.begin() + next_boundary + boundary.length() + 2;
+
+
+		Queryparser::map_ss		header;
+		Queryparser::parse_otherline(str, it, header);
+		for (Queryparser::map_ss::const_iterator it2 = header.begin();
+			it2 != header.end(); it2++)
+			std::cerr << " - " << it2->first << ": " << it2->second << std::endl;
+		str = str.substr(it - str.begin());
+
+		std::ofstream outfile ("test.txt", std::ofstream::binary); // TODO: finish this?
+
+		next_boundary = str.find(boundary);
+		std::string out = str;
+		if (next_boundary != std::string::npos)
+			out = out.substr(0, next_boundary);
+		// outfile.write(reinterpret_cast<const char*>(out.c_str()), out.length());
+		outfile << out << std::endl;
+
+		outfile.close();
+	}
+}
+
 Queryparser::Firstline Request::_get_first_line() const
 {
 	try

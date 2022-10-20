@@ -28,6 +28,7 @@ class Request
 public:
 	typedef std::map<std::string, std::string>			map_ss;
 	typedef std::pair<std::string, std::string>			pair_ss;
+	typedef std::vector<std::string>					vector_str;
 
 private:
 	bool			_complete;
@@ -68,6 +69,7 @@ public:
 	bool			is_bind() const;
 
 	void			do_bind();
+	void			do_end();
 
 	std::string		get_location() const;
 	std::string		get_query() const;

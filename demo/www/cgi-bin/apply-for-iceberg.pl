@@ -28,7 +28,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
 	print STDOUT "\t<ul>\r\n";
 	&cgi_print_array_html(%_GET);
-	&cgi_print_array_html(%_POST);
+	# &cgi_print_array_html(%_POST);
 	&cgi_print_array_html(%ENV);
 	print STDOUT "\t</ul>\r\n";
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");

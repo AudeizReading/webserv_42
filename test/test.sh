@@ -84,6 +84,8 @@ test_diff "http://localhost:8081/fdshfjkds" "custom_err_page"	"test_page.html"
 post=$(cat ./diff/show-post.txt)
 test_diff "http://127.0.0.1:4242/cgi-bin/test/show-post.pl" "check_post" "./diff/show-post.txt" "-d $post -X POST"
 
+test_diff "http://127.0.0.1:4242/cgi-bin/show_file_upload.pl" "test_multipart_form-data" "../res/error/404.html" "--form file=@../res/error/404.html"
+
 pkill -2 webserv
 
 exit 0
