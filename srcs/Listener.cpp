@@ -302,6 +302,7 @@ void	Listener::start_listener()
 			if (event.flags & EV_EOF)
 			{
 				std::cout << "[listener] client has disconnected for event#" << event_fd << std::endl;
+				_requests.erase(event_fd);
 				close(event_fd);
 			}
 			else if (event_fd == _fd) // = Socket connection
