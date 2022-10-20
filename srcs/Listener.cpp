@@ -268,6 +268,7 @@ void	Listener::start_listener()
 	std::cout << "[listener] create socket#" << _fd << std::endl;
 	if (_fd < 0)
 		throw std::runtime_error(strerror(errno));
+	// fcntl(_fd, F_SETFL, O_NONBLOCK);
 
 	/*
 	* SOL_SOCKET: La doc indique directement SOL_SOCKET.
@@ -286,7 +287,7 @@ void	Listener::start_listener()
 		throw std::runtime_error(strerror(errno));
 
 	// TIMEOUT TO 10sec
-	struct timeval timeout;
+	struct timeval timeout; // fonctionne peut-être
 	timeout.tv_sec = 10;
 	timeout.tv_usec = 0;
 
@@ -332,27 +333,51 @@ void	Listener::start_listener()
 	int							kq = kqueue();
 	struct kevent				change_event, event;
 
-	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+	// TIMEOUT TO 10sec
+	struct timespec				ktimeout; // fonctionne peut-être
+	ktimeout.tv_sec = 10;
+	ktimeout.tv_nsec = 0;
 
 	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
-	if (kevent(kq, &change_event, 1, NULL, 0, NULL) < 0)
+
+	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 		throw std::runtime_error(strerror(errno));
 
 	while (I_LOVE_ICEBERG)
 	{
 		int							new_events;
 
-		//std::cout << "[listener] check for new events for socket#" << _fd << std::endl;
-		struct timespec timeout;
-		timeout.tv_sec = 10;
-		timeout.tv_nsec = 0;
-		new_events = kevent(kq, NULL, 0, &event, 1, &timeout);
+		new_events = kevent(kq, NULL, 0, &event, 1, &ktimeout);
 		if (new_events < 0)
 			throw std::runtime_error(strerror(errno));
 
 		for (int i = 0, event_fd; new_events > i; i++)
 		{
 			event_fd = event.ident;
+			if (event.filter == EVFILT_READ)	std::cerr << "EVFILT_READ: ";
+			if (event.filter == EVFILT_WRITE)	std::cerr << "EVFILT_WRITE: ";
+			//if (event.filter == EVFILT_EMPTY)	std::cerr << "EVFILT_EMPTY: ";
+			if (event.filter == EVFILT_AIO)		std::cerr << "EVFILT_AIO: ";
+			if (event.filter == EVFILT_VNODE)	std::cerr << "EVFILT_VNODE: ";
+			if (event.filter == EVFILT_PROC)	std::cerr << "EVFILT_PROC: ";
+			//if (event.filter == EVFILT_PROCDESC)	std::cerr << "EVFILT_PROCDESC: ";
+			if (event.filter == EVFILT_SIGNAL)	std::cerr << "EVFILT_SIGNAL: ";
+			if (event.filter == EVFILT_TIMER)	std::cerr << "EVFILT_TIMER: ";
+			if (event.filter == EVFILT_USER)	std::cerr << "EVFILT_USER: ";
+
+			if (event.flags & EV_ADD)			std::cerr << "EV_ADD ";
+			if (event.flags & EV_ENABLE)		std::cerr << "EV_ENABLE ";
+			if (event.flags & EV_DISABLE)		std::cerr << "EV_DISABLE ";
+			if (event.flags & EV_DISPATCH)		std::cerr << "EV_DISPATCH ";
+			if (event.flags & EV_DELETE)		std::cerr << "EV_DELETE ";
+			if (event.flags & EV_RECEIPT)		std::cerr << "EV_RECEIPT ";
+			if (event.flags & EV_ONESHOT)		std::cerr << "EV_ONESHOT ";
+			if (event.flags & EV_CLEAR)			std::cerr << "EV_CLEAR ";
+			if (event.flags & EV_EOF)			std::cerr << "EV_EOF ";
+			if (event.flags & EV_ERROR)			std::cerr << "EV_ERROR ";
+
+			std::cerr << std::endl;
 
 			if (event.flags & EV_EOF)
 			{
@@ -376,13 +401,13 @@ void	Listener::start_listener()
 				}
 
 				EV_SET(&change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
-				if (kevent(kq, &change_event, 1, NULL, 0, &timeout) < 0)
+				if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 				{
 					std::cout << "[listener] kevent error for event#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
 				}
 			}
-			else if (event.filter & EVFILT_READ)
+			else if (event.filter == EVFILT_READ)
 			/*
 			 * This event coming each block of 512 (PIPE_BUF) character of the request, until we :
 			 * A) Read all the data (also sometime, content cannot be thrust)
