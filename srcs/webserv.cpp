@@ -21,7 +21,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-t_map_ss	*mime_types = NULL;
+const t_map_ss	*g_mime_types = NULL;	// At least if we use a global, make it const
 
 struct s_thread_init
 {
@@ -42,7 +42,7 @@ void signal_handler(int signal) // TESTME: Would sigaction be better ?
 	(void) signal;
 }
 
-// Note: The p_thread_init pointer WILL be invalidated after this call. This is fine,
+// NOTE: The p_thread_init pointer WILL be invalidated after this call. This is fine,
 // because it only contains pointers to values that aren't invalidated.
 /* static */ void	*init_thread(void *p_thread_init)
 {
@@ -71,38 +71,6 @@ void signal_handler(int signal) // TESTME: Would sigaction be better ?
 	return (0);
 }
 
-// // Note: The p_pair pointer WILL be invalidated after this call. This is fine,
-// // because it only contains pointers to values that are NOT invalidated.
-// /* static */ void	*init_thread2(void *p_pair)
-// {
-// 	typedef	std::pair<Listener*, pthread_cond_t*>	init_pair_t;
-
-// 	init_pair_t		*pair = static_cast< init_pair_t* >(p_pair);
-// 	Listener		&listener = *pair->first;
-// 	pthread_cond_t	*condvar = pair->second;
-
-// 	pthread_mutex_t	test;
-// 	pthread_mutex_init(&test, NULL);
-
-// 	pthread_mutex_lock(&test);
-// 	pthread_cond_wait(condvar, &test);
-// 	std::cout << "FINISHED WAITING" << std::endl;
-// 	pthread_mutex_unlock(&test);
-// 	pthread_mutex_destroy(&test);
-
-// 	try
-// 	{
-// 		listener.start_listener();
-// 	}
-// 	catch (std::exception const& e)
-// 	{
-// 		std::cerr << "fatal: webserv terminated because " << e.what() << std::endl;
-// 		pthread_cond_signal(condvar);
-// 	}
-
-// 	return NULL;
-// }
-
 static bool create_dico_mimetypes(TOML::Document config)
 {
 	if (!config.has("mime_types"))
@@ -113,10 +81,11 @@ static bool create_dico_mimetypes(TOML::Document config)
 
 	TOML::Document	conf = config.at("mime_types");
 
-	mime_types = new t_map_ss();
+	t_map_ss	*new_mime_types = new t_map_ss();
 	for (TOML::Document::iterator it = conf.begin(); it != conf.end(); ++it)
 		// TODO: Parse forbidden char ???
-		mime_types->insert(std::pair<std::string, std::string>(it->key(), it->Str()));
+		new_mime_types->insert(std::pair<std::string, std::string>(it->key(), it->Str()));
+	g_mime_types = new_mime_types;
 	return (true);
 }
 

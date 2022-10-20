@@ -76,8 +76,8 @@ void Response::create()
 			content << file.rdbuf();
 			_content = content.str();
 
-			if (mime_types->find(ext) != mime_types->end())
-				_content_type = mime_types->at(ext);
+			if (g_mime_types->find(ext) != g_mime_types->end())
+				_content_type = g_mime_types->at(ext);
 			else
 				_content_type = "text/plain";
 		}

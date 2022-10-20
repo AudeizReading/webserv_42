@@ -25,7 +25,7 @@
 
 typedef std::map<std::string, std::string>			t_map_ss;
 
-extern t_map_ss	*mime_types;
+extern const t_map_ss	*g_mime_types;
 
 int				webserv(const char *config_file_path);
 
