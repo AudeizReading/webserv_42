@@ -13,6 +13,7 @@
 #include <string>
 #include <sstream>
 #include <dirent.h>
+#include <cassert>
 
 #include <webserv_utils.hpp>
 
