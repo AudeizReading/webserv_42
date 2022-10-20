@@ -37,17 +37,14 @@ std::string	get_dir_list_html(std::string const& dir_path)
 	html << 	"<hr>"CRLF;
 	html << 	"<pre>"CRLF;
 
-	DIR		*dir;
-	if ( (dir = opendir(dir_path.c_str())) == NULL )
-		html << CRLF;
-	else
+	DIR		*dir = opendir(dir_path.c_str());
+	assert(dir != NULL); // If this happens, tell Paul!
+
+	for (struct dirent *dirent = readdir(dir); dirent != NULL; dirent = readdir(dir))
 	{
-		for (struct dirent *dirent = readdir(dir); dirent != NULL; dirent = readdir(dir))
-		{
-			html << LINK(dirent) << CRLF;
-		}
-		closedir(dir);
+		html << LINK(dirent) << CRLF;
 	}
+	closedir(dir);
 
 	html << 	"</pre>"CRLF;
 	html << 	"<hr>"CRLF;

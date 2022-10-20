@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include "webserv.hpp"
 #include "Listener.hpp"
@@ -181,17 +182,26 @@ void	Listener::answer(int fd, Request const& request)
 
 		// Check if index file exists
 		std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
+		DIR			*dir;
 		if (file_index != NULL) // If index file exists at requested directory
 		{
 			fclose(file_index);
 			response = new Response_Ok(request);
 		}
 
-		// If index doesn't exist but dir_listing (a.k.a. autoindex) is ON
-		else if (serv_loc.allows_dir_listing() == true)
+		// Index doesn't exist but requested directory EXISTS and dir_listing (aka autoindex) is ON
+		else if (serv_loc.allows_dir_listing() == true
+			&& (dir = opendir(path.c_str())) != NULL )
+		{
+			closedir(dir);
 			response = new Response_Dirlist(request, get_dir_list_html(path));
+		}
 
-		// If index doesn't exist and dir_listing (a.k.a. autoindex) is OFF
+		// Index doesn't exist, directory doesn't exist, dir_listing is OFF
+		else if ( (dir = opendir(path.c_str())) == NULL )
+			response = new Response_Not_Found(request);
+
+		// Index doesn't exist, directory exists, and dir_listing (a.k.a. autoindex) is OFF
 		else
 			response = new Response_Forbidden(request);
 	}
