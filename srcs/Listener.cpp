@@ -235,7 +235,7 @@ bool	Listener::_send(int fd, Response* response)
 	do
 	{
 		will_be_send = will_be_send.substr(size);
-		size = send(fd, will_be_send.c_str(), will_be_send.length(), MSG_DONTWAIT);
+		size = send(fd, will_be_send.c_str(), will_be_send.length(), 0);
 		std::cout << "[listener] send size: " << size << " to socket#" << fd << std::endl;
 	}
 	while (size > -1 && static_cast<unsigned long>(size) < will_be_send.length());
@@ -279,7 +279,7 @@ void	Listener::start_listener()
 	std::cout << "[listener] create socket#" << _fd << std::endl;
 	if (_fd < 0)
 		throw std::runtime_error(strerror(errno));
-	// fcntl(_fd, F_SETFL, O_NONBLOCK);
+	fcntl(_fd, F_SETFL, O_NONBLOCK);
 
 	/*
 	* SOL_SOCKET: La doc indique directement SOL_SOCKET.
