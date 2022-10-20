@@ -52,19 +52,15 @@ static bool create_dico_mimetypes(TOML::Document config)
 	return (true);
 }
 
-// NOTE: argc and argv are offset by -1. argv[0] is the first argument,
-// and argc == 0 means no arguments.
-int	webserv(int argc, char *argv[])
-{	
-	if (argc != 1)
-	{
-		std::cerr << "Error: missing configuration file path" << std::endl;
-		return 1;
-	}
+int	webserv(const char *config_file_path)
+{
+	if (config_file_path == NULL)
+		config_file_path = DEFAULT_CONFIG_FILE;
+
 	std::signal(SIGINT, signal_handler);
 
-	std::cout << "Config file: " << argv[0] << std::endl;
-	TOML::Document	config = parse_config_file(argv[0]);
+	std::cout << "Config file: " << config_file_path << std::endl;
+	TOML::Document	config = parse_config_file(config_file_path);
 	std::cout << F_BGRN("Config parsed :)") << std::endl;
 
 	if (!create_dico_mimetypes(config.at("http")))
