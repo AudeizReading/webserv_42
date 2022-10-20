@@ -41,6 +41,7 @@ private:
 	vector_s				_servers;
 	map_ir					_requests;
 
+	bool				prepare_answer(int fd, Request& request, int size);
 	void				answer(int fd, Request const& request);
 	bool				_send(int fd, Response* response);
 	void				_bind_request(Request &request);

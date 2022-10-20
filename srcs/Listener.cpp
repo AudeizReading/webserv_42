@@ -112,6 +112,54 @@ bool	Listener::redirect_if_dir_request(Request const& req, int event_fd)
 	return _send(event_fd, new Response_Redirect_Permanent(req, req.get_location() + '/'));
 }
 
+bool	Listener::prepare_answer(int fd, Request& request, int size)
+{
+	bool was_sent = false;
+	if (request.is_parsed())
+	{
+		if (!request.is_complete()) {
+			std::cerr << _RED << "Hello I'm here" << RESET << std::endl;
+			was_sent = _send(fd, new Response_Bad_Request(request));
+		}
+		else if (!request.is_bind())
+		{
+			_bind_request(request);
+			if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
+				was_sent = _send(fd, new Response_Internal_Server_Error(request));
+			else if (request.get_server_location()->has_redirect())
+				was_sent = _send(fd, new Response_Redirect(request));
+			else if (!request.get_server_location()->allows_method(request.get_method()))
+				was_sent = _send(fd, new Response_Method_Not_Allowed(request));
+			else
+				was_sent = redirect_if_dir_request(request, fd);
+		}
+		else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
+			was_sent = _send(fd, new Response_Payload_Too_Large(request));
+	}
+	else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
+		was_sent = _send(fd, new Response_Request_Header_Too_Large(request));
+
+	if (was_sent)
+		return (true);
+
+	std::string length = "";
+	if (request.is_complete())
+		length = request.get_header()["Content-Length"]; // FIXME: non const method
+
+	// std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
+	std::string type = request.get_header()["Content-Type"];
+	if (size == PIPE_BUF || (length != ""
+			&& request.get_content().length() < static_cast<unsigned long>(stoi(length))
+			&& type.find("multipart/form-data; ") == std::string::npos))
+		return (false);
+
+	if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+		std::cout << "[listener] socket partial#" << fd << std::endl;
+
+	answer(fd, request);
+	return (true);
+}
+
 void	Listener::answer(int fd, Request const& request)
 {
 	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
@@ -328,6 +376,12 @@ void	Listener::start_listener()
 				}
 			}
 			else if (event.filter & EVFILT_READ)
+			/*
+			 * This event coming each block of 512 (PIPE_BUF) character of the request, until we :
+			 * A) Read all the data (also sometime, content cannot be thrust)
+			 * B) close
+			 * Also, we can send() before A) or B).
+			 */
 			{
 				char buffer[PIPE_BUF + 1] = {0};
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
@@ -343,64 +397,19 @@ void	Listener::start_listener()
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
-					_requests.insert(Listener::pair_ir(event_fd, Request(buffer, address.sin_addr)));
+					_requests.insert(Listener::pair_ir(event_fd, Request(address.sin_addr)));
 					search = _requests.find(event_fd);
 					search->second.set_s_sloc(&_servers[0], &_servers[0].get_locations()[0]);
 				}
-				else
+				search->second.append_plaintext(buffer);
+
+				if (prepare_answer(event_fd, search->second, size))
 				{
-					search->second.append_plaintext(buffer);
+					char	addr_str[INET_ADDRSTRLEN];
+					std::cout << _RED << "[listener] Client address: "
+						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
+						<< RESET << std::endl;
 				}
-
-				bool was_sent = false;
-				Request &request = search->second;
-				std::string length = "";
-				if (request.is_parsed())
-				{
-					if (!request.is_complete()) {
-						std::cerr << _RED << "Hello I'm here" << RESET << std::endl;
-						was_sent = _send(event_fd, new Response_Bad_Request(request));
-					}
-					else if (!request.is_bind())
-					{
-						_bind_request(request);
-						if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
-							was_sent = _send(event_fd, new Response_Internal_Server_Error(request));
-						else if (request.get_server_location()->has_redirect())
-							was_sent = _send(event_fd, new Response_Redirect(request));
-						else if (!request.get_server_location()->allows_method(request.get_method()))
-							was_sent = _send(event_fd, new Response_Method_Not_Allowed(request));
-						else
-							was_sent = redirect_if_dir_request(request, event_fd);
-					}
-					else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
-						was_sent = _send(event_fd, new Response_Payload_Too_Large(request));
-				}
-				else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
-					was_sent = _send(event_fd, new Response_Request_Header_Too_Large(request));
-
-				if (was_sent)
-					continue;
-
-				if (request.is_complete())
-					length = request.get_header()["Content-Length"]; // FIXME: non const method
-
-				// std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
-				std::string type = request.get_header()["Content-Type"];
-				if (size == PIPE_BUF || (length != ""
-						&& request.get_content().length() < static_cast<unsigned long>(stoi(length))
-						&& type.find("multipart/form-data; ") == std::string::npos))
-					continue;
-
-				if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
-					std::cout << "[listener] socket partial#" << event_fd << std::endl;
-
-				char	addr_str[INET_ADDRSTRLEN];
-				std::cout << _RED << "[listener] Client address: "
-					<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
-					<< RESET << std::endl;
-
-				answer(event_fd, request);
 			}
 			else
 			{
@@ -416,6 +425,7 @@ Listener::~Listener()
 		return ;
 	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
+	_requests.clear();
 	if (close(_fd) < 0)
 		throw std::runtime_error(strerror(errno));
 }

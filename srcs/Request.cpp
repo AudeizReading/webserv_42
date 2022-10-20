@@ -20,12 +20,11 @@
 #include "webserv.hpp"
 #include "Request.hpp"
 
-Request::Request(std::string const& plaintext, in_addr client_in_addr) : _complete(0), _parsed(0),
+Request::Request(in_addr client_in_addr) : _complete(0), _parsed(0),
 	_bind(false), _plaintext(""), _client_addr(client_in_addr)
 {
 	_server = NULL;
 	_server_location = NULL;
-	append_plaintext(plaintext);
 }
 
 void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)

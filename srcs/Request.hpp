@@ -53,7 +53,7 @@ private:
 	Queryparser ::Firstline _get_first_line() const;
 
 public:
-	Request(std::string const& plaintext, in_addr client_in_addr);
+	Request(in_addr client_in_addr);
 
 	~Request();
 
