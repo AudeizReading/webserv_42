@@ -177,8 +177,9 @@ void	Listener::answer(int fd, Request const& request)
 	{
 		const Location&		serv_loc = *request.get_server_location();
 		const std::string&	index_file_name = serv_loc.get_index();
-		const std::string	path = serv_loc.get_root() + '/'				// Requested path, when adjusted for location root
-			+ request.get_location().substr(serv_loc.get_URI().length());	// This is terrible, I'm sorry
+		const std::string	adjusted_URI = request.get_location().substr(serv_loc.get_URI().length()); // This is terrible, I'm sorry
+		const std::string	path = serv_loc.get_root()
+			+ (adjusted_URI[0] == '/' ? "" : "/") + adjusted_URI;
 
 		// Check if index file exists
 		std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
