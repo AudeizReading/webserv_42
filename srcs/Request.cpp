@@ -65,6 +65,32 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		throw std::runtime_error("Bad Request: Forbidden previous folder");
 }
 
+std::ostream& operator<<(std::ostream& os, Request const& request)
+{
+	os << "\e[30;48;5;245m\n";
+
+	os << "Method: " << request.get_method() << " - ";
+	os << "Location: " << request.get_location() << std::endl;
+	if (request.get_query().length() > 0)
+		os << "Query: " << request.get_query() << std::endl;
+	if (request.get_content().length() > 0)
+	{
+		if (request.get_content().length() < 1400)
+			os << "Content: " << request.get_content() << std::endl;
+		else
+			os << "Content: <_content length: "
+				<< request.get_content().length() << ">" << std::endl;
+	}
+
+	os << "Headers (" << request.get_header().size() << "):" << std::endl;
+	for (Request::map_ss::const_iterator it2 = request.get_header().begin();
+			it2 != request.get_header().end(); it2++)
+		os << " - " << it2->first << ": " << it2->second << std::endl;
+
+	os << RESET << std::endl;
+	return (os);
+}
+
 void Request::parse()
 {
 	_parsed = 1;
@@ -76,31 +102,7 @@ void Request::parse()
 		_content = Queryparser::parse_otherline(_plaintext, it, _header);
 		_content_start = it - _plaintext.begin();
 
-		std::cerr << "\e[30;48;5;245m\n";
-
-		std::cout << "Method: " << _method << " - ";
-		std::cout << "Location: " << _location << std::endl;
-		if (_query.length() > 0)
-			std::cout << "Query: " << _query << std::endl;
-		if (_content.length() > 0)
-		{
-			if (_content.length() < 1400)
-				std::cout << "Content: " << _content << std::endl;
-			else
-				std::cout << "Content: <_content length: "
-					<< _content.length() << ">" << std::endl;
-		}
-
-		map_ss::iterator it2;
-		std::cerr << "Headers (" << _header.size() << "):" << std::endl;
-		for (it2 = _header.begin(); it2 != _header.end(); it2++)
-			std::cerr << " - " << it2->first << ": " << it2->second << std::endl;
-
-		std::cerr << RESET << std::endl;
-
-		// if you want test 400, uncomment this line:
-		// throw std::runtime_error("Bad Request");
-
+		std::cerr << "Request parsed: " << _method << " " << _location << std::endl;
 		_complete = 1;
 	}
 	catch(const std::runtime_error& e)

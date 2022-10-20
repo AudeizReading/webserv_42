@@ -92,3 +92,5 @@ public:
 
 	in_addr			get_client_addr() const;
 };
+
+std::ostream& operator<<(std::ostream& os, Request const& request);

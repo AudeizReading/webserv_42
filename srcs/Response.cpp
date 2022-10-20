@@ -59,7 +59,7 @@ void Response::create()
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
 				
-				std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext << "\033[0m" << std::endl;
+				// std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext.substr(0, 1500) << "\033[0m… (limit of 1500char)" << std::endl;
 			}
 			catch(const std::exception& e)
 			{
@@ -118,7 +118,7 @@ void Response::create()
 		}
 		catch(const std::exception& e)
 		{
-			std::cout << "[CGI] Not a full custom header (" << e.what() << ")" << std::endl;
+			//std::cout << "[CGI] Not a full custom header (" << e.what() << ")" << std::endl;
 		}
 
 		try
@@ -134,7 +134,7 @@ void Response::create()
 		catch(const std::exception& e)
 		{
 			_content = _plaintext;
-			std::cout << "[CGI] No partial custom header (" << e.what() << ")" << std::endl;
+			//std::cout << "[CGI] No partial custom header (" << e.what() << ")" << std::endl;
 		}
 	}
 

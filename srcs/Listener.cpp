@@ -156,6 +156,8 @@ bool	Listener::prepare_answer(int fd, Request& request, int size)
 	if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 		std::cout << "[listener] socket partial#" << fd << std::endl;
 
+	std::cerr << request << std::endl;
+
 	answer(fd, request);
 	return (true);
 }
@@ -399,8 +401,9 @@ void	Listener::start_listener()
 					_requests.insert(Listener::pair_ir(event_fd, Request(address)));
 					search = _requests.find(event_fd);
 					search->second.set_s_sloc(&_servers[0], &_servers[0].get_locations()[0]);
-					std::cout << _RED << "[listener] Client address: " << search->second.get_addr()
-											<< " host: " << search->second.get_host() << RESET << std::endl;
+					std::cout << "[listener] Start recv socket#" << event_fd
+						<< " ip: " << search->second.get_addr()
+						<< " host: " << search->second.get_host() << std::endl;
 				}
 				search->second.append_plaintext(buffer);
 
