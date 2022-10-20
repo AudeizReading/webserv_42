@@ -33,6 +33,7 @@ private:
 	bool			_complete;
 	bool			_parsed;
 	bool			_bind;
+
 	std::string		_plaintext;
 	std::string::difference_type	_content_start;
 
@@ -41,19 +42,20 @@ private:
 	std::string		_query;
 	std::string		_content;
 
+	std::string		_addr;
+	std::string		_host;
+
 	map_ss			_header;
 
 	const Server	*_server;
 	const Location	*_server_location;
-
-	in_addr			_client_addr;
 
 	void		_parse_firstline(const std::string &str, std::string::const_iterator &it);
 	
 	Queryparser ::Firstline _get_first_line() const;
 
 public:
-	Request(in_addr client_in_addr);
+	Request(struct sockaddr_in address);
 
 	~Request();
 
@@ -73,6 +75,9 @@ public:
 	std::string		get_method() const;
 	std::string		get_http_version() const;
 	std::string		get_buffer() const;
+
+	std::string		get_addr() const;
+	std::string		get_host() const;
 
 	Server const*	get_server() const;
 	void			set_server(Server const* src);

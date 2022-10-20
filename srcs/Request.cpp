@@ -13,18 +13,28 @@
 #include <iostream>
 #include <sstream>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <unistd.h>
+#include <netdb.h>
 
 #include <toml_parser.hpp>
 
 #include "webserv.hpp"
 #include "Request.hpp"
 
-Request::Request(in_addr client_in_addr) : _complete(0), _parsed(0),
-	_bind(false), _plaintext(""), _client_addr(client_in_addr)
+Request::Request(struct sockaddr_in address) : _complete(0), _parsed(0),
+	_bind(false), _plaintext("")
 {
 	_server = NULL;
 	_server_location = NULL;
+
+	char	addr_str[INET_ADDRSTRLEN] = {0};
+	char	host_str[NI_MAXHOST] = {0};
+	inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN);
+	getnameinfo(reinterpret_cast<struct sockaddr *>(&address), sizeof(struct sockaddr_in),
+		host_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD);
+	_addr = addr_str;
+	_host = host_str;
 }
 
 void Request::_parse_firstline(const std::string &str, std::string::const_iterator &it)
@@ -183,6 +193,16 @@ std::string	Request::get_buffer() const
 	return (_plaintext);
 }
 
+std::string	Request::get_addr() const
+{
+	return (_addr);
+}
+
+std::string	Request::get_host() const
+{
+	return (_host);
+}
+
 Server const*	Request::get_server() const
 {
 	if (!_server)
@@ -221,9 +241,4 @@ Request::map_ss&	Request::get_header()
 Request::map_ss const&	Request::get_header() const
 {
 	return (_header);
-}
-
-in_addr		Request::get_client_addr() const
-{
-	return _client_addr;
 }

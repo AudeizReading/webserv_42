@@ -71,11 +71,6 @@ void				CGIEnviron::_setEnv()
 	// La racine de l'endroit où tu es, c'est la root de la Location + son URI.
 	// http://nginx.org/en/docs/beginners_guide.html, section "Serving Static Content"
 	std::string	root = _location.get_root() + '/'; 
-	
-	std::string	port = _server.get_port_str();
-
-//	std::string	remote_host = _request.get_?(); //@pbremond ici, j'ai besoin du nom du client (comme pour le serveur)
-//	std::string	remote_addr = _request.get_?(); //@pbremond ici, j'ai besoin de l'ip du client
 
 	std::string	script_name = root + location;
 	// path_info : This is the path part after the script name (yes it can) -> considered as infos on the path by rfc
@@ -100,22 +95,22 @@ void				CGIEnviron::_setEnv()
 	// Retraitement de la query string pouvant contenir le path_info
 	this->_setHeaderEnv();
 
-	std::string	cgi_env[][2] = {\
-			{REQUEST_METHOD, this->_request.get_method()},\
-			{QUERY_STRING, query_string},\
-			{CONTENT_LENGTH, content_length}, \
-			{CONTENT_TYPE, this->_header["Content-Type"]}, \
-			{GATEWAY_INTERFACE, "CGI/1.1"}, \
-			{SERVER_SOFTWARE, "webserv"}, \
-			{SERVER_NAME, this->_header["Host"]}, \
-			{SERVER_PROTOCOL, this->_request.get_http_version()}, \
-			{SERVER_PORT, port}, \
-			{PATH_INFO, path_info}, \
-			{PATH_TRANSLATED, path_translated}, \
-			{DOCUMENT_ROOT, root}, \
-			{SCRIPT_NAME, script_name}, \
-			{REMOTE_HOST, "\033[44;37m MUST -> has to be taken from request?\033[0m"}, \
-			{REMOTE_ADDR, "\033[44;37m MUST -> has to be taken from request?\033[0m"} \
+	std::string	cgi_env[][2] = {
+			{REQUEST_METHOD, this->_request.get_method()},
+			{QUERY_STRING, query_string},
+			{CONTENT_LENGTH, content_length},
+			{CONTENT_TYPE, this->_header["Content-Type"]},
+			{GATEWAY_INTERFACE, "CGI/1.1"},
+			{SERVER_SOFTWARE, _server.get_name()},
+			{SERVER_NAME, this->_header["Host"]},
+			{SERVER_PROTOCOL, this->_request.get_http_version()},
+			{SERVER_PORT, _server.get_port_str()},
+			{PATH_INFO, path_info},
+			{PATH_TRANSLATED, path_translated},
+			{DOCUMENT_ROOT, root},
+			{SCRIPT_NAME, script_name},
+			{REMOTE_HOST, _request.get_host()},
+			{REMOTE_ADDR, _request.get_addr()} 
 	};
 
 	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly

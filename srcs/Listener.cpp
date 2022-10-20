@@ -393,22 +393,21 @@ void	Listener::start_listener()
 					continue;
 				}
 
-				// std::cerr << BRED"[listener]: " << __FILE__ << " " << __LINE__ << ": buffer: " << buffer << "\nsize: " << std::string(buffer).size() << RESET << std::endl;
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
-					_requests.insert(Listener::pair_ir(event_fd, Request(address.sin_addr)));
+					_requests.insert(Listener::pair_ir(event_fd, Request(address)));
 					search = _requests.find(event_fd);
 					search->second.set_s_sloc(&_servers[0], &_servers[0].get_locations()[0]);
+					std::cout << _RED << "[listener] Client address: " << search->second.get_addr()
+											<< " host: " << search->second.get_host() << RESET << std::endl;
 				}
 				search->second.append_plaintext(buffer);
 
 				if (prepare_answer(event_fd, search->second, size))
 				{
-					char	addr_str[INET_ADDRSTRLEN];
-					std::cout << _RED << "[listener] Client address: "
-						<< inet_ntop(AF_INET, static_cast<void*>(&address.sin_addr), addr_str, INET_ADDRSTRLEN)
-						<< RESET << std::endl;
+					// Do something after send & close (one time for each request)
+					continue ;
 				}
 			}
 			else
