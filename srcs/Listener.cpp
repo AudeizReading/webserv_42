@@ -366,6 +366,8 @@ void	Listener::start_listener()
 		for (int i = 0, event_fd; new_events > i; i++)
 		{
 			event_fd = event.ident;
+
+			/*
 			if (event.filter == EVFILT_READ)	std::cerr << "EVFILT_READ: ";
 			if (event.filter == EVFILT_WRITE)	std::cerr << "EVFILT_WRITE: ";
 			//if (event.filter == EVFILT_EMPTY)	std::cerr << "EVFILT_EMPTY: ";
@@ -389,6 +391,7 @@ void	Listener::start_listener()
 			if (event.flags & EV_ERROR)			std::cerr << "EV_ERROR ";
 
 			std::cerr << std::endl;
+			*/
 
 			if (event.flags & EV_EOF)
 			{
