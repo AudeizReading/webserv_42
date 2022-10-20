@@ -214,6 +214,9 @@ void	Listener::answer(int fd, Request const& request)
 
 bool	Listener::_send(int fd, Response* response)
 {
+	if (_port == 1234)
+		throw std::runtime_error("DEBUG: THROWING BECAUSE REQUESTED ON PORT 1234");
+
 	std::cerr << "\e[30;48;5;245m\n";
 	if (response->get_ctype().rfind("text/", 0) == 0)
 		// Redirect STDERR to file to get primitive log
@@ -326,6 +329,9 @@ void	Listener::start_listener()
 	std::cout << "[listener] bind socket#" << _fd << " to " << _addr << ':' <<_port << std::endl;
 	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0)
 		throw std::runtime_error(strerror(errno));
+
+	// if (_port == 1234)
+	// 	throw std::runtime_error("DEBUG: TEST EXCEPTION THROW");
 
 	std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
 	if (listen(_fd, _listen_backlog) < 0)

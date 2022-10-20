@@ -25,7 +25,7 @@ int	main(int argc, const char *argv[])
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << BRED << "Caught exception in main - THIS SHOULD NOT HAPPEN: " << e.what() << RESET << '\n';
+		std::cerr << BRED << "webserv: fatal: " << e.what() << RESET << '\n';
 		return (1);
 	}
 }
