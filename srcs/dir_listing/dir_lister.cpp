@@ -54,7 +54,7 @@ static const char	*display_file_size_with_pad(std::size_t num)
 {
 	static char	file_size_str[MAX_FILE_OCTET_SIZE + 1] = {' '};
 
-	int num_len = std::snprintf(file_size_str, MAX_FILENAME_LEN + 1, "%zu", num);
+	int num_len = std::snprintf(file_size_str, MAX_FILE_OCTET_SIZE + 1, "%zu", num);
 	std::memmove(file_size_str + (MAX_FILE_OCTET_SIZE - num_len), file_size_str, num_len);
 	std::memset(file_size_str, ' ', MAX_FILE_OCTET_SIZE - num_len);
 	return file_size_str;
