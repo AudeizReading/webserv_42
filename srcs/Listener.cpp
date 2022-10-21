@@ -182,7 +182,11 @@ void	Listener::answer(int fd, Request const& request)
 			+ (adjusted_URI[0] == '/' ? "" : "/") + adjusted_URI;
 
 		// Check if index file exists
-		std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
+		std::FILE	*file_index;
+		if (index_file_name.empty())
+			file_index = NULL;
+		else
+			file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
 		DIR			*dir;
 		if (file_index != NULL) // If index file exists at requested directory
 		{
@@ -195,7 +199,7 @@ void	Listener::answer(int fd, Request const& request)
 			&& (dir = opendir(path.c_str())) != NULL )
 		{
 			closedir(dir);
-			response = new Response_Dirlist(request, get_dir_list_html(path));
+			response = new Response_Dirlist(request, get_dir_list_html(path, request.get_location()));
 		}
 
 		// Index doesn't exist, directory doesn't exist, dir_listing is OFF
