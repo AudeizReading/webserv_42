@@ -177,11 +177,16 @@ void	Listener::answer(int fd, Request const& request)
 	{
 		const Location&		serv_loc = *request.get_server_location();
 		const std::string&	index_file_name = serv_loc.get_index();
-		const std::string	path = serv_loc.get_root() + '/'				// Requested path, when adjusted for location root
-			+ request.get_location().substr(serv_loc.get_URI().length());	// This is terrible, I'm sorry
+		const std::string	adjusted_URI = request.get_location().substr(serv_loc.get_URI().length()); // This is terrible, I'm sorry
+		const std::string	path = serv_loc.get_root()
+			+ (adjusted_URI[0] == '/' ? "" : "/") + adjusted_URI;
 
 		// Check if index file exists
-		std::FILE	*file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
+		std::FILE	*file_index;
+		if (index_file_name.empty())
+			file_index = NULL;
+		else
+			file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
 		DIR			*dir;
 		if (file_index != NULL) // If index file exists at requested directory
 		{
@@ -194,7 +199,7 @@ void	Listener::answer(int fd, Request const& request)
 			&& (dir = opendir(path.c_str())) != NULL )
 		{
 			closedir(dir);
-			response = new Response_Dirlist(request, get_dir_list_html(path));
+			response = new Response_Dirlist(request, get_dir_list_html(path, request.get_location()));
 		}
 
 		// Index doesn't exist, directory doesn't exist, dir_listing is OFF
@@ -237,7 +242,7 @@ bool	Listener::_send(int fd, Response* response)
 	do
 	{
 		will_be_send = will_be_send.substr(size);
-		size = send(fd, will_be_send.c_str(), will_be_send.length(), MSG_DONTWAIT);
+		size = send(fd, will_be_send.c_str(), will_be_send.length(), 0);
 		std::cout << "[listener] send size: " << size << " to socket#" << fd << std::endl;
 	}
 	while (size > -1 && static_cast<unsigned long>(size) < will_be_send.length());
@@ -281,7 +286,7 @@ void	Listener::start_listener()
 	std::cout << "[listener] create socket#" << _fd << std::endl;
 	if (_fd < 0)
 		throw std::runtime_error(strerror(errno));
-	// fcntl(_fd, F_SETFL, O_NONBLOCK);
+	fcntl(_fd, F_SETFL, O_NONBLOCK);
 
 	/*
 	* SOL_SOCKET: La doc indique directement SOL_SOCKET.
@@ -371,6 +376,8 @@ void	Listener::start_listener()
 		for (int i = 0, event_fd; new_events > i; i++)
 		{
 			event_fd = event.ident;
+
+			/*
 			if (event.filter == EVFILT_READ)	std::cerr << "EVFILT_READ: ";
 			if (event.filter == EVFILT_WRITE)	std::cerr << "EVFILT_WRITE: ";
 			//if (event.filter == EVFILT_EMPTY)	std::cerr << "EVFILT_EMPTY: ";
@@ -394,6 +401,7 @@ void	Listener::start_listener()
 			if (event.flags & EV_ERROR)			std::cerr << "EV_ERROR ";
 
 			std::cerr << std::endl;
+			*/
 
 			if (event.flags & EV_EOF)
 			{
