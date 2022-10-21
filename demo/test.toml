@@ -33,6 +33,12 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		root = "./demo/www"
 		index = "index.hml"
 
+		[[http.server.location]]
+		URI = "www"
+		root = "./demo/www"
+		index = ""
+		dir_listing = true
+
 	[[http.server]]
 	listen_port = 4242
 	listen_addr = "127.0.0.1"
