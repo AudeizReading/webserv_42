@@ -118,10 +118,10 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 		}
 		servers.push_back(
 			Server(
-				it->at_or("name",					TOML::make_string("Groenland"))	.Str(),
-				it->at_or("listen_addr",			TOML::make_string("0.0.0.0"))	.Str(),
+				it->at_or("name",					TOML::make_string("Groenland"))		.Str(),
+				it->at_or("listen_addr",			TOML::make_string("0.0.0.0"))		.Str(),
 				(*it)["listen_port"].Int(),
-				it->at_or("client_max_body_size",	TOML::make_int(4194304))		.Int(),
+				it->at_or("client_max_body_size",	TOML::make_int(CL_MAX_BODYSIZE))	.Int(),
 				std::make_pair(server_names.begin(), server_names.end()),
 				_get_locations_from_server((*it)["location"].Array()), // "location" is guaranteed to exist at this point
 				_get_error_pages(*it)

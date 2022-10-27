@@ -1,0 +1,5 @@
+[cgi_param]
+GATEWAY_INTERFACE =	"CGI/1.1"
+SERVER_SOFTWARE =	"42_AGP_webserv"
+# Après tu mets ce que tu veux là dedans, je sais pas trop ce
+# dont t'as besoin mais bon

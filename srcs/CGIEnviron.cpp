@@ -96,21 +96,21 @@ void				CGIEnviron::_setEnv()
 	this->_setHeaderEnv();
 
 	std::string	cgi_env[][2] = {
-			{REQUEST_METHOD, this->_request.get_method()},
-			{QUERY_STRING, query_string},
-			{CONTENT_LENGTH, content_length},
-			{CONTENT_TYPE, this->_header["Content-Type"]},
-			{GATEWAY_INTERFACE, "CGI/1.1"},
-			{SERVER_SOFTWARE, _server.get_name()},
-			{SERVER_NAME, this->_header["Host"]},
-			{SERVER_PROTOCOL, this->_request.get_http_version()},
-			{SERVER_PORT, _server.get_port_str()},
-			{PATH_INFO, path_info},
-			{PATH_TRANSLATED, path_translated},
-			{DOCUMENT_ROOT, root},
-			{SCRIPT_NAME, script_name},
-			{REMOTE_HOST, _request.get_host()},
-			{REMOTE_ADDR, _request.get_addr()} 
+			{REQUEST_METHOD,	this->_request.get_method()},
+			{QUERY_STRING,		query_string},
+			{CONTENT_LENGTH,	content_length},
+			{CONTENT_TYPE,		this->_header["Content-Type"]},
+			{GATEWAY_INTERFACE,	"CGI/1.1"},
+			{SERVER_SOFTWARE,	_server.get_name()},
+			{SERVER_NAME,		this->_header["Host"]},
+			{SERVER_PROTOCOL,	this->_request.get_http_version()},
+			{SERVER_PORT,		_server.get_port_str()},
+			{PATH_INFO,			path_info},
+			{PATH_TRANSLATED,	path_translated},
+			{DOCUMENT_ROOT,		root},
+			{SCRIPT_NAME,		script_name},
+			{REMOTE_HOST,		_request.get_host()},
+			{REMOTE_ADDR,		_request.get_addr()} 
 	};
 
 	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
