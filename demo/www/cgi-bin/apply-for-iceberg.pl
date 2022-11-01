@@ -12,22 +12,57 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		print "We are waiting for ".$ENV{'CONTENT_LENGTH'}." octets.\r\n";
 		print "We are waiting for ".$ENV{'CONTENT_TYPE'}.".\r\n";
 
+		binmode STDIN;
+
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 		if (defined($ARGV[0])) # Means that a boundary key is passed to the cgi script
 		{
-			&cgi_print_html_double_elt("p", "\$ARGV[0]: $ARGV[0]");
-		#	$buf = $buffer;
-		#	$buf =~ s/\r\n\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-([a-z0-9]*)\-\-\r\n//g;
-		#	$buf =~ s/\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-([a-z0-9]*)//g;
-		#	$buf =~ s/Content-Disposition: ([a-z0-9-\"; .=]+)\r\n//g;
-		#	$buf =~ s/Content-Type: text\/html\r\n\r\n//g;
-		#	print $buf;
+			$boundary = $ARGV[0];
+			if ($buffer =~ $boundary)
+			{
+				#if ($buffer =~ /Content-Disposition: ([a-z0-9-\"; .=]+)/)
+				#{
+					@post_datas = split($boundary, $buffer);
+					@files_datas = split(/=;|(image\/png|jpeg)/, $post_datas[1]);
+					@form_post_datas = split(/"/, $files_datas[0]);
+					foreach $data (@post_datas)
+					{
+						&cgi_print_html_double_elt("p", "post_datas ==>  $data");
+					}
+					#chop $files_datas[4];
+					#chop $files_datas[4];
+					$upload_filename = $form_post_datas[3];
+					#($post_info, $post_datas) = split(/Content-Type: image\/png|jpeg/, $buffer);
+					#($post_info, $upload_filename) = split(/filename="/, $post_info);
+					#($upload_filename, $dummy) = split(/"/, $upload_filename);
+					#if ($post_datas =~ $boundary)
+					#{
+						#$post_datas =~ s/$boundary//g;
+					#}
+					foreach $data (@files_datas)
+					{
+						&cgi_print_html_double_elt("p", "files_datas ==>  $data");
+					}
+					foreach $data (@form_post_datas)
+					{
+						&cgi_print_html_double_elt("p", "form_post_datas ==>  $data");
+					}
+				#&cgi_print_html_double_elt("p", "out ==>  $post_datas");
+				#open(UPLOAD_FILE, ">../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
+				binmode UPLOAD_FILE;
+				#print UPLOAD_FILE $files_datas[4] || die "$upload_filename couldn't be written: $!";
+				#close UPLOAD_FILE;
+				#print "Location: $_GET{'path_info'}$upload_filename";
+				#print "Location: /cgi-bin/apply-for-iceberg.pl";
+				print "\r\n";
+				#}
+			}
 		}
 		$output_mess="STDIN (Methode POST)" ;
-		%_POST=&cgi_parse_request_string($buffer);
+		#%_POST=&cgi_parse_request_string($buffer);
 	}
 
-	&cgi_response_header(200, "OK");
+	#&cgi_response_header(200, "OK");
 	&cgi_print_html_dtd();
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
@@ -42,8 +77,8 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_double_elt("li", $ARGV[0]);
 	print "GET\r\n";
 	&cgi_print_array_html(%_GET);
-	print "POST\r\n";
-	&cgi_print_array_html(%_POST);
+	#print "POST\r\n";
+	#&cgi_print_array_html(%_POST);
 	print "ENV\r\n";
 	&cgi_print_array_html(%ENV);
 	print STDOUT "\t</ul>\r\n";
