@@ -13,6 +13,16 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		print "We are waiting for ".$ENV{'CONTENT_TYPE'}.".\r\n";
 
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+		if (defined($ARGV[0])) # Means that a boundary key is passed to the cgi script
+		{
+			&cgi_print_html_double_elt("p", "\$ARGV[0]: $ARGV[0]");
+		#	$buf = $buffer;
+		#	$buf =~ s/\r\n\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-([a-z0-9]*)\-\-\r\n//g;
+		#	$buf =~ s/\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-([a-z0-9]*)//g;
+		#	$buf =~ s/Content-Disposition: ([a-z0-9-\"; .=]+)\r\n//g;
+		#	$buf =~ s/Content-Type: text\/html\r\n\r\n//g;
+		#	print $buf;
+		}
 		$output_mess="STDIN (Methode POST)" ;
 		%_POST=&cgi_parse_request_string($buffer);
 	}
@@ -27,8 +37,14 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_double_elt("div", "<p>Raw Datas:</p> <pre>$buffer</pre>");
 	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
 	print STDOUT "\t<ul>\r\n";
+	#	&cgi_print_array_html(@ARGV);
+	print "ARGV[0]\r\n";
+	&cgi_print_html_double_elt("li", $ARGV[0]);
+	print "GET\r\n";
 	&cgi_print_array_html(%_GET);
-	# &cgi_print_array_html(%_POST);
+	print "POST\r\n";
+	&cgi_print_array_html(%_POST);
+	print "ENV\r\n";
 	&cgi_print_array_html(%ENV);
 	print STDOUT "\t</ul>\r\n";
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
