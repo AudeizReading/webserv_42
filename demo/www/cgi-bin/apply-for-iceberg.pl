@@ -4,6 +4,7 @@ use POSIX;
 # --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
+
 	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
 	# check for upload file
 	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
@@ -14,74 +15,77 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 
 		binmode STDIN;
 
-		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-		if (defined($ARGV[0])) # Means that a boundary key is passed to the cgi script
+		$len_read = read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+		$len = length $buffer;
+		print "<p> buffer lenght: $len</p>";
+		print "<p> read lenght: $len_read</p>";
+
+		# It seems that we do not read the same size of datas as expected, do not know why but we receive less than content length, so we do not have the full datas and the upload "failed" -> not really failed, but as we do not have the full datas, the file is created but the datas are corrupted (the new upload file can be seen in the gallery but as broken link, try to upload one file, you will be able to delete it from the gallery)
+		if (($len == $len_read && $len_read == $ENV{'CONTENT_LENGTH'}) || warn "We've read $len_read bytes but we are expecting $ENV{'CONTENT_LENGTH'}.")
+		{
+		}
+		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
 			$boundary = $ARGV[0];
-			if ($buffer =~ $boundary)
+			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || die "These datas are not allowed to be host on the server.")
 			{
-				#if ($buffer =~ /Content-Disposition: ([a-z0-9-\"; .=]+)/)
-				#{
 					@post_datas = split($boundary, $buffer);
-					@files_datas = split(/=;|(image\/png|jpeg)/, $post_datas[1]);
-					@form_post_datas = split(/"/, $files_datas[0]);
-					foreach $data (@post_datas)
-					{
-						&cgi_print_html_double_elt("p", "post_datas ==>  $data");
-					}
-					#chop $files_datas[4];
-					#chop $files_datas[4];
-					$upload_filename = $form_post_datas[3];
-					#($post_info, $post_datas) = split(/Content-Type: image\/png|jpeg/, $buffer);
-					#($post_info, $upload_filename) = split(/filename="/, $post_info);
-					#($upload_filename, $dummy) = split(/"/, $upload_filename);
-					#if ($post_datas =~ $boundary)
-					#{
-						#$post_datas =~ s/$boundary//g;
-					#}
-					foreach $data (@files_datas)
-					{
-						&cgi_print_html_double_elt("p", "files_datas ==>  $data");
-					}
-					foreach $data (@form_post_datas)
-					{
-						&cgi_print_html_double_elt("p", "form_post_datas ==>  $data");
-					}
-				#&cgi_print_html_double_elt("p", "out ==>  $post_datas");
-				#open(UPLOAD_FILE, ">../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
-				binmode UPLOAD_FILE;
-				#print UPLOAD_FILE $files_datas[4] || die "$upload_filename couldn't be written: $!";
-				#close UPLOAD_FILE;
-				#print "Location: $_GET{'path_info'}$upload_filename";
-				#print "Location: /cgi-bin/apply-for-iceberg.pl";
-				print "\r\n";
-				#}
+					@upload_datas = split(/\n\r\n/, $post_datas[1]);
+					@form_post_datas = split(/[=;:"' ]/, $upload_datas[0]);
+						#foreach $data (@post_datas)
+						#{
+						#	$len = length $data;
+						#	&cgi_print_html_double_elt("pre", "post_datas ==> $data");
+						#}
+					$upload_filename = $form_post_datas[11];
+
+						#foreach $data (@upload_datas)
+						#{
+						#	&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
+						#	$len = length $data;
+						#	print "<p> lenght: $len</br>";
+						#	for(my $i=0; $i < $len; ++$i) {
+						#		my $ascii = substr($data, $i, 1);
+						#		$ascii = ord($ascii);
+						#		&cgi_print_html_double_elt("span", "==> $ascii <==</br>");
+						#	}
+						#	print "</p>";
+						#}
+						#foreach $data (@form_post_datas)
+						#{
+						#	$len = length $data;
+						#	print "<p> lenght: $len</p>";
+						#	&cgi_print_html_double_elt("pre", "form_post_datas ==> $data");
+						#}
+					&cgi_print_html_double_elt("p", "upload filename: $upload_filename\n\r");
+
+					open(UPLOAD_FILE, ">../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
+					binmode UPLOAD_FILE;
+					print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
+					close UPLOAD_FILE;
 			}
 		}
 		$output_mess="STDIN (Methode POST)" ;
-		#%_POST=&cgi_parse_request_string($buffer);
 	}
 
-	#&cgi_response_header(200, "OK");
+	&cgi_response_header(206, "Partial Content");
 	&cgi_print_html_dtd();
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
-	&cgi_print_html_body_begin();
-	&cgi_print_html_double_elt("h1", "Résultat de la requete POST");
-	&cgi_print_html_double_elt("h2", $output_mess);
-	&cgi_print_html_double_elt("div", "<p>Raw Datas:</p> <pre>$buffer</pre>");
-	&cgi_print_html_double_elt("h2", "Liste des informations décodées");
-	print STDOUT "\t<ul>\r\n";
-	#	&cgi_print_array_html(@ARGV);
-	print "ARGV[0]\r\n";
-	&cgi_print_html_double_elt("li", $ARGV[0]);
-	print "GET\r\n";
-	&cgi_print_array_html(%_GET);
-	#print "POST\r\n";
-	#&cgi_print_array_html(%_POST);
-	print "ENV\r\n";
-	&cgi_print_array_html(%ENV);
-	print STDOUT "\t</ul>\r\n";
+	#&cgi_print_html_body_begin();
+	#&cgi_print_html_double_elt("h1", "Résultat de la requete POST");
+	#&cgi_print_html_double_elt("h2", $output_mess);
+	#&cgi_print_html_double_elt("div", "<p>Raw Datas:</p> <pre>$buffer</pre>");
+	#&cgi_print_html_double_elt("h2", "Liste des informations décodées");
+	#print STDOUT "\t<ul>\r\n";
+	#print "ARGV[0]\r\n";
+	#&cgi_print_html_double_elt("li", $ARGV[0]);
+	#print "GET\r\n";
+	#&cgi_print_array_html(%_GET);
+	#print "ENV\r\n";
+	#&cgi_print_array_html(%ENV);
+	#print STDOUT "\t</ul>\r\n";
+	&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
@@ -226,6 +230,7 @@ sub cgi_print_html_head
 	print STDOUT "\t<meta charset=\"UTF-8\">\r\n";
 	print STDOUT "\t<title>$ENV{'REQUEST_METHOD'}</title>\r\n";
 	print STDOUT "<link href=\"../main-style.css\" rel=\"stylesheet\" type=\"text/css\">"; # maybe the link could vary
+	print STDOUT "<link href=\"http://fonts.cdnfonts.com/css/iceberg\" rel=\"stylesheet\">";
 	print STDOUT "</head>\r\n";
 }
 

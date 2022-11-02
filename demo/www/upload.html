@@ -4,9 +4,10 @@
 	<meta charset="UTF-8" />
 	<title>Upload</title>
 	<link href="main-style.css" rel="stylesheet" type="text/css">
+	<link href="http://fonts.cdnfonts.com/css/iceberg" rel="stylesheet">
 </head>
 <body>
-	<form method="POST" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Upload file(s)">
+	<form id="upload-form" method="POST" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Upload file(s)">
 		<p>
 			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
 		</p>
@@ -62,11 +63,18 @@
 			//document.getElementById('output').textContent += data
 		})
 
+
 		event.preventDefault()
 	})
 	</script>
+	<!--<script>
+		document.getElementById('upload-form').addEventListener('submit', function(event) { 
+					location.reload(); 
+					event.preventDefault()
+				})
+	</script>-->
 	<hr>
-	<form method="GET" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Gallery">
+	<form method="GET" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Gallery">
 		<p>
 			<input type="hidden" name="path_info" value="/upload"/>
 		</p>

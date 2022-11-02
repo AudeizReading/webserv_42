@@ -5,6 +5,7 @@ body {
 	color: #2E5866;
 	margin: 1em;
 	padding: 0.5em;
+	font-family: 'Iceberg', sans-serif;
 }
 
 img {
@@ -25,7 +26,7 @@ h1 {
 h2 {}
 h3 {}
 input[type="submit"], input[type="reset"] {
-font-size: 1em;
+	font-size: 1em;
 	color: white;
 	text-shadow: 1px 2px 5px #4D6066;
 	background-color: lightblue;
@@ -35,6 +36,7 @@ font-size: 1em;
 	margin: 1em;
 	padding: 0.5em;
 	cursor: pointer;
+	font-family: 'Iceberg', sans-serif;
 }
 
 p {
@@ -48,6 +50,7 @@ p {
 }
 
 input[type="file"] {
+	font-family: 'Iceberg', sans-serif;
 }
 
 .gallery {
@@ -71,7 +74,9 @@ a:visited {
 	text-shadow: 1px 2px 5px #4D6066;
 }
 
-form {}
+form {
+	font-family: 'Iceberg', sans-serif;
+}
 
 pre {}
 hr {}
