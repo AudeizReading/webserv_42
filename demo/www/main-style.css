@@ -1,0 +1,82 @@
+/* Adobe Kuler (monochrome) based on lightblue (#ADD8E6(3)): #4D6066(1: dark)  #69CAEA(2: blue) #2E5866(4: dark) #86A7B3(5: light) */
+/* Another blue that could match the theme #307bba; */
+body {
+	background-color: lightblue;
+	color: #2E5866;
+	margin: 1em;
+	padding: 0.5em;
+	font-family: 'Iceberg', sans-serif;
+}
+
+img {
+	max-width: 100%;
+}
+
+ul {}
+li {
+  list-style-type: none;
+}
+
+h1 {
+	color: #69CAEA;
+	text-transform : uppercase;
+	text-shadow: 3px 3px 3px white;
+}
+
+h2 {}
+h3 {}
+input[type="submit"], input[type="reset"] {
+	font-size: 1em;
+	color: white;
+	text-shadow: 1px 2px 5px #4D6066;
+	background-color: lightblue;
+	border-style: solid;
+	border-color: #86A7B3 #4D6066 #4D6066 #86A7B3;
+	border-radius: 0% 10% / 10% 40%;
+	margin: 1em;
+	padding: 0.5em;
+	cursor: pointer;
+	font-family: 'Iceberg', sans-serif;
+}
+
+p {
+	margin: 1em;
+	padding: 0.5em;
+}
+
+#here {
+	font-weight: bold;
+	margin: 0 0 10px 142px;
+}
+
+input[type="file"] {
+	font-family: 'Iceberg', sans-serif;
+}
+
+.gallery {
+	width: 612px;
+	height: 612px;
+	border: #86A7B3 2px solid;
+	border-radius: 10%;
+}
+
+a {
+	color: #2E5866;
+}
+
+a:hover, a:visited {
+	color: white;
+	text-shadow: 1px 2px 5px #4D6066;
+}
+
+a:visited {
+	color: #2E5866;
+	text-shadow: 1px 2px 5px #4D6066;
+}
+
+form {
+	font-family: 'Iceberg', sans-serif;
+}
+
+pre {}
+hr {}
