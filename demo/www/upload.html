@@ -5,6 +5,7 @@
 	<title>Upload</title>
 	<link href="main-style.css" rel="stylesheet" type="text/css">
 	<link href="http://fonts.cdnfonts.com/css/iceberg" rel="stylesheet">
+	<script src="https://kit.fontawesome.com/dedab4d2ca.js" crossorigin="anonymous"></script>
 </head>
 <body>
 	<div class="form_container">
@@ -12,9 +13,10 @@
 		<p>
 			<label for="upload_input_type_file">
 				Select a file to upload: 
+				<i class="fa fa-eye"></i>
 			<input id="upload_input_type_file" type="file" name="form" accept="image/png, image/jpeg" required />
 			<!--<input type="file" name="form" accept="image/png, image/jpeg" multiple required />-->
-			<label>
+			</label>
 		</p>
 		<p>
 			<input type="submit" name="submit" value="Book an iceberg" />
@@ -25,9 +27,10 @@
 	<form id="delete-form" method="DELETE" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Deletion files(s)">
 		<p>
 			<label for="delfile">
-				Select a file to delete: 
+				Select a file to delete:
+				<i class="fa fa-eye"></i>
 			<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
-			<label>
+			</label>
 		</p>
 		<p class="hidden">
 			<input class="hidden" type="hidden" name="path_info" value="/upload"/>

@@ -232,6 +232,7 @@ sub cgi_print_html_head
 	print STDOUT "\t<title>$ENV{'REQUEST_METHOD'}</title>\r\n";
 	print STDOUT "<link href=\"../main-style.css\" rel=\"stylesheet\" type=\"text/css\">"; # maybe the link could vary
 	print STDOUT "<link href=\"http://fonts.cdnfonts.com/css/iceberg\" rel=\"stylesheet\">";
+	print STDOUT "<script src=\"https://kit.fontawesome.com/dedab4d2ca.js\" crossorigin=\"anonymous\"></script>";
 	print STDOUT "</head>\r\n";
 }
 
@@ -338,12 +339,12 @@ sub cgi_display_files
 	my ($path_info, @files) = @_;
 	my $i = 0;
 
-	print STDOUT "\t<ul>\r\n";
+	print STDOUT "\t<ul class=\"gallery\">\r\n";
 	foreach $file (@files)
 	{
 		# ici mettre path /upload/$file pour que ca route derriere le cgi
 		# faire un systeme de pagination si trop de photos
-		&cgi_print_html_double_elt("li", "<img class=\"gallery\" src=\"$path_info/$file\"/>"); 
+		&cgi_print_html_double_elt("li", "<img class=\"img_gallery\" src=\"$path_info/$file\"/>"); 
 
 		print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
 		&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$path_info/$file\" value=\"/upload\"/>"); 
