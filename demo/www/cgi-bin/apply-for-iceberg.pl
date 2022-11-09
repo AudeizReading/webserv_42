@@ -59,7 +59,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 						#}
 					&cgi_print_html_double_elt("p", "upload filename: $upload_filename\n\r");
 
-					open(UPLOAD_FILE, ">../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
+					open(UPLOAD_FILE, ">:raw", "../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
 					binmode UPLOAD_FILE;
 					print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
 					close UPLOAD_FILE;
@@ -175,6 +175,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		closedir(DIRECTORY_FD);
 	}
 	&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
+	&cgi_print_html_double_elt("p", "Book another iceberg? <a href=\"../upload.html\">Click Here:</a>");
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
 }
