@@ -147,8 +147,14 @@ bool				CGIManager::exec()
 				return false;
 			}
 			::waitpid(pid, &exit_status, 0); //WNOHANG is the non-block opt for waitpid but does really need it?
+			if (exit_status != 0) // Means a pb happens - only for debugging
+			{
+				std::cerr << "\033[31;1m[CGI]: exit status: " << exit_status << "\nstrerror: " << strerror(exit_status) << "\033[0m\n";
+			}
+
 			if (exit_status != 0 && WIFEXITED(exit_status))
-				throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
+				throw std::invalid_argument(strerror(WEXITSTATUS(exit_status)));
+				//throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
 			else if (WIFSIGNALED(exit_status))
 				throw std::runtime_error(strerror(WTERMSIG(exit_status)));
 			else if (WIFSTOPPED(exit_status))
