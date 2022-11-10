@@ -122,6 +122,10 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 			unlink("../$file") || warn "../$file couldn't be deleted: $!";
 			&cgi_print_html_double_elt("p", "The file ../$file has been deleted"); 
 		}
+		else
+		{
+			die "You are trying to delete an element that is not on the server or that you are not allowed to access!";
+		}
 	}
 	else # multi file
 	{
@@ -135,6 +139,10 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 					#delete here
 					unlink("$directory/$_POST{$file}");
 					&cgi_print_html_double_elt("p", "The file $directory/$_POST{$file} has been deleted"); 
+				}
+				else
+				{
+					die "You are trying to delete an element that is not on the server or that you are not allowed to access!";
 				}
 			}
 		}
@@ -161,7 +169,7 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		#$directory = $ENV{'PATH_TRANSLATED'};
 		if (defined($_GET{'path_info'}))
 		{
-			# ./demo/www//upload -> resultat obtenu, et suffisant pour opendir
+			# ./demo/www/upload -> resultat obtenu, et suffisant pour opendir
 			#$directory = $ENV{'PATH_TRANSLATED'}.$_GET{'path_info'};
 			# avec le chdir du CGIManager, il faut aussi changer le path d'acces, nous sommes dans le rep cgi-bin
 			$directory = "../".$_GET{'path_info'};

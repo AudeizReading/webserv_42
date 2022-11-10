@@ -16,14 +16,11 @@ body {
 	align-items: center;
 }
 
-h1 {
+h1, h2, h3 {
 	color: #69CAEA;
 	text-transform : uppercase;
 	text-shadow: 3px 3px 3px white;
 }
-
-h2 {}
-h3 {}
 
 p {
 	margin: 1em;
@@ -108,7 +105,10 @@ form {
 }
 
 #upload-form {
-	margin-top: 0px
+	margin-top: 0px;
+}
+
+#gallery-form {
 }
 
 input[type="submit"], input[type="reset"], label {
@@ -126,7 +126,21 @@ input[type="submit"], input[type="reset"], label {
 	font-family: 'Iceberg', sans-serif;
 }
 
+input[type="submit"]:hover, input[type="reset"]:hover, label:hover {
+	box-shadow: 10px 10px 20px #86a7b3;
+}
+
 input[type="file"] {
-	font-family: 'Iceberg', sans-serif;
-	display: none;
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+label {
+    display: inline-block;
+    text-align: center;
+    padding: auto;
 }
