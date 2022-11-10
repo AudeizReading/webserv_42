@@ -435,6 +435,7 @@ void	Listener::start_listener()
 			{
 				char buffer[PIPE_BUF + 1] = {0};
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
+				std::cerr << "[listener]: buffer [\033[33m" << buffer << "\033[0m] end buffer\n";
 				if (size < 0)
 				{
 					std::cout << "[listener] recv error for event#" << event_fd << std::endl;
