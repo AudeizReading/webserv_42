@@ -152,9 +152,15 @@ bool				CGIManager::exec()
 				std::cerr << "\033[31;1m[CGI]: exit status: " << exit_status << "\nstrerror: " << strerror(exit_status) << "\033[0m\n";
 			}
 
-			if (exit_status != 0 && WIFEXITED(exit_status))
+			CGIEnviron::map_ss	env = this->_environ.getEnv();
+			bool				is_perl_cgi = false;
+
+			if (env["SCRIPT_NAME"].find(".pl") != std::string::npos)
+				is_perl_cgi = true;
+			if ((exit_status == 1 || exit_status == 512) && WIFEXITED(exit_status) && is_perl_cgi)
 				throw std::invalid_argument(strerror(WEXITSTATUS(exit_status)));
-				//throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
+			else if (exit_status != 0 && WIFEXITED(exit_status))
+				throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
 			else if (WIFSIGNALED(exit_status))
 				throw std::runtime_error(strerror(WTERMSIG(exit_status)));
 			else if (WIFSTOPPED(exit_status))

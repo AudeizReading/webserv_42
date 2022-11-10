@@ -68,7 +68,6 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		$output_mess="STDIN (Methode POST)" ;
 	}
 
-	&cgi_response_header(206, "Partial Content");
 	&cgi_print_html_dtd();
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
@@ -147,15 +146,12 @@ elsif ($ENV{'REQUEST_METHOD'} eq "DELETE")
 			}
 		}
 	}
-
-	&cgi_response_header(200, "OK");
 }
 elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 {
     $buffer = $ENV{'QUERY_STRING'};
 	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 
-	&cgi_response_header(200, "OK");
 	&cgi_print_html_dtd();
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
@@ -189,7 +185,6 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 }
 else # other methods that we do not handle
 {
-	&cgi_response_header(403, "Forbidden");
 	exit 1;
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
