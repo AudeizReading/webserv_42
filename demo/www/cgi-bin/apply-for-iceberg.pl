@@ -27,44 +27,104 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
 			&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
+			#&cgi_print_html_double_elt("pre", "buffer ==> $buffer");
 			$boundary = $ARGV[0];
-			#&cgi_simulate_body_upload($boundary);
+
+			# simulation body contenant 3 fichiers a upload
+			$buffer_simulated_3_files = "--$boundary
+Content-Disposition: form-data; name=\"form\"; filename=\"9080412_brand_bootstrap_icon_1.png\"
+Content-Type: image/png
+\r\nPNG
+
+
+IHDR00Wù	pHYs·IDAThíXKN1²á\@áHßªwàL VhwÝp8e%ðÌ$±L©yÒÛel¿?éºÚ1!ÄOâ×ÈqFÜ
+~J¼Ë´+â¡5øâ}Áà{âN,.*¾çEÀ¹&îY)WÌ÷³ÅÐÙO Ì÷Åÿ¹íkßÎÿ¥¥¶gðê	<¦¶g0Vm¯Z¤¶0Km¯J ­íQ¦ìá÷¸ÍÞHÅSÞÔ
+{øÉs^\"`Èf(<ìRÐ;
+\\7§
+RÌÏm~cýWð¿äYGc;
+\@Ã{ñ(*ìbyÔð¥¯f[ìºög
+õÐÖliÒÚÚG45[*\@k7z¦ é»Q¤ç´½ 
+}½ z¡2Mv¡o»Já?Úd¥ìXÌTHÉEU6c¡	0Ïã	 ÙGPÏã ÝGpÍã%èÛGÀ<¾ª x\Óõ:¨yáàCý\"¨Ç'Dò{®;]¿hhhh(oh1át²óIEND®B`
+--$boundary
+Content-Disposition: form-data; name=\"form\"; filename=\"9080412_brand_bootstrap_icon_2.png\"
+Content-Type: image/png
+\r\nPNG
+
+
+IHDR00Wù	pHYs·IDAThíXKN1²á\@áHßªwàL VhwÝp8e%ðÌ$±L©yÒÛel¿?éºÚ1!ÄOâ×ÈqFÜ
+~J¼Ë´+â¡5øâ}Áà{âN,.*¾çEÀ¹&îY)WÌ÷³ÅÐÙO Ì÷Åÿ¹íkßÎÿ¥¥¶gðê	<¦¶g0Vm¯Z¤¶0Km¯J ­íQ¦ìá÷¸ÍÞHÅSÞÔ
+{øÉs^\"`Èf(<ìRÐ;
+\\7§
+RÌÏm~cýWð¿äYGc;
+\@Ã{ñ(*ìbyÔð¥¯f[ìºög
+õÐÖliÒÚÚG45[*\@k7z¦ é»Q¤ç´½ 
+}½ z¡2Mv¡o»Já?Úd¥ìXÌTHÉEU6c¡	0Ïã	 ÙGPÏã ÝGpÍã%èÛGÀ<¾ª x\Óõ:¨yáàCý\"¨Ç'Dò{®;]¿hhhh(oh1át²óIEND®B`
+--$boundary
+Content-Disposition: form-data; name=\"form\"; filename=\"9080412_brand_bootstrap_icon_3.png\"
+Content-Type: image/png
+\r\nPNG
+
+
+IHDR00Wù	pHYs·IDAThíXKN1²á\@áHßªwàL VhwÝp8e%ðÌ$±L©yÒÛel¿?éºÚ1!ÄOâ×ÈqFÜ
+~J¼Ë´+â¡5øâ}Áà{âN,.*¾çEÀ¹&îY)WÌ÷³ÅÐÙO Ì÷Åÿ¹íkßÎÿ¥¥¶gðê	<¦¶g0Vm¯Z¤¶0Km¯J ­íQ¦ìá÷¸ÍÞHÅSÞÔ
+{øÉs^\"`Èf(<ìRÐ;
+\\7§
+RÌÏm~cýWð¿äYGc;
+\@Ã{ñ(*ìbyÔð¥¯f[ìºög
+õÐÖliÒÚÚG45[*\@k7z¦ é»Q¤ç´½ 
+}½ z¡2Mv¡o»Já?Úd¥ìXÌTHÉEU6c¡	0Ïã	 ÙGPÏã ÝGpÍã%èÛGÀ<¾ª x\Óõ:¨yáàCý\"¨Ç'Dò{®;]¿hhhh(oh1át²óIEND®B`
+--$boundary
+Content-Disposition: form-data; name=\"submit\"
+
+Book an iceberg
+--$boundary--";
+
+			# also have to check is the upload size is acceptable or not
 			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || die "These datas are not allowed to be host on the server.")
 			{
-					@post_datas = split($boundary, $buffer);
-					@upload_datas = split(/\n\r\n/, $post_datas[1]);
-					@form_post_datas = split(/[=;:"' ]/, $upload_datas[0]);
-						#foreach $data (@post_datas)
-						#{
-						#	$len = length $data;
-						#	&cgi_print_html_double_elt("pre", "post_datas ==> $data");
-						#}
-					$upload_filename = $form_post_datas[11];
+				# Si j'ai bien compris le parsing d'une requete les lignes commentees ci-dessus gere l'upload, mais en l'etat actuel je ne peux pas l'appliquer sur le buffer qu'on recoit
+				#&cgi_parse_body_upload($boundary, $buffer);
+				#my %upload_files = &cgi_parse_body_upload($boundary, $buffer_simulated_3_files);
+				#&cgi_upload_files(%upload_files);
+				#&cgi_print_html_double_elt("p", "End cgi_simulate_body_upload");
 
-						foreach $data (@upload_datas)
-						{
-							&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
-							$len = length $data;
-							print "<p> lenght: $len</br>";
-							for(my $i=0; $i < $len; ++$i) {
-								my $ascii = substr($data, $i, 1);
-								$ascii = ord($ascii);
-								&cgi_print_html_double_elt("span", "==> $ascii <==</br>");
-							}
-							print "</p>";
-						}
-						#foreach $data (@form_post_datas)
-						#{
-						#	$len = length $data;
-						#	print "<p> lenght: $len</p>";
-						#	&cgi_print_html_double_elt("pre", "form_post_datas ==> $data");
-						#}
-					&cgi_print_html_double_elt("p", "upload filename: $upload_filename\n\r");
+				@post_datas = split($boundary, $buffer);
+				@upload_datas = split(/\n\r\n/, $post_datas[1]);
+				@form_post_datas = split(/[=;:"' ]/, $upload_datas[0]);
+				foreach $data (@post_datas)
+				{
+					my $len = length $data;
+					my $post_datas_size = $#post_datas + 1;
+					#&cgi_print_html_double_elt("p", "\@post_datas ==> @post_datas"); # affiche le tableau complet
+					#&cgi_print_html_double_elt("p", "\$post_datas_size ==> $post_datas_size");
+					#&cgi_print_html_double_elt("p", "lenght of data ==> $len");
+					#&cgi_print_html_double_elt("pre", "post_datas THE data ==> $data");
+				}
+				$upload_filename = $form_post_datas[11];
 
-					open(UPLOAD_FILE, ">:raw", "../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
-					binmode UPLOAD_FILE;
-					print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
-					close UPLOAD_FILE;
+				foreach $data (@upload_datas)
+				{
+					if ($data eq $upload_datas[1])
+					{
+						&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
+						$len = length $data;
+						print "<p> lenght: $len</br>";
+						&cgi_print_ascii($data);
+					}
+					print "</p>";
+				}
+				#foreach $data (@form_post_datas)
+				#{
+				#	$len = length $data;
+				#	print "<p> lenght: $len</p>";
+				#	&cgi_print_html_double_elt("pre", "form_post_datas ==> $data");
+				#}
+				&cgi_print_html_double_elt("p", "upload filename: $upload_filename\n\r");
+
+				open(UPLOAD_FILE, ">:raw", "../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
+				binmode UPLOAD_FILE;
+				print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
+				close UPLOAD_FILE;
 			}
 		}
 		$output_mess="STDIN (Methode POST)" ;
@@ -190,11 +250,68 @@ else # other methods that we do not handle
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
 
-sub	cgi_simulate_body_upload
+sub	cgi_print_ascii
 {
-	my $arg = @_;
-	print STDOUT "<p>arg: $arg</p>";
+	my ($str) = @_;
+	for(my $i=0; $i < $len; ++$i) 
+	{
+		my $ascii = substr($str, $i, 1);
+		$ascii = ord($ascii);
+		&cgi_print_html_double_elt("span", "==> $ascii <==&nbsp");
+	}
 }
+
+# parse the body of an upload "POST" request
+# cgi_parse_body_upload($boundary, $buffer_stdin);
+sub	cgi_parse_body_upload
+{
+	my ($bound, $raw_datas) = @_;
+
+	my (@body_datas) = split("--$bound", $raw_datas);
+	my $body_datas_size = $#body_datas + 1;
+
+	# Les filename + les datas y correspondant sont dans body_datas[1] à body_datas[nb_upload]
+	# body_datas[0] ne contiendrait que des \0 (je ne sais pas pq)
+	# body_datas[$#body_datas - 1] contient les datas concernant l'input submit
+	# body_datas[$#body_datas] contient --
+	# taille minimale attendue si ce schema est respecté: 4
+	if ($body_datas_size > 3)
+	{
+		my $nb_upload = $body_datas_size - 3;
+		my (%files_data);
+
+		for (my $i = 1; $i <= $nb_upload; ++$i)
+		{
+			my ($post_form_attributes, $file_datas) = split(/\n\r\n/, $body_datas[$i]);
+			my (@form_attr) = split(/[=;:"' ]/, $post_form_attributes);
+			$files_data{$form_attr[11]} = $file_datas;
+		}
+		return %files_data;
+	}
+	else
+	{
+		&cgi_print_html_double_elt("p", "There is a pb with the upload arguments");
+	}
+}
+
+sub cgi_upload_files
+{
+	my (%upload_files) = @_;
+
+	foreach $filename (keys %upload_files)
+	{
+		#print "<p>";
+		#print "filename: <span>". $filename ."</span><br/>";
+		#print "raw_datas: <pre>". $upload_files{$filename} ."</pre>";
+		#print "</p>";
+
+		open(UPLOAD_FILE, ">:raw", "../upload/$filename") || die "$filename couldn't be opened: $!";
+		binmode UPLOAD_FILE;
+		print UPLOAD_FILE $upload_files{$filename} || die "$filename couldn't be written: $!";
+		close UPLOAD_FILE;
+	}
+}
+
 # split by & and =, put this in a sort of map
 # works with GET and also POST and ENV
 sub cgi_parse_request_string
