@@ -435,7 +435,7 @@ void	Listener::start_listener()
 			{
 				char buffer[PIPE_BUF + 1] = {0};
 				int size = recv(event_fd, buffer, PIPE_BUF, 0);
-				std::cerr << "[listener]: buffer [\033[33m" << buffer << "\033[0m] end buffer\n";
+
 				if (size < 0)
 				{
 					std::cout << "[listener] recv error for event#" << event_fd << std::endl;
@@ -453,10 +453,67 @@ void	Listener::start_listener()
 						<< " ip: " << search->second.get_addr()
 						<< " host: " << search->second.get_host() << std::endl;
 				}
+
+				/* Debug upload part */
+				std::cerr << "[listener]: buffer [\033[33m" << buffer << "\033[0m] end buffer\n";
+				std::string	buf_str(buffer);
+				std::string	ultimate_buffer = search->second.get_buffer();
+
+			//	std::cerr << "[listener]: ultimate_buffer [\033[33m" << ultimate_buffer << "\033[0m] end buffer\n";
+			//	search the body part if this is a POST request
+				if (buf_str.find("\n\r\n") != std::string::npos 
+						&& search->second.get_method() == "POST")
+				{
+					Request::map_ss				header = search->second.get_header();
+					Request::map_ss::iterator	end = header.end();
+					Request::map_ss::iterator	cont_len_it = header.find("Content-Length");
+
+					std::string		content_length("Non init");
+					size_t			content_length_sizet = 0;
+					if (cont_len_it != end)
+					{
+						content_length = cont_len_it->second;
+						content_length_sizet = ToNum<size_t>(content_length);
+					}
+					unsigned long 	start_pic = buf_str.find("\n\r\n") + 3;
+					unsigned char	start_pic_char = buffer[start_pic];
+					int				octet_value = static_cast<int>(start_pic_char);
+					size_t			size_start_pic = PIPE_BUF - start_pic;
+					unsigned char	*start_pic_buffer = 0;
+
+					if (start_pic == std::string::npos)
+					{
+						std::cerr << "Where is the char 137 that should be before the PNG sequence?\n";
+					}
+
+					std::cerr << "[listener]: buffer[buf_str.find(\"\\n\\r\\n\") + 3]: " << start_pic_char << "\n"; // here this is the beginning of the binary data
+					std::cerr << "octet_value = "<< octet_value << "\n";
+					std::cerr << "PIPE_BUF - start_pic = "<< size_start_pic << "\n";
+					std::cerr << "content_length = "<< content_length << "\n";
+					std::cerr << "content_length_sizet = "<< content_length_sizet << "\n";
+
+					// check if the request total size is not too big
+					if (size_start_pic > 0 && content_length_sizet > 0 && content_length_sizet < 100000)
+					{
+						start_pic_buffer = static_cast<unsigned char*>(malloc(sizeof(*start_pic_buffer) * (size_start_pic)));
+
+						::bzero(start_pic_buffer, size_start_pic);
+						for (size_t i = 0; i <= size_start_pic; ++i)
+						{
+							start_pic_buffer[i] = buffer[start_pic + i];
+							std::cerr << "(int) start_pic_buffer[i] = "<< static_cast<int>(start_pic_buffer[i]) << "\n";
+						}
+						std::cerr << "start_pic_buffer = "<< start_pic_buffer << "\n";
+						free(start_pic_buffer);
+					}
+				}
+				/* Debug upload part */
+
 				search->second.append_plaintext(buffer);
 
 				if (prepare_answer(event_fd, search->second, size))
 				{
+					std::cerr << "\033[32mpass here! prepare_answer\033[0m\n";
 					// Do something after send & close (one time for each request)
 					continue ;
 				}

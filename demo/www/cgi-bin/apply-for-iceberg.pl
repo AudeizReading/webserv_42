@@ -26,7 +26,9 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		}
 		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
+			&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
 			$boundary = $ARGV[0];
+			#&cgi_simulate_body_upload($boundary);
 			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || die "These datas are not allowed to be host on the server.")
 			{
 					@post_datas = split($boundary, $buffer);
@@ -39,18 +41,18 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 						#}
 					$upload_filename = $form_post_datas[11];
 
-						#foreach $data (@upload_datas)
-						#{
-						#	&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
-						#	$len = length $data;
-						#	print "<p> lenght: $len</br>";
-						#	for(my $i=0; $i < $len; ++$i) {
-						#		my $ascii = substr($data, $i, 1);
-						#		$ascii = ord($ascii);
-						#		&cgi_print_html_double_elt("span", "==> $ascii <==</br>");
-						#	}
-						#	print "</p>";
-						#}
+						foreach $data (@upload_datas)
+						{
+							&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
+							$len = length $data;
+							print "<p> lenght: $len</br>";
+							for(my $i=0; $i < $len; ++$i) {
+								my $ascii = substr($data, $i, 1);
+								$ascii = ord($ascii);
+								&cgi_print_html_double_elt("span", "==> $ascii <==</br>");
+							}
+							print "</p>";
+						}
 						#foreach $data (@form_post_datas)
 						#{
 						#	$len = length $data;
@@ -158,7 +160,6 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 	&cgi_print_html_body_begin();
 	&cgi_print_html_double_elt("h1", "Our icebergs' collection");
 
-	#&cgi_debug(0, %_GET);
 	if (defined($ENV{'PATH_INFO'}) || defined($_GET{'path_info'})) # Is there a path_info where searching datas ?
 	{
 		$directory = "../".$ENV{'PATH_INFO'};
@@ -189,6 +190,11 @@ else # other methods that we do not handle
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
 
+sub	cgi_simulate_body_upload
+{
+	my $arg = @_;
+	print STDOUT "<p>arg: $arg</p>";
+}
 # split by & and =, put this in a sort of map
 # works with GET and also POST and ENV
 sub cgi_parse_request_string

@@ -144,3 +144,60 @@ label {
     text-align: center;
     padding: auto;
 }
+
+/* Snow animation
+ * https://www.creativejuiz.fr/blog/css-css3/creer-une-animation-de-neige-ou-de-particules-en-css3
+ */
+
+.illustration {
+	position: relative;
+	margin: 0 auto;
+	width : 612px;
+	height: 405px;
+	border: #86A7B3 2px solid;
+	border-radius: 10%;
+	background : url("./img/istockphoto-1124563104-612x612.jpeg") no-repeat top center;
+}
+
+.i-large,
+.i-medium,
+.i-small {
+	position : absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+	width : 612px;
+	height: 405px;
+	border: #86A7B3 2px solid;
+	border-radius: 10%;
+}
+
+.i-large {
+	background: url("./img/kisspng-snowflake-schema-tattoo-grey-gray-shining-snowflakes-5a954fa9d92a05.7741385315197346978895.png") repeat 0px 0px;
+	-webkit-animation: dropFlowParticles 6s linear infinite;
+	     -o-animation: dropFlowParticles 6s linear infinite;
+	        animation: dropFlowParticles 6s linear infinite;
+	        opacity: 75%;
+}
+.i-medium {
+	background: url("./img/kisspng-printworx-nj-snowflake-desktop-wallpaper-snowflakes-5ab485b41ee320.1380978515217801481265.png") repeat 0px 0px;
+	-webkit-animation: dropFlowParticles 12s linear infinite;
+	     -o-animation: dropFlowParticles 12s linear infinite;
+	        animation: dropFlowParticles 12s linear infinite;
+	        opacity: 95%;
+}
+.i-small {
+	background:url("./img/kisspng-drawing-transparency-and-translucency-snowflake-5a83c4b3e6b483.072921821518585011945.png") repeat 0px 0px;
+	-webkit-animation: dropFlowParticles 27s linear infinite;
+	     -o-animation: dropFlowParticles 27s linear infinite;
+	        animation: dropFlowParticles 27s linear infinite;
+	        opacity: 25%;
+}
+
+@-webkit-keyframes dropFlowParticles {
+	from { background-position: 0 0; }
+	to { background-position: 0 405px; }
+}
+@keyframes dropFlowParticles {
+	from { background-position: 0 0; }
+	to { background-position: 0 405px; }
+}
+/* End snow animation */
