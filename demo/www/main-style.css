@@ -148,6 +148,7 @@ label {
 /* Snow animation
  * https://www.creativejuiz.fr/blog/css-css3/creer-une-animation-de-neige-ou-de-particules-en-css3
  */
+
 .illustration {
 	position: relative;
 	margin: 0 auto;
@@ -164,9 +165,8 @@ label {
 	position : absolute;
 	top: 0; right: 0; bottom: 0; left: 0;
 	width : 612px;
-	height: 405px;
-	border: #86A7B3 2px solid;
 	border-radius: 10%;
+	height: 405px;
 }
 
 .i-large {
@@ -193,9 +193,9 @@ label {
 
 @-webkit-keyframes dropFlowParticles {
 	from { background-position: 0 0; }
-	to { background-position: 0 405px; }
+	to { background-position: 612px 405px; }
 }
 @keyframes dropFlowParticles {
 	from { background-position: 0 0; }
-	to { background-position: 0 405px; }
+	to { background-position: 612px 405px; }
 }
