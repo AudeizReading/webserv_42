@@ -15,7 +15,7 @@
 			<label for="upload_input_type_file">
 				Select a file to upload <br/>    
 				<i class="fa-regular fa-folder-open"></i>
-				<input id="upload_input_type_file" type="file" name="form" accept="image/png, image/jpeg" multiple required />
+				<input id="upload_input_type_file" type="file" name="form" accept="image/png, image/jpeg" onchange="previewPicture(this);" multiple required />
 			</label>
 		</p>
 		<p>
@@ -101,6 +101,26 @@
 		<h2>GET request</h2>
 	</form>
 	</div>
+	<!---->
+	<img src="#" id="img-prev" hidden>
+	<script type="text/javascript" >
+    // L'image img#image
+    var image = document.getElementById("img-prev");
+
+    // La fonction previewPicture
+    var previewPicture  = function (e) {
+
+        // e.files contient un objet FileList
+        const [picture] = e.files
+
+        // "picture" est un objet File
+        if (picture) {
+            // On change l'URL de l'image
+            image.src = URL.createObjectURL(picture);
+			image.hidden = false;
+        }
+    }
+</script>
 	<hr>
 	<div class="illustration">
 		<div class="i-large"></div>
@@ -111,5 +131,4 @@
 		<a href="../index.html" alt="Are you lost?">Are you lost?</a>
 	</p>
 </body>
-</script>
 </html>
