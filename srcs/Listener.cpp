@@ -508,8 +508,10 @@ void	Listener::start_listener()
 					}
 				}
 				/* Debug upload part */
-
-				search->second.append_plaintext(buffer);
+				std::string	buf_s(buffer, size);
+				std::cerr << "[listener]: buf_s [\033[33m" << buf_s << "\033[0m] end buffer\n";
+				std::cerr << "[listener]: size:" << size << "buf_s.size() "<< buf_s.size() << "\033[0m] end buffer\n";
+				search->second.append_plaintext(buf_s);
 
 				if (prepare_answer(event_fd, search->second, size))
 				{
