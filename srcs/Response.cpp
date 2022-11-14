@@ -61,7 +61,21 @@ void Response::create()
 				
 				// std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext.substr(0, 1500) << "\033[0m… (limit of 1500char)" << std::endl;
 			}
-			catch(const std::exception& e)
+			catch (const std::invalid_argument& e)
+			{
+				std::cerr << "[CGI] " << e.what() << std::endl;
+				std::cerr << "[STOP] " << _content_path << std::endl;
+				*this = Response_Forbidden(*_request);
+				return ;
+			}
+			catch (const std::runtime_error& e)
+			{
+				std::cerr << "[CGI] " << e.what() << std::endl;
+				std::cerr << "[STOP] " << _content_path << std::endl;
+				*this = Response_Internal_Server_Error(*_request);
+				return ;
+			}
+			catch (const std::exception& e)
 			{
 				std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;

@@ -3,29 +3,44 @@
 <head>
 	<meta charset="UTF-8" />
 	<title>Upload</title>
+	<link href="main-style.css" rel="stylesheet" type="text/css">
+	<link href="http://fonts.cdnfonts.com/css/iceberg" rel="stylesheet">
+	<script src="https://kit.fontawesome.com/dedab4d2ca.js" crossorigin="anonymous"></script>
 </head>
-<body style="background-color: lightblue;">
-	<form method="POST" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Upload file(s)">
+<body>
+	<h1>mandatory requests</h1>
+	<div class="form_container">
+	<form id="upload-form" method="POST" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Upload file(s)">
 		<p>
-			<input type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
+			<label for="upload_input_type_file">
+				Select a file to upload <br/>    
+				<i class="fa-regular fa-folder-open"></i>
+				<input id="upload_input_type_file" type="file" name="form" accept="image/png, image/jpeg" onchange="previewPicture(this);" multiple required />
+			</label>
 		</p>
 		<p>
-			<input type="submit" name="submit" value="Réserver un iceberg" />
+			<input type="submit" name="submit" value="Book an iceberg" />
 			<input type="reset" name="reset" value="Reset" />
 		</p>
+		<h2>POST request</h2>
 	</form>
 	<hr>
 	<form id="delete-form" method="DELETE" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Deletion files(s)">
 		<p>
-			<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
+			<label for="delfile">
+				Select a file to delete  <br/>   
+				<i class="fa-regular fa-folder-open"></i>
+				<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
+			</label>
+		</p>
+		<p class="hidden">
+			<input class="hidden" type="hidden" name="path_info" value="/upload"/>
 		</p>
 		<p>
-			<input type="hidden" name="path_info" value="/upload"/>
-		</p>
-		<p>
-			<input type="submit" name="submit" value="Supprimer un iceberg" />
+			<input type="submit" name="submit" value="Delete an iceberg" />
 			<input type="reset" name="reset" value="Reset" />
 		</p>
+		<h2>DELETE request</h2>
 		<pre id="output" style="max-height:300px;">
 		</pre>
 	</form>
@@ -61,22 +76,59 @@
 			//document.getElementById('output').textContent += data
 		})
 
+
 		event.preventDefault()
 	})
 	</script>
+	<!--<script>
+		document.getElementById('upload-form').addEventListener('submit', function(event) { 
+					location.reload(); 
+					event.preventDefault()
+				})
+	</script>-->
 	<hr>
-	<form method="GET" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Gallery">
-		<p>
+	<form id="gallery-form" method="GET" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Gallery">
+		<p class="hidden">
 			<input type="hidden" name="path_info" value="/upload"/>
 		</p>
 		<p>
-			<input type="submit" name="submit" value="Obtenir un iceberg" />
+			Want to see the gallery ?
+		</p>
+		<p>
+			<input type="submit" name="submit" value="Get an iceberg" />
 			<input type="reset" name="reset" value="Reset" />
 		</p>
+		<h2>GET request</h2>
 	</form>
+	</div>
+	<!---->
+	<img src="#" id="img-prev" hidden>
+	<script type="text/javascript" >
+    // L'image img#image
+    var image = document.getElementById("img-prev");
+
+    // La fonction previewPicture
+    var previewPicture  = function (e) {
+
+        // e.files contient un objet FileList
+        const [picture] = e.files
+
+        // "picture" est un objet File
+        if (picture) {
+            // On change l'URL de l'image
+            image.src = URL.createObjectURL(picture);
+			image.hidden = false;
+        }
+    }
+</script>
+	<hr>
+	<div class="illustration">
+		<div class="i-large"></div>
+		<div class="i-medium"></div>
+		<div class="i-small"></div>
+	</div>
 	<p>
 		<a href="../index.html" alt="Are you lost?">Are you lost?</a>
 	</p>
 </body>
-</script>
 </html>

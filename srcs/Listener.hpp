@@ -25,6 +25,16 @@
 #define DEFAULT_PORT	5000
 #define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
 
+
+template <typename T>
+T ToNum(std::string str)
+{
+    std::istringstream oStream(str);
+    T tX = 0;
+    oStream >> tX;
+    return tX;
+}
+
 class Listener
 {
 public:

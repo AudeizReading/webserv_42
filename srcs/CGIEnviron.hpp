@@ -42,6 +42,7 @@
 #define REMOTE_USER			"REMOTE_USER"
 #define REMOTE_IDENT		"REMOTE_IDENT"
 #define AUTH_TYPE			"AUTH_TYPE"
+#define CGI_EXEC			"CGI_EXEC" // For the moment defined here and in .cpp, but if we do multi-cgi, it should be taken from the config file as a variable, just done this for preparing the env for this possibility
 
 #define PRINT(x) std::cerr << std::boolalpha << "\nin " << __FILE__ << ":" << __LINE__ << "\n"<< __func__ << ": " << #x << "\n" << x << std::endl;
 
