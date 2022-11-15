@@ -26,6 +26,22 @@ static bool	_location_URI_comp(Location const& a, Location const& b)
 		< std::count(b.get_URI().begin(), b.get_URI().end(), '/'));
 }
 
+static
+std::map<std::string, std::string>
+	_get_cgi_environ(TOML::Value::group_type const& toml_cgi_environ)
+{
+	std::map<std::string, std::string>	cgi_environ;
+
+	for (TOML::Value::const_group_iterator it = toml_cgi_environ.group_begin();
+		it != toml_cgi_environ.group_end();
+		++it)
+	{
+		cgi_environ.insert( std::make_pair(it->key(), it->Str()) );
+	}
+
+	return cgi_environ;
+}
+
 // Why can't this take advantage of RVO/copy elision ? I might need to read more docs.
 // Maybe Apple clang or C++98 just sucks at that ?
 static
@@ -44,7 +60,8 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 				it->at_or("root",			TOML::make_string(""))			.Str(),
 				it->at_or("index",			TOML::make_string("index.html")).Str(),
 				it->at_or("dir_listing",	TOML::make_bool(false))			.Bool(),
-				it->at_or("redirect",		TOML::make_string(""))			.Str()
+				it->at_or("redirect",		TOML::make_string(""))			.Str(),
+				_get_cgi_environ(it->at("cgi_environ"))
 			) );
 		if (it->has("allowed_methods"))
 		{
@@ -108,7 +125,7 @@ static std::vector<Server>	_get_servers_from_config(TOML::Value::array_type cons
 		else
 		{	// Copy everything in there. Assign won't work because TOML::Value isn't 
 			// implicitely convertible to string. TODO ?
-			// for (auto j : (*it)["server_name"].Array()) => I cry every day
+			// for (auto const &j : (*it)["server_name"].Array()) => I cry every day
 			for (TOML::Value::array_type::const_iterator j = (*it)["server_name"].Array().begin();
 				j != (*it)["server_name"].Array().end();
 				++j)

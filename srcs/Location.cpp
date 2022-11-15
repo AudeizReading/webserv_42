@@ -12,10 +12,15 @@
 
 #include "Location.hpp"
 
-Location::Location(std::string const& URI, std::string const& root, std::string const& index,
-	bool dir_listing, std::string const& redirect)
-: _URI(URI), _root(root), _index(index), _redirect(redirect), _dir_listing(dir_listing),
-	_allow_GET(true), _allow_POST(true), _allow_DELETE(true), _allow_HEAD(true)
+Location::Location(std::string const& URI,
+				   std::string const& root,
+				   std::string const& index,
+				   bool dir_listing,
+				   std::string const& redirect,
+				   std::map<std::string, std::string> const& cgi_environ)
+
+: _URI(URI), _root(root), _index(index), _redirect(redirect), _cgi_environ(cgi_environ),
+	_dir_listing(dir_listing), _allow_GET(true), _allow_POST(true), _allow_DELETE(true), _allow_HEAD(true)
 {
 	if (*(_root.end() - 1) == '/')
 		_root.erase(_root.end() - 1);
@@ -67,6 +72,8 @@ std::string	Location::get_allowed_methods() const
 		allowed += std::string(allowed.empty() ? "" : ", ") + "POST";
 	if (_allow_DELETE)
 		allowed += std::string(allowed.empty() ? "" : ", ") + "DELETE";
+	if (_allow_HEAD)
+		allowed += std::string(allowed.empty() ? "" : ", ") + "HEAD";
 	return allowed;
 }
 
@@ -94,6 +101,11 @@ std::string const&	Location::get_index() const
 std::string const&	Location::get_redirect() const
 {
 	return _redirect;
+}
+
+Location::map_strstr const&	Location::get_cgi_environ() const
+{
+	return _cgi_environ;
 }
 
 std::string		Location::get_path() const

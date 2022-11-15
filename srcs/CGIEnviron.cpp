@@ -100,9 +100,9 @@ void				CGIEnviron::_setEnv()
 			{QUERY_STRING,			query_string},
 			{CONTENT_LENGTH,		content_length},
 			{CONTENT_TYPE,			this->_header["Content-Type"]},
-			{GATEWAY_INTERFACE,		"CGI/1.1"},
-			{CGI_EXEC,				"/usr/bin/perl"},
-			{SERVER_SOFTWARE,		_server.get_name()},
+			{GATEWAY_INTERFACE,		_location.get_cgi_environ().at(GATEWAY_INTERFACE)},
+			{CGI_EXEC,				_location.get_cgi_environ().at(CGI_EXEC)},
+			{SERVER_SOFTWARE,		_location.get_cgi_environ().at(SERVER_SOFTWARE)},
 			{SERVER_NAME,			this->_header["Host"]},
 			{SERVER_PROTOCOL,		this->_request.get_http_version()},
 			{SERVER_PORT,			_server.get_port_str()},
@@ -111,7 +111,8 @@ void				CGIEnviron::_setEnv()
 			{DOCUMENT_ROOT,			root},
 			{SCRIPT_NAME,			script_name},
 			{REMOTE_HOST,			_request.get_host()},
-			{REMOTE_ADDR,			_request.get_addr()} 
+			{REMOTE_ADDR,			_request.get_addr()},
+			{"DIR_UPLOAD",			_location.get_cgi_environ().at("DIR_UPLOAD")} // NOTE: not very pretty?
 	};
 
 	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
