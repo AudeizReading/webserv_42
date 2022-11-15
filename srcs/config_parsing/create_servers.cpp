@@ -61,6 +61,7 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 				it->at_or("index",			TOML::make_string("index.html")).Str(),
 				it->at_or("dir_listing",	TOML::make_bool(false))			.Bool(),
 				it->at_or("redirect",		TOML::make_string(""))			.Str(),
+				it->at_or("allow_upload",	TOML::make_bool(false))			.Bool(),
 				_get_cgi_environ(it->at("cgi_environ"))
 			) );
 		if (it->has("allowed_methods"))
