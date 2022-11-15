@@ -102,14 +102,15 @@ void Response::create()
 		}
 	}
 
-	time_t						ctime = time(NULL);
-	tm							*t = gmtime(&ctime);
-	std::stringstream			date;
-	// TODO: full date support
-	date << "Wed, 28 Sep " << t->tm_year << " "
-		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT";
+	const time_t	ctime = time(NULL);
+	struct tm		t;
+	char			date[30];
 
-	_header.insert(Queryparser::pair_ss("Date", date.str()));
+	if (gmtime_r(&ctime, &t) == NULL)
+		throw std::runtime_error("unable to get or convert current time");
+	std::strftime(date, 30, "%a, %d %b %Y %H:%M:%S GMT", &t);
+
+	_header.insert(Queryparser::pair_ss("Date", date));
 	_header.insert(Queryparser::pair_ss("Server", _request->get_server()->get_name()));
 	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
 	_header.insert(Queryparser::pair_ss("Content-Type", _content_type));
