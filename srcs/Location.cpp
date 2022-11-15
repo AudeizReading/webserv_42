@@ -18,12 +18,11 @@ Location::Location(std::string const& URI,
 				   std::string const& redirect,
 				   std::string const& cgi_file_ext,
 				   bool dir_listing,
-				   bool allow_upload,
 				   std::map<std::string, std::string> const& cgi_environ)
 
 : _URI(URI), _root(root), _index(index), _redirect(redirect), _cgi_file_ext(cgi_file_ext),
 	_cgi_environ(cgi_environ), _allow_dir_listing(dir_listing), _allow_GET(true), _allow_POST(true),
-	_allow_DELETE(true), _allow_HEAD(true), _allow_upload(allow_upload)
+	_allow_DELETE(true), _allow_HEAD(true)
 {
 	if (*(_root.end() - 1) == '/')
 		_root.erase(_root.end() - 1);
@@ -78,11 +77,6 @@ std::string	Location::get_allowed_methods() const
 	if (_allow_HEAD)
 		allowed += std::string(allowed.empty() ? "" : ", ") + "HEAD";
 	return allowed;
-}
-
-bool	Location::allows_upload() const
-{
-	return _allow_upload;
 }
 
 bool	Location::allows_dir_listing() const

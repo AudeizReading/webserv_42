@@ -26,7 +26,6 @@ class Location
 				 std::string const& redirect,
 				 std::string const& cgi_file_ext,
 				 bool dir_listing,
-				 bool allow_upload,
 				 std::map<std::string, std::string> const& cgi_environ);
 
 		void	set_allowed_methods(bool GET, bool POST, bool DELETE, bool HEAD);
@@ -43,7 +42,6 @@ class Location
 		// Returns a string of allowed methods in the RFC expected format for the "Allow" field.
 		std::string	get_allowed_methods() const;
 
-		bool	allows_upload() const;
 		bool	allows_dir_listing() const;
 		bool	has_redirect() const;
 
@@ -70,6 +68,5 @@ class Location
 		int8_t			_allow_POST;	// bool to save space. Combined, they
 		int8_t			_allow_DELETE;	// take the space of a single bool.
 		int8_t			_allow_HEAD;
-		int8_t			_allow_upload;
 		// NOTE: Include some CGI stuff in there ?
 };
