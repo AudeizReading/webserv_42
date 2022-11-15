@@ -23,8 +23,9 @@ class Location
 		Location(std::string const& URI,
 				 std::string const& root,
 				 std::string const& index,
-				 bool dir_listing,
 				 std::string const& redirect,
+				 std::string const& cgi_file_ext,
+				 bool dir_listing,
 				 bool allow_upload,
 				 std::map<std::string, std::string> const& cgi_environ);
 
@@ -50,6 +51,7 @@ class Location
 		std::string const&	get_URI() const;
 		std::string const&	get_index() const;
 		std::string const&	get_redirect() const;
+		std::string const&	get_cgi_file_ext() const;
 		map_strstr  const&	get_cgi_environ() const;
 
 		// FIXME: obsolete
@@ -60,6 +62,7 @@ class Location
 		std::string		_root;	// Must not end with a '/'
 		std::string		_index;
 		std::string		_redirect; // Empty string means no redirect, else, redirect 302
+		std::string		_cgi_file_ext;
 		map_strstr		_cgi_environ;
 
 		int8_t			_allow_dir_listing;
