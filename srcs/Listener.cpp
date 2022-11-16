@@ -455,7 +455,7 @@ void	Listener::start_listener()
 				}
 
 				/* Debug upload part */
-		/*		std::cerr << "[listener]: buffer [\033[33m" << buffer << "\033[0m] end buffer\n";
+				std::cerr << "[listener]: buffer [\033[33m" << buffer << "\033[0m] end buffer\n";
 				std::string	buf_str(buffer);
 				std::string	ultimate_buffer = search->second.get_buffer();
 
@@ -506,11 +506,11 @@ void	Listener::start_listener()
 						std::cerr << "start_pic_buffer = "<< start_pic_buffer << "\n";
 						free(start_pic_buffer);
 					}
-				}*/
+				}
 				/* Debug upload part */
 				std::string	buf_s(buffer, size);
 				std::cerr << "[listener]: buf_s [\033[33m" << buf_s << "\033[0m] end buffer\n";
-				std::cerr << "[listener]: size:" << size << " buf_s.size() "<< buf_s.size() << "\n";
+				std::cerr << "[listener]: size:" << size << "buf_s.size() "<< buf_s.size() << "\033[0m] end buffer\n";
 				search->second.append_plaintext(buf_s);
 
 				if (prepare_answer(event_fd, search->second, size))
