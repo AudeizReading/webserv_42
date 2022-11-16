@@ -119,6 +119,8 @@ void	Request::append_plaintext(std::string const& buffer)
 		parse();
 	if (_parsed)
 		_content = _plaintext.substr(_content_start);
+	//std::cerr << "[request]: _plaintext [\033[35m" << _plaintext << "\033[0m] end buffer\n";
+	//std::cerr << "[request]: _content [\033[36m" << _content << "\033[0m] end buffer\n";
 }
 
 void	Request::do_end()

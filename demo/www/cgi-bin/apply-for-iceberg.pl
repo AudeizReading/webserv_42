@@ -19,6 +19,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		$len = length $buffer;
 		print "<p> buffer lenght: $len</p>";
 		print "<p> read lenght: $len_read</p>";
+		print "<p> buffer: [<pre>$buffer</pre>]</p>";
 
 		# It seems that we do not read the same size of datas as expected, do not know why but we receive less than content length, so we do not have the full datas and the upload "failed" -> not really failed, but as we do not have the full datas, the file is created but the datas are corrupted (the new upload file can be seen in the gallery but as broken link, try to upload one file, you will be able to delete it from the gallery)
 		if (($len == $len_read && $len_read == $ENV{'CONTENT_LENGTH'}) || warn "We've read $len_read bytes but we are expecting $ENV{'CONTENT_LENGTH'}.")
@@ -27,104 +28,67 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
 			&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
-			#&cgi_print_html_double_elt("pre", "buffer ==> $buffer");
 			$boundary = $ARGV[0];
-
-			# simulation body contenant 3 fichiers a upload
-			$buffer_simulated_3_files = "--$boundary
-Content-Disposition: form-data; name=\"form\"; filename=\"9080412_brand_bootstrap_icon_1.png\"
-Content-Type: image/png
-\r\nPNG
-
-
-IHDR00Wù	pHYs·IDAThíXKN1²á\@áHßªwàL VhwÝp8e%ðÌ$±L©yÒÛel¿?éºÚ1!ÄOâ×ÈqFÜ
-~J¼Ë´+â¡5øâ}Áà{âN,.*¾çEÀ¹&îY)WÌ÷³ÅÐÙO Ì÷Åÿ¹íkßÎÿ¥¥¶gðê	<¦¶g0Vm¯Z¤¶0Km¯J ­íQ¦ìá÷¸ÍÞHÅSÞÔ
-{øÉs^\"`Èf(<ìRÐ;
-\\7§
-RÌÏm~cýWð¿äYGc;
-\@Ã{ñ(*ìbyÔð¥¯f[ìºög
-õÐÖliÒÚÚG45[*\@k7z¦ é»Q¤ç´½ 
-}½ z¡2Mv¡o»Já?Úd¥ìXÌTHÉEU6c¡	0Ïã	 ÙGPÏã ÝGpÍã%èÛGÀ<¾ª x\Óõ:¨yáàCý\"¨Ç'Dò{®;]¿hhhh(oh1át²óIEND®B`
---$boundary
-Content-Disposition: form-data; name=\"form\"; filename=\"9080412_brand_bootstrap_icon_2.png\"
-Content-Type: image/png
-\r\nPNG
-
-
-IHDR00Wù	pHYs·IDAThíXKN1²á\@áHßªwàL VhwÝp8e%ðÌ$±L©yÒÛel¿?éºÚ1!ÄOâ×ÈqFÜ
-~J¼Ë´+â¡5øâ}Áà{âN,.*¾çEÀ¹&îY)WÌ÷³ÅÐÙO Ì÷Åÿ¹íkßÎÿ¥¥¶gðê	<¦¶g0Vm¯Z¤¶0Km¯J ­íQ¦ìá÷¸ÍÞHÅSÞÔ
-{øÉs^\"`Èf(<ìRÐ;
-\\7§
-RÌÏm~cýWð¿äYGc;
-\@Ã{ñ(*ìbyÔð¥¯f[ìºög
-õÐÖliÒÚÚG45[*\@k7z¦ é»Q¤ç´½ 
-}½ z¡2Mv¡o»Já?Úd¥ìXÌTHÉEU6c¡	0Ïã	 ÙGPÏã ÝGpÍã%èÛGÀ<¾ª x\Óõ:¨yáàCý\"¨Ç'Dò{®;]¿hhhh(oh1át²óIEND®B`
---$boundary
-Content-Disposition: form-data; name=\"form\"; filename=\"9080412_brand_bootstrap_icon_3.png\"
-Content-Type: image/png
-\r\nPNG
-
-
-IHDR00Wù	pHYs·IDAThíXKN1²á\@áHßªwàL VhwÝp8e%ðÌ$±L©yÒÛel¿?éºÚ1!ÄOâ×ÈqFÜ
-~J¼Ë´+â¡5øâ}Áà{âN,.*¾çEÀ¹&îY)WÌ÷³ÅÐÙO Ì÷Åÿ¹íkßÎÿ¥¥¶gðê	<¦¶g0Vm¯Z¤¶0Km¯J ­íQ¦ìá÷¸ÍÞHÅSÞÔ
-{øÉs^\"`Èf(<ìRÐ;
-\\7§
-RÌÏm~cýWð¿äYGc;
-\@Ã{ñ(*ìbyÔð¥¯f[ìºög
-õÐÖliÒÚÚG45[*\@k7z¦ é»Q¤ç´½ 
-}½ z¡2Mv¡o»Já?Úd¥ìXÌTHÉEU6c¡	0Ïã	 ÙGPÏã ÝGpÍã%èÛGÀ<¾ª x\Óõ:¨yáàCý\"¨Ç'Dò{®;]¿hhhh(oh1át²óIEND®B`
---$boundary
-Content-Disposition: form-data; name=\"submit\"
-
-Book an iceberg
---$boundary--";
 
 			# also have to check is the upload size is acceptable or not
 			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || die "These datas are not allowed to be host on the server.")
 			{
-				# Si j'ai bien compris le parsing d'une requete les lignes commentees ci-dessus gere l'upload, mais en l'etat actuel je ne peux pas l'appliquer sur le buffer qu'on recoit
-				#&cgi_parse_body_upload($boundary, $buffer);
-				#my %upload_files = &cgi_parse_body_upload($boundary, $buffer_simulated_3_files);
-				#&cgi_upload_files(%upload_files);
-				#&cgi_print_html_double_elt("p", "End cgi_simulate_body_upload");
+				my $buffer_len = length $buffer;
+				&cgi_print_html_double_elt("p", "buffer de taille: $buffer_len");
+				# Certains fichiers se retrouvent encore corrompu, mais je n'ai franchement pas d'idees de pourquoi, les buffers cotes serveurs semblent safe, ce serait ici que ca se produit, mais j'ai aucune idee de pourquoi entre read et la creation du file il manque des donnees, alors qu'on a bien read content_length car
+				my %upload_files = &cgi_parse_body_upload($boundary, "$buffer");
+				&cgi_upload_files(%upload_files);
+				&cgi_print_html_double_elt("p", "End cgi_simulate_body_upload");
 
-				@post_datas = split($boundary, $buffer);
-				@upload_datas = split(/\n\r\n/, $post_datas[1]);
-				@form_post_datas = split(/[=;:"' ]/, $upload_datas[0]);
-				foreach $data (@post_datas)
-				{
-					my $len = length $data;
-					my $post_datas_size = $#post_datas + 1;
-					#&cgi_print_html_double_elt("p", "\@post_datas ==> @post_datas"); # affiche le tableau complet
-					#&cgi_print_html_double_elt("p", "\$post_datas_size ==> $post_datas_size");
-					#&cgi_print_html_double_elt("p", "lenght of data ==> $len");
-					#&cgi_print_html_double_elt("pre", "post_datas THE data ==> $data");
-				}
-				$upload_filename = $form_post_datas[11];
+				&cgi_print_html_double_elt("p", "boundary ==> [$boundary]");
+				#&cgi_print_html_double_elt("pre", "buffer ==> [$buffer]");
+				#@post_datas = split("--$boundary", $buffer);
+				#@upload_datas = split(/\n\r\n/, $post_datas[1]);
+				#@form_post_datas = split(/[=;:"' ]/, $upload_datas[0]);
+				##&cgi_print_html_double_elt("pre", "upload_datas ==> [$upload_datas[1]]");
+				#my $i = 0;
+				#foreach $data (@post_datas)
+				#{
+				#	my $len = length $data;
+				#	my $post_datas_size = $#post_datas + 1;
+				#	#&cgi_print_html_double_elt("p", "\@post_datas ==> @post_datas"); # affiche le tableau complet
+				#	#&cgi_print_html_double_elt("p", "\$post_datas_size ==> $post_datas_size");
+				#	#&cgi_print_html_double_elt("p", "lenght of data ==> $len");
+				#	print "post_datas-$i";
+				#	#&cgi_print_html_double_elt("pre", "$i: post_datas THE data ==> $data");
+				#	++$i;
+				#}
+				#$upload_filename = $form_post_datas[11];
 
-				foreach $data (@upload_datas)
-				{
-					if ($data eq $upload_datas[1])
-					{
-						&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
-						$len = length $data;
-						print "<p> lenght: $len</br>";
-						&cgi_print_ascii($data);
-					}
-					print "</p>";
-				}
+				#$i = 0;
+				#foreach $data (@upload_datas)
+				#{
+				#	#if ($data eq $upload_datas[1])
+				#	#{
+				#		print "upload_datas-$i";
+				#		#&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
+				#		$len = length $data;
+				#		print "<p> lenght: $len</br>";
+				#		#&cgi_print_ascii($data);
+				#		print "</p>";
+				#	#}
+				#	++$i;
+				#}
+				#$i = 0;
 				#foreach $data (@form_post_datas)
 				#{
-				#	$len = length $data;
-				#	print "<p> lenght: $len</p>";
-				#	&cgi_print_html_double_elt("pre", "form_post_datas ==> $data");
+				##	$len = length $data;
+				##	print "<p> lenght: $len</p>";
+				#	print "form_post_datas-$i";
+				#	++$i;
+				#	#&cgi_print_html_double_elt("pre", "form_post_datas ==> $data");
 				#}
-				&cgi_print_html_double_elt("p", "upload filename: $upload_filename\n\r");
+				#&cgi_print_html_double_elt("p", "upload filename: $upload_filename");
 
-				open(UPLOAD_FILE, ">:raw", "../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
-				binmode UPLOAD_FILE;
-				print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
-				close UPLOAD_FILE;
+				#open(UPLOAD_FILE, ">:raw", "../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
+				#binmode UPLOAD_FILE;
+				#print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
+				#close UPLOAD_FILE;
 			}
 		}
 		$output_mess="STDIN (Methode POST)" ;
@@ -269,6 +233,11 @@ sub	cgi_parse_body_upload
 
 	my (@body_datas) = split("--$bound", $raw_datas);
 	my $body_datas_size = $#body_datas + 1;
+	print "<p>cgi_parse_body_upload<br/>";
+	print "bound: <span>$bound</span><br/>";
+	print "body_datas_size: <span>$body_datas_size</span><br/>";
+	#print "raw_datas: {<pre>$raw_datas</pre>}<br/>";
+	print "</p>";
 
 	# Les filename + les datas y correspondant sont dans body_datas[1] à body_datas[nb_upload]
 	# body_datas[0] ne contiendrait que des \0 (je ne sais pas pq)
@@ -284,7 +253,8 @@ sub	cgi_parse_body_upload
 		{
 			my ($post_form_attributes, $file_datas) = split(/\n\r\n/, $body_datas[$i]);
 			my (@form_attr) = split(/[=;:"' ]/, $post_form_attributes);
-			$files_data{$form_attr[11]} = $file_datas;
+			$files_data{$form_attr[11]} = $form_attr[11];
+			print "<p>filename: $form_attr[11]<p/>";
 		}
 		return %files_data;
 	}
