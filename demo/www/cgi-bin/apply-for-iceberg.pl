@@ -19,7 +19,8 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		$len = length $buffer;
 		print "<p> buffer lenght: $len</p>";
 		print "<p> read lenght: $len_read</p>";
-		print "<p> buffer: [<pre>$buffer</pre>]</p>";
+		&cgi_print_ascii($buffer);
+		#print "<p> buffer: [<pre>$buffer</pre>]</p>";
 
 		# It seems that we do not read the same size of datas as expected, do not know why but we receive less than content length, so we do not have the full datas and the upload "failed" -> not really failed, but as we do not have the full datas, the file is created but the datas are corrupted (the new upload file can be seen in the gallery but as broken link, try to upload one file, you will be able to delete it from the gallery)
 		if (($len == $len_read && $len_read == $ENV{'CONTENT_LENGTH'}) || warn "We've read $len_read bytes but we are expecting $ENV{'CONTENT_LENGTH'}.")
@@ -41,54 +42,6 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 				&cgi_print_html_double_elt("p", "End cgi_simulate_body_upload");
 
 				&cgi_print_html_double_elt("p", "boundary ==> [$boundary]");
-				#&cgi_print_html_double_elt("pre", "buffer ==> [$buffer]");
-				#@post_datas = split("--$boundary", $buffer);
-				#@upload_datas = split(/\n\r\n/, $post_datas[1]);
-				#@form_post_datas = split(/[=;:"' ]/, $upload_datas[0]);
-				##&cgi_print_html_double_elt("pre", "upload_datas ==> [$upload_datas[1]]");
-				#my $i = 0;
-				#foreach $data (@post_datas)
-				#{
-				#	my $len = length $data;
-				#	my $post_datas_size = $#post_datas + 1;
-				#	#&cgi_print_html_double_elt("p", "\@post_datas ==> @post_datas"); # affiche le tableau complet
-				#	#&cgi_print_html_double_elt("p", "\$post_datas_size ==> $post_datas_size");
-				#	#&cgi_print_html_double_elt("p", "lenght of data ==> $len");
-				#	print "post_datas-$i";
-				#	#&cgi_print_html_double_elt("pre", "$i: post_datas THE data ==> $data");
-				#	++$i;
-				#}
-				#$upload_filename = $form_post_datas[11];
-
-				#$i = 0;
-				#foreach $data (@upload_datas)
-				#{
-				#	#if ($data eq $upload_datas[1])
-				#	#{
-				#		print "upload_datas-$i";
-				#		#&cgi_print_html_double_elt("pre", "Hi <-> upload_datas ==> $data");
-				#		$len = length $data;
-				#		print "<p> lenght: $len</br>";
-				#		#&cgi_print_ascii($data);
-				#		print "</p>";
-				#	#}
-				#	++$i;
-				#}
-				#$i = 0;
-				#foreach $data (@form_post_datas)
-				#{
-				##	$len = length $data;
-				##	print "<p> lenght: $len</p>";
-				#	print "form_post_datas-$i";
-				#	++$i;
-				#	#&cgi_print_html_double_elt("pre", "form_post_datas ==> $data");
-				#}
-				#&cgi_print_html_double_elt("p", "upload filename: $upload_filename");
-
-				#open(UPLOAD_FILE, ">:raw", "../upload/$upload_filename") || die "$upload_filename couldn't be opened: $!";
-				#binmode UPLOAD_FILE;
-				#print UPLOAD_FILE $upload_datas[1] || die "$upload_filename couldn't be written: $!";
-				#close UPLOAD_FILE;
 			}
 		}
 		$output_mess="STDIN (Methode POST)" ;
@@ -217,12 +170,15 @@ else # other methods that we do not handle
 sub	cgi_print_ascii
 {
 	my ($str) = @_;
+	my ($len) = length $str;
+	print "<p> convert $len ascii to int</br>";
 	for(my $i=0; $i < $len; ++$i) 
 	{
 		my $ascii = substr($str, $i, 1);
 		$ascii = ord($ascii);
-		&cgi_print_html_double_elt("span", "==> $ascii <==&nbsp");
+		print "<span>==> $ascii <== </span>";
 	}
+	print "</p>";
 }
 
 # parse the body of an upload "POST" request
@@ -251,10 +207,14 @@ sub	cgi_parse_body_upload
 
 		for (my $i = 1; $i <= $nb_upload; ++$i)
 		{
-			my ($post_form_attributes, $file_datas) = split(/\n\r\n/, $body_datas[$i]);
+			my ($post_form_attributes, $file_datas, $remaining) = split(/\n\r\n/, $body_datas[$i]);
 			my (@form_attr) = split(/[=;:"' ]/, $post_form_attributes);
-			$files_data{$form_attr[11]} = $form_attr[11];
-			print "<p>filename: $form_attr[11]<p/>";
+			#$files_data{$form_attr[11]} = $form_attr[11];
+			$files_data{$form_attr[11]} = $file_datas;
+			print "<p>filename: $form_attr[11]</br> file datas converted: <p/>";
+			&cgi_print_ascii($file_datas);
+			print "remaining: ";
+			&cgi_print_ascii($remaining);
 		}
 		return %files_data;
 	}

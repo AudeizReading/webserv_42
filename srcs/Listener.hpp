@@ -21,6 +21,7 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Buffer.hpp"
 
 #define DEFAULT_PORT	5000
 #define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
