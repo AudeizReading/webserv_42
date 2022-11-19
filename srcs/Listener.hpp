@@ -27,6 +27,8 @@
 #define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
 
 
+unsigned long		get_req_content_length(Request& req);
+
 template <typename T>
 T ToNum(std::string str)
 {
@@ -52,7 +54,7 @@ private:
 	vector_s				_servers;
 	map_ir					_requests;
 
-	bool				prepare_answer(int fd, Request& request, int size);
+	bool				prepare_answer(int fd, Request& request, int size, int pending_datas_sz);
 	void				answer(int fd, Request const& request);
 	bool				_send(int fd, Response* response);
 	void				_bind_request(Request &request);

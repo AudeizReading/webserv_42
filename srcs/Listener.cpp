@@ -38,6 +38,13 @@
 
 #define MAX_REQ_HEADER_BUFFER 24576
 
+unsigned long		get_req_content_length(Request& req)
+{
+	std::string		length = req.get_header()["Content-Length"];
+	unsigned long	size = ToNum<unsigned long>(length);
+	return size;
+}
+
 Listener::Listener(std::string const& listen_addr, int listen_port, int listen_backlog,
 		vector_s::const_iterator servers_first,
 		vector_s::const_iterator servers_last
@@ -113,7 +120,7 @@ bool	Listener::redirect_if_dir_request(Request const& req, int event_fd)
 	return _send(event_fd, new Response_Redirect_Permanent(req, req.get_location() + '/'));
 }
 
-bool	Listener::prepare_answer(int fd, Request& request, int size)
+bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_datas_sz)
 {
 	bool was_sent = false;
 	if (request.is_parsed())
@@ -143,19 +150,30 @@ bool	Listener::prepare_answer(int fd, Request& request, int size)
 	if (was_sent)
 		return (true);
 
-	std::string length = "";
+/*	std::string length = "";
 	if (request.is_complete())
 		length = request.get_header()["Content-Length"]; // FIXME: non const method
 
-	//std::cerr << _MAG << "Received length: " << size << RESET << std::endl;
+	//std::cerr << _MAG << "Received length: " << size << RESET << std::endl;*/
+	std::cerr << "\033[34;1m[prepare_answer] pending datas size aka event.data: " << pending_datas_sz << "\033[0m\n";
 	std::string type = request.get_header()["Content-Type"];
-	if (size == PIPE_BUF || (length != ""
+/*	if (size == PIPE_BUF || (length != ""
 			&& request.get_content().length() < static_cast<unsigned long>(stoi(length))
 			&& type.find("multipart/form-data; ") == std::string::npos)
 		|| (type.find("multipart/form-data; ") != std::string::npos
 			&& length != ""
 			&& request.get_content().length() < 0.2 * static_cast<unsigned long>(stoi(length))))
-		return (false);
+		return (false);*/
+	unsigned long content_length = get_req_content_length(request);
+	if (size == PIPE_BUF 
+		|| (request.get_content().length() < content_length
+			&& type.find("multipart/form-data; ") == std::string::npos)
+		|| (type.find("multipart/form-data; ") != std::string::npos
+			&& request.get_content().length() < 0.2 * content_length)
+		|| content_length - size > 0)
+	{
+		return false;
+	}
 	else
 	{
 		size_t	buf_size = (request.get_buffer()).size();
@@ -165,7 +183,8 @@ bool	Listener::prepare_answer(int fd, Request& request, int size)
 		buf.print_raw_to_int(buf_size);
 	}
 
-	if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
+	if (content_length > 0 && request.get_content().length() < content_length)
+	//if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 		std::cout << "[listener] socket partial#" << fd << std::endl;
 
 	std::cerr << request << std::endl;
@@ -363,7 +382,8 @@ void	Listener::start_listener()
 
 	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
 
-	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	EV_SET(&change_event, _fd, EVFILT_READ | EVFILT_TIMER, EV_ADD, NOTE_SECONDS, 0, NULL);
+	//EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 		throw std::runtime_error(strerror(errno));
 
@@ -462,55 +482,25 @@ void	Listener::start_listener()
 						<< " host: " << search->second.get_host() << std::endl;
 				}
 
-			/*	std::cerr << "[listener]: buffer [\033[33m" << buffer << "\033[0m] end buffer\n";
-				Buffer	buf_stream(buffer, size);
-				buf_stream.print_obf();
-				buf_stream.print_raw(size);
-
-				static bool		has_upload = false;
-				static size_t	size_read_cumul = 0;
-
-				if (size > -1)
-				{
-					size_read_cumul += size;
-				}
-				if (buf_stream.has_upload_request(search->second) && has_upload)
-				{
-					has_upload = false;
-				}
-				if (buf_stream.has_upload_request(search->second))
-				{
-					has_upload = true;
-				}
-				if (has_upload)
-				{
-
-					Request::map_ss				header = search->second.get_header();
-					Request::map_ss::iterator	end = header.end();
-					Request::map_ss::iterator	cont_len_it = header.find("Content-Length");
-
-					if (cont_len_it != end)
-					{
-						std::string	content_length = cont_len_it->second;
-						size_t	len = ToNum<size_t>(content_length);
-						std::cerr << "content-length: " << len << "\n";
-						//buf_stream.print_raw_to_int(len);
-						buf_stream.print_raw_to_int(size);
-					}
-				}*/
 				std::string	buf_s(buffer, size);
-			//	std::cerr << "[listener]: size:" << size << " buf_s.size() "<< buf_s.size() << " Buffer::get_obf_size() " << buf_stream.get_obf_size() << " Buffer::get_raw_size() " << buf_stream.get_raw_size() << "\n";
-			//	std::cerr << "size cumul: " << size_read_cumul << "\n";
-				//search->second.append_plaintext(buf_stream.get_obf());
 				search->second.append_plaintext(buf_s);
 
-				if (prepare_answer(event_fd, search->second, size))
+				if (prepare_answer(event_fd, search->second, size, event.data))
+				//if (prepare_answer(event_fd, search->second, size))
 				{
-					//size_read_cumul = 0;
-					std::cerr << "\033[32mpass here! prepare_answer\033[0m\n";
+					std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_READ} event.data: <<" << event.data << ">>\033[0m\n";
 					// Do something after send & close (one time for each request)
 					continue ;
 				}
+			}
+			else if (event.filter == EVFILT_TIMER)
+			{
+				std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_TIMER} event.data: <<" << event.data << ">>\033[0m\n";
+				if (_requests.find(event_fd) == _requests.end())
+				{
+					std::cout << "[listener] missing event for EVFILT_TIMER socket#" << event_fd << std::endl;
+				}
+				_send(event_fd, new Response_Internal_Server_Gateway_Timeout(_requests.find(event_fd)->second)); // TODO: Timeout
 			}
 			else
 			{
@@ -529,5 +519,4 @@ Listener::~Listener()
 	_requests.clear();
 	if (close(_fd) < 0)
 		throw std::runtime_error(strerror(errno));
-com
 }
