@@ -150,38 +150,21 @@ bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_da
 	if (was_sent)
 		return (true);
 
-/*	std::string length = "";
-	if (request.is_complete())
-		length = request.get_header()["Content-Length"]; // FIXME: non const method
+	//std::string		type = request.get_header()["Content-Type"];
+	unsigned long	content_length = get_req_content_length(request);
 
-	//std::cerr << _MAG << "Received length: " << size << RESET << std::endl;*/
-	std::cerr << "\033[34;1m[prepare_answer] pending datas size aka event.data: " << pending_datas_sz << "\033[0m\n";
-	std::string type = request.get_header()["Content-Type"];
-/*	if (size == PIPE_BUF || (length != ""
-			&& request.get_content().length() < static_cast<unsigned long>(stoi(length))
-			&& type.find("multipart/form-data; ") == std::string::npos)
-		|| (type.find("multipart/form-data; ") != std::string::npos
-			&& length != ""
-			&& request.get_content().length() < 0.2 * static_cast<unsigned long>(stoi(length))))
-		return (false);*/
-	unsigned long content_length = get_req_content_length(request);
-	if (size == PIPE_BUF 
-		|| (request.get_content().length() < content_length
-			&& type.find("multipart/form-data; ") == std::string::npos)
-		|| (type.find("multipart/form-data; ") != std::string::npos
-			&& request.get_content().length() < 0.2 * content_length)
-		|| content_length - size > 0)
+	if (pending_datas_sz - size > 0 || request.get_content().length() < content_length)
 	{
 		return false;
 	}
-	else
+ /*	else
 	{
 		size_t	buf_size = (request.get_buffer()).size();
 		Buffer	buf(request.get_buffer().c_str(), buf_size);
 
 		buf.print_raw(buf_size);
 		buf.print_raw_to_int(buf_size);
-	}
+	}*/
 
 	if (content_length > 0 && request.get_content().length() < content_length)
 	//if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))

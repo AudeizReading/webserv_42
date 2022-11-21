@@ -19,13 +19,13 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		$len = length $buffer;
 		print "<p> buffer lenght: $len</p>";
 		print "<p> read lenght: $len_read</p>";
-		&cgi_print_ascii($buffer);
+		#&cgi_print_ascii($buffer);
 		#print "<p> buffer: [<pre>$buffer</pre>]</p>";
 
 		# It seems that we do not read the same size of datas as expected, do not know why but we receive less than content length, so we do not have the full datas and the upload "failed" -> not really failed, but as we do not have the full datas, the file is created but the datas are corrupted (the new upload file can be seen in the gallery but as broken link, try to upload one file, you will be able to delete it from the gallery)
-		if (($len == $len_read && $len_read == $ENV{'CONTENT_LENGTH'}) || warn "We've read $len_read bytes but we are expecting $ENV{'CONTENT_LENGTH'}.")
-		{
-		}
+		#if (($len == $len_read && $len_read == $ENV{'CONTENT_LENGTH'}) || warn "We've read $len_read bytes but we are expecting $ENV{'CONTENT_LENGTH'}.")
+		#{
+		#}
 		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
 			&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
@@ -36,7 +36,6 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 			{
 				my $buffer_len = length $buffer;
 				&cgi_print_html_double_elt("p", "buffer de taille: $buffer_len");
-				# Certains fichiers se retrouvent encore corrompu, mais je n'ai franchement pas d'idees de pourquoi, les buffers cotes serveurs semblent safe, ce serait ici que ca se produit, mais j'ai aucune idee de pourquoi entre read et la creation du file il manque des donnees, alors qu'on a bien read content_length car
 				my %upload_files = &cgi_parse_body_upload($boundary, "$buffer");
 				&cgi_upload_files(%upload_files);
 				&cgi_print_html_double_elt("p", "End cgi_simulate_body_upload");
@@ -209,12 +208,11 @@ sub	cgi_parse_body_upload
 		{
 			my ($post_form_attributes, $file_datas, $remaining) = split(/\n\r\n/, $body_datas[$i]);
 			my (@form_attr) = split(/[=;:"' ]/, $post_form_attributes);
-			#$files_data{$form_attr[11]} = $form_attr[11];
 			$files_data{$form_attr[11]} = $file_datas;
-			print "<p>filename: $form_attr[11]</br> file datas converted: <p/>";
-			&cgi_print_ascii($file_datas);
-			print "remaining: ";
-			&cgi_print_ascii($remaining);
+			print "<p>filename: $form_attr[11]<p/>";
+			#&cgi_print_ascii($file_datas);
+			#print "remaining: ";
+			#&cgi_print_ascii($remaining);
 		}
 		return %files_data;
 	}
