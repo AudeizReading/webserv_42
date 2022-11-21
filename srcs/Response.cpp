@@ -29,7 +29,8 @@ Response::Response(Request const& request): _request(&request)
 
 void Response::create()
 {
-	std::string					ext;
+	std::string			ext;
+	const std::string	cgi_file_ext = _request->get_server_location()->get_cgi_file_ext();
 
 	_init();
 
@@ -51,7 +52,7 @@ void Response::create()
 		/*
 		 * NOTE: I commented out the CGI part because I didn't want to touch it yet.
 		 */
-		else if (good && ext == "pl") { // TODO: is cgi extension of application
+		else if (good && ext == cgi_file_ext) {
 			// CGI Handling
 			try 
 			{

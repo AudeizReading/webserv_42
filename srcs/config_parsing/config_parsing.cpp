@@ -43,7 +43,7 @@ static void	_parse_value(TOML::Value& val)
 {
 	if (val.type() == TOML::T_ARRAY)
 	{
-		// for (auto it : val.Array()) => Remember what they took away from you.
+		// for (auto &it : val.Array()) => Remember what they took away from you.
 		for (TOML::Document::array_type::iterator it = val.Array().begin();
 			it != val.Array().end();
 			++it)
@@ -64,6 +64,24 @@ static void	_parse_value(TOML::Value& val)
 	}
 }
 
+static TOML::Value::group_type	_get_default_cgi_environ_group()
+{
+	// static to avoid constructing every time before return. Did that because RVO seems janky in C++98 w/ Apple clang.
+	// And because I wanted to.
+	static TOML::Value::group_type	cgi_environ = TOML::make_group("cgi_environ");
+	static bool is_init = false;
+
+	if (is_init == false)
+	{
+		cgi_environ.group_addValue( TOML::make_string("DIR_UPLOAD",			"./demo/www/upload")	);
+		cgi_environ.group_addValue( TOML::make_string("GATEWAY_INTERFACE",	"CGI/1.1")				);
+		cgi_environ.group_addValue( TOML::make_string("CGI_EXEC",			"/usr/bin/perl")		);
+		cgi_environ.group_addValue( TOML::make_string("SERVER_SOFTWARE",	"42_AGP_webserv")		);
+		is_init = true;
+	}
+	return cgi_environ;
+}
+
 // Goes through each server block in the HTTP group, and adds a default "location"
 // to a server when none is defined.
 static void	_insert_default_locations(TOML::Value& http)
@@ -75,13 +93,29 @@ static void	_insert_default_locations(TOML::Value& http)
 	{
 		if (!it->has("location"))
 		{
-			TOML::Value new_group = TOML::make_group("");
+			TOML::Value new_group = TOML::make_group("");	// Group has no key because it's in an array
 			new_group.group_addValue( TOML::make_string("URI", "/") );
 			new_group.group_addValue( TOML::make_string("root", "./demo/www") );
+			new_group.group_addValue( _get_default_cgi_environ_group() );
+
 			it->group_addValue( TOML::make_array("location", TOML::T_GROUP) );
 			(*it)["location"].groupArray_addValue(new_group);
 		}
 	}
+}
+
+// Checks for some environment variables in cgi_environ group. If they're not present,
+// inserts them with a default value.
+static void	_insert_default_cgi_environ_vars(TOML::Value& cgi_environ)
+{
+	if (!cgi_environ.has("DIR_UPLOAD")) // A bit useless for locations that will deny dir upload, but is easier to do here
+		cgi_environ.group_addValue( TOML::make_string("DIR_UPLOAD",			"./demo/www/upload")	);
+	if (!cgi_environ.has("GATEWAY_INTERFACE"))
+		cgi_environ.group_addValue( TOML::make_string("GATEWAY_INTERFACE",	"CGI/1.1")				);
+	if (!cgi_environ.has("CGI_EXEC"))
+		cgi_environ.group_addValue( TOML::make_string("CGI_EXEC",			"/usr/bin/perl")		);
+	if (!cgi_environ.has("SERVER_SOFTWARE"))
+		cgi_environ.group_addValue( TOML::make_string("SERVER_SOFTWARE",	"42_AGP_webserv")		);
 }
 
 static void	_location_fields_autoformat(TOML::Value::array_type& servers)
@@ -96,12 +130,16 @@ static void	_location_fields_autoformat(TOML::Value::array_type& servers)
 			if ((*j)["URI"].Str().empty())
 				(*j)["URI"].Str() = "/";
 			
-			if (!(*j).has("redirect"))
+			if (!j->has("redirect"))
 			{
 				(*j)["root"].Str() = strtrim_right((*j)["root"].Str(), "/");
 				if ((*j)["root"].Str().empty())
 					(*j)["root"].Str() = "/";
 			}
+			if (!j->has("cgi_environ"))
+				j->group_addValue( _get_default_cgi_environ_group() );
+			else
+				_insert_default_cgi_environ_vars(*j);
 			
 			// std::cerr << YELB << "URI: \"" << (*j)["URI"].Str() << '\"' << RESET << std::endl;
 			// std::cerr << YELB << "root: \"" << (*j)["root"].Str() << '\"' << RESET << std::endl << std::endl;
