@@ -24,7 +24,7 @@
 #include "Buffer.hpp"
 
 #define DEFAULT_PORT	5000
-#define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
+#define LISTEN_BACKLOG	2048 // The maximum length for the queue of pending connections.
 
 
 unsigned long		get_req_content_length(Request& req);

@@ -69,7 +69,7 @@ void				Buffer::print_raw_to_int(const size_t content_length)	const
 
 unsigned char*	Buffer::get_body(const size_t content_length) const
 {
-	unsigned long 	start_body_obf = this->_obfuscated.find("\r\n\r\n") + 4;
+	unsigned long 	start_body_obf = this->_obfuscated.find("\n\r\n") + 3;
 	if (start_body_obf == std::string::npos)
 	{
 		std::cerr << "There is nothing inside the \n";

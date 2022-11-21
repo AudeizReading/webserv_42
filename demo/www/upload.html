@@ -25,12 +25,12 @@
 		<h2>POST request</h2>
 	</form>
 	<hr>
-	<form id="delete-form" method="DELETE" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Deletion files(s)">
+	<form id="delete-form" method="DELETE" action="#" enctype="multipart/form-data" alt="Deletion files(s)">
 		<p>
 			<label for="delfile">
 				Select a file to delete  <br/>   
 				<i class="fa-regular fa-folder-open"></i>
-				<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
+				<input id="delfile" type="file" accept="image/png, image/jpeg" enctype="multipart/form-data" multiple required />
 			</label>
 		</p>
 		<p class="hidden">
@@ -49,43 +49,26 @@
 		const data = new URLSearchParams(new FormData(document.getElementById('delete-form')))
 
 		let nb_files = document.getElementById('delfile').files.length;
-		data.append("nb_files", nb_files);
 
 		const nb_files_int = parseInt(nb_files, 10);
-		let i=0;
+		let i = 0;
 		while (i < nb_files_int)
 		{
 			file = document.getElementById('delfile').files[i].name;
 			data.append("filename" + i.toString(), file);
 			i++;
+				function reqListener() {
+					console.log(this.responseText);
+				}
+
+				const req = new XMLHttpRequest();
+				req.open("DELETE", "http://127.0.0.1:4242/upload/" + file);
+				req.send();
 		}
-
-		let delete_header = new Headers();
-		delete_header.append('Content-Type', 'multipart/form-data');
-		
-		fetch(document.getElementById('delete-form').action, {
-			headers: delete_header,
-		    method: 'DELETE',
-		    body: data,
-		}).then(function(response) {
-			return response.text()
-		})
-		.then((data) => {
-			document.getElementById('output').textContent += "Request sent ";
-			location.reload();
-			//document.getElementById('output').textContent += data
-		})
-
 
 		event.preventDefault()
 	})
 	</script>
-	<!--<script>
-		document.getElementById('upload-form').addEventListener('submit', function(event) { 
-					location.reload(); 
-					event.preventDefault()
-				})
-	</script>-->
 	<hr>
 	<form id="gallery-form" method="GET" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Gallery">
 		<p class="hidden">

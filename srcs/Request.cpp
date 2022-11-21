@@ -123,6 +123,7 @@ void	Request::append_plaintext(std::string const& buffer)
 	//std::cerr << "[request]: _content [\033[36m" << _content << "\033[0m] end buffer\n";
 }
 
+
 void	Request::do_end()
 {
 	// ACTUELLEMENT NON UTILISE mais peut etre utile pour le CGI et avoir une map

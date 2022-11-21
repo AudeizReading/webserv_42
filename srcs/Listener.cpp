@@ -167,10 +167,10 @@ bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_da
 	}*/
 
 	if (content_length > 0 && request.get_content().length() < content_length)
-	//if (length != "" && request.get_content().length() < static_cast<unsigned long>(stoi(length)))
 		std::cout << "[listener] socket partial#" << fd << std::endl;
 
 	std::cerr << request << std::endl;
+	//return false;
 
 	request.do_end();
 
@@ -222,6 +222,16 @@ void	Listener::answer(int fd, Request const& request)
 	}
 	else // Client hasn't requested a directory, just a normal file
 	{
+		if (request.get_method() == "DELETE")
+		{
+			std::cout << _MAG << "[Listener::answer] Request method: " << request.get_method() << RESET << std::endl;
+			std::cout << _MAG << "[Listener::answer] Request location: " << request.get_location() << RESET << std::endl;
+			size_t	buf_size = (request.get_buffer()).size();
+			Buffer	buf(request.get_buffer().c_str(), buf_size);
+
+			buf.print_raw(buf_size);
+		//	buf.print_raw_to_int(buf_size);
+		}
 		response = new Response_Ok(request);
 	}
 	_send(fd, response);
