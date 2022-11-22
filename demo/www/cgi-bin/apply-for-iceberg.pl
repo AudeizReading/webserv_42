@@ -318,7 +318,7 @@ sub cgi_print_html_input_submit_reset
 
 	print "<p>";
 	print "<input type=\"submit\" name=\"submit\" value=\"$value\" />";
-	print "<input type=\"reset\" name=\"reset\" value=\"Reset\" />";
+	#print "<input type=\"reset\" name=\"reset\" value=\"Reset\" />";
 	print "</p>";
 }
 
@@ -362,28 +362,11 @@ sub cgi_delete_request_javascript
 {
 	my ($i, $path_info, $file) = @_;
 
-	print "<script>";
+	print "<script>\r\n";
 	print "document.getElementById('delete-form$i').addEventListener('submit', function (event) {\r\n";
-	print "	const data = new URLSearchParams(new FormData(document.getElementById('delete-form$i')));\r\n";
-	#
-	print "data.append(\"filename\", \"$path_info/$file\")\r\n";
-	print "let nb_files = 1;\r\n";
-	print "data.append(\"nb_files\", nb_files.toString());\r\n";
-
-	print "fetch(document.getElementById('delete-form$i').action, {\r\n";
-	print "	method: 'DELETE',\r\n";
-	print "	body: data,\r\n";
-	print "	}).then(function(response) {\r\n";
-	print "		return response.text()\r\n";
-	print "	})\r\n";
-	print "	.then((data) => {\r\n";
-	print "		document.getElementById('output').textContent = \"Request sent\";\r\n";
-	print "location.reload();\r\n";
-	#print "		document.getElementById('output').textContent = data;\r\n";
-	print "	})\r\n";
-	print "		event.preventDefault()\r\n";
-	print 	"event.preventDefault()";
-	print 	"})\r\n";
+	print "		fetch(\"http://127.0.0.1:4242/$path_info/$file\", { method: 'DELETE' }).then(response => response.text()).then(() => {document.getElementById('output').textContent = \"Request sent\";location.reload();});\r\n";
+	print "	event.preventDefault()\r\n";
+	print "})\r\n";
 	print "	</script>\r\n";
 
 }
@@ -400,7 +383,8 @@ sub cgi_display_files
 		# faire un systeme de pagination si trop de photos
 		&cgi_print_html_double_elt("li", "<img class=\"img_gallery\" src=\"$path_info/$file\"/>"); 
 
-		print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
+		print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"#\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
+		#print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"/cgi-bin/apply-for-iceberg.pl?/upload\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
 		&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$path_info/$file\" value=\"/upload\"/>"); 
 		&cgi_print_html_input_submit_reset("Delete an Iceberg");
 

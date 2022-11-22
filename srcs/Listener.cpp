@@ -127,7 +127,11 @@ bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_da
 	{
 		if (!request.is_complete()) {
 			std::cerr << _RED << "Hello I'm here" << RESET << std::endl;
-			was_sent = _send(fd, new Response_Bad_Request(request));
+			/*
+			 * ugly catching, but if I put the related error inside the Response as for CGI, it makes an infinite loop that crashing with bus error, like that I can catch the 404 error when a bad DELETE request is coming
+			 */
+			if (request.get_method() != "DELETE")
+				was_sent = _send(fd, new Response_Bad_Request(request));
 		}
 		else if (!request.is_bind())
 		{

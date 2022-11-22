@@ -89,28 +89,20 @@ void Response::create()
 		else if (good && _request->get_method() == "DELETE")
 		{
 			file.close();
-			
+
 			Location const	loc			= *_request->get_server_location();
 			std::string		dir_upload	= loc.get_cgi_environ().at("DIR_UPLOAD");
 
-			if (dir_upload.empty() || (!dir_upload.empty() && _content_path.find(dir_upload) == std::string::npos))
+			// Blocking the possibility of deleting the upload directory for the sake of the defense
+			if (_content_path != dir_upload && _content_path.find(dir_upload) != std::string::npos && ::remove(_content_path.c_str()) == 0)
 			{
-				std::cerr << _RED << "[Response::create] a problem occurs while trying to access the resources: no right" << RESET << std::endl;
-				*this = Response_Forbidden(*_request);
-				return ;
+				_content_type = "text/plain";
+				std::cout << "\033[32m[Response::create] the resource " << _content_path  << " has been deleted correctly from " << dir_upload << "." << RESET << std::endl;
 			}
-			else if (::remove(_content_path.c_str()) != 0)
+			else
 			{
 				std::cerr << _RED << "[Response::create] a problem occurs while trying to delete the resources" << RESET << std::endl;
-				*this = Response_Forbidden(*_request);
-				return ;
 			}
-
-			size_t	buf_size = (_request->get_buffer()).size();
-			Buffer	buf(_request->get_buffer().c_str(), buf_size);
-
-		//	buf.print_raw(buf_size);
-			buf.print_header();
 		}
 		else if (good)
 		{
@@ -125,7 +117,7 @@ void Response::create()
 		}
 		else
 		{
-		std::cout << "\033[32m[Response::create] Request location (else condition): " << _request->get_location() << RESET << std::endl;
+
 			*this = Response_Not_Found(*_request);
 			return ;
 		}
