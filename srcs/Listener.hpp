@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <sys/stat.h>
+#include <sys/param.h>
 
 #include <toml_parser.hpp>
 

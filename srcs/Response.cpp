@@ -59,6 +59,7 @@ void Response::create()
 				CGIManager cgi(*_request, *_request->get_server(), *_request->get_server_location());
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
+				// parser si entete dans perl?
 				
 				// std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext.substr(0, 1500) << "\033[0m… (limit of 1500char)" << std::endl;
 			}
@@ -85,6 +86,32 @@ void Response::create()
 			}
 			std::cerr << "[CONTINUE] " << _content_path << std::endl;
 		}
+		else if (good && _request->get_method() == "DELETE")
+		{
+			file.close();
+			
+			Location const	loc			= *_request->get_server_location();
+			std::string		dir_upload	= loc.get_cgi_environ().at("DIR_UPLOAD");
+
+			if (dir_upload.empty() || (!dir_upload.empty() && _content_path.find(dir_upload) == std::string::npos))
+			{
+				std::cerr << _RED << "[Response::create] a problem occurs while trying to access the resources: no right" << RESET << std::endl;
+				*this = Response_Forbidden(*_request);
+				return ;
+			}
+			else if (::remove(_content_path.c_str()) != 0)
+			{
+				std::cerr << _RED << "[Response::create] a problem occurs while trying to delete the resources" << RESET << std::endl;
+				*this = Response_Forbidden(*_request);
+				return ;
+			}
+
+			size_t	buf_size = (_request->get_buffer()).size();
+			Buffer	buf(_request->get_buffer().c_str(), buf_size);
+
+		//	buf.print_raw(buf_size);
+			buf.print_header();
+		}
 		else if (good)
 		{
 			std::stringstream	content;
@@ -98,6 +125,7 @@ void Response::create()
 		}
 		else
 		{
+		std::cout << "\033[32m[Response::create] Request location (else condition): " << _request->get_location() << RESET << std::endl;
 			*this = Response_Not_Found(*_request);
 			return ;
 		}

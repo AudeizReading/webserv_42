@@ -67,7 +67,7 @@ void				Buffer::print_raw_to_int(const size_t content_length)	const
 	free(buffer);
 }
 
-unsigned char*	Buffer::get_body(const size_t content_length) const
+unsigned char*		Buffer::get_body(const size_t content_length) const
 {
 	unsigned long 	start_body_obf = this->_obfuscated.find("\n\r\n") + 3;
 	if (start_body_obf == std::string::npos)
@@ -94,7 +94,33 @@ unsigned char*	Buffer::get_body(const size_t content_length) const
 	return body;
 }
 
-bool		Buffer::has_post_request(const std::string& method) const
+unsigned char*		Buffer::get_header() const
+{
+	unsigned long 	start_header_obf = this->_obfuscated.find("\r\n\r\n");
+
+	if (start_header_obf == std::string::npos || start_header_obf == 0)
+	{
+		std::cerr << "buffer is not well-shaped\n";
+		return 0;
+	}
+
+	unsigned char	*header = static_cast<unsigned char*>(malloc(sizeof(*header) * (start_header_obf)));
+	if (!header)
+		return 0;
+	::bzero(header, start_header_obf);
+	for (size_t i = 0; i < start_header_obf; ++i)
+	{
+		header[i] = this->_raw[i];
+	}
+	return header;
+}
+
+void				Buffer::print_header() const
+{
+	std::cerr << "[Buffer]: header [\033[32;1m" << this->get_header() << "\033[0m] end header buffer\n";
+}
+
+bool				Buffer::has_post_request(const std::string& method) const
 {
 	if (this->_obfuscated.find("\n\r\n") != std::string::npos 
 			&& method == "POST")
@@ -104,7 +130,7 @@ bool		Buffer::has_post_request(const std::string& method) const
 	return false;
 }
 
-bool		Buffer::has_upload_request(Request::map_ss& header, const std::string& method) const
+bool				Buffer::has_upload_request(Request::map_ss& header, const std::string& method) const
 {
 	//Request::map_ss				header = req.get_header();
 	

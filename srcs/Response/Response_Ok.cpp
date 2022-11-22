@@ -31,6 +31,7 @@ void Response_Ok::_init()
 
 	if (req_location[0] != '/')
 	{
+		std::cout << _MAG << "[Response_Ok::_init] Request location: " << req_location << RESET << std::endl;
 		Response				&moi = *this;
 		moi = Response_Not_Found(*_request);
 		return ;

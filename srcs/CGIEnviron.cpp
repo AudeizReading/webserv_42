@@ -112,7 +112,7 @@ void				CGIEnviron::_setEnv()
 			{SCRIPT_NAME,			script_name},
 			{REMOTE_HOST,			_request.get_host()},
 			{REMOTE_ADDR,			_request.get_addr()},
-			{"DIR_UPLOAD",			_location.get_cgi_environ().at("DIR_UPLOAD")} // NOTE: not very pretty?
+			{DIR_UPLOAD,			_location.get_cgi_environ().at(DIR_UPLOAD)} // NOTE: not very pretty?
 	};
 
 	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
