@@ -58,10 +58,6 @@ a:visited {
 	text-shadow: 1px 2px 5px #4D6066;
 }
 
-
-pre {}
-hr {}
-
 .hidden {
 	display: none;
 	width: 0px;
@@ -165,7 +161,6 @@ label {
 /* Snow animation
  * https://www.creativejuiz.fr/blog/css-css3/creer-une-animation-de-neige-ou-de-particules-en-css3
  */
-
 .illustration {
 	position: relative;
 	margin: 0 auto;

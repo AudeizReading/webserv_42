@@ -4,9 +4,6 @@ use POSIX;
 # --- OU LES CHOSES SERIEUSES DOIVENT SE PASSER --------------------------------
 if ($ENV{'REQUEST_METHOD'} eq "POST" ) 
 {
-
-	# l'upload doit se passer dans cette partie, on read les donnees puis on les envoie vers un fichier
-	# check for upload file
 	&cgi_print_html_dtd();
 	&cgi_print_html_begin();
 	&cgi_print_html_head();
@@ -21,7 +18,6 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 
 		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
-			#&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
 			$boundary = $ARGV[0];
 
 			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || die "These datas are not allowed to be hosted on the server.")
@@ -48,10 +44,6 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 		}
 		$output_mess="STDIN (Methode POST)" ;
 	}
-	#print STDOUT "\t<div class=\"form_container\">\r\n";
-	#&cgi_print_html_double_elt("p", "Another upload? <a href=\"../upload.html\">Click Here:</a>");
-	#&cgi_print_html_double_elt("p", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
-	#print STDOUT "\t</div>\r\n";
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
 }
@@ -109,21 +101,6 @@ else # other methods that we do not handle
 	exit 1;
 }
 # --- OU LES CHOSES SERIEUSES DOIVENT FINIR DE SE PASSER -----------------------
-
-sub	cgi_print_ascii
-{
-	my ($str) = @_;
-	my ($len) = length $str;
-	print "<p> convert $len ascii to int</br>";
-	for(my $i=0; $i < $len; ++$i) 
-	{
-		my $ascii = substr($str, $i, 1);
-		$ascii = ord($ascii);
-		print "<span>==> $ascii <== </span>";
-	}
-	print "</p>";
-}
-
 # parse the body of an upload "POST" request
 # cgi_parse_body_upload($boundary, $buffer_stdin);
 sub	cgi_parse_body_upload
@@ -190,19 +167,9 @@ sub cgi_parse_request_string
 	%form;
 }
 
-# print any array nom
-sub cgi_print_array_html
-{
-	local (%array) = @_;
-
-	foreach $match (keys (%array)) {
-		print STDOUT "\t\t<li><b>$match: </b>".$array{$match}."</li>\n";
-	}
-}
-
 sub cgi_print_html_dtd
 {
-	print STDOUT "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\r\n";
+	print STDOUT "<!DOCTYPE html>\r\n";
 }
 
 sub cgi_print_html_begin
@@ -243,26 +210,13 @@ sub cgi_print_html_double_elt
 	print STDOUT "<".$elt.">".$value."</".$elt.">\r\n";
 }
 
-sub cgi_print_html_input_submit_reset
+sub cgi_print_html_input_submit
 {
 	my ($value) = @_;
 
 	print "<p>";
 	print "<input type=\"submit\" name=\"submit\" value=\"$value\" />";
 	print "</p>";
-}
-
-sub	cgi_debug
-{
-	my ($need_env, %array) = @_;
-
-	print STDOUT "<p>DEBUG<br/>\t<ul>\r\n";
-	&cgi_print_array_html(%array);
-	if ($need_env > 0)
-	{
-		&cgi_print_array_html(%ENV);
-	}
-	print STDOUT "\t</ul></p>\r\n";
 }
 
 sub cgi_delete_request_javascript
@@ -291,7 +245,7 @@ sub cgi_display_files
 
 		print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"#\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
 		&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$path_info/$file\" value=\"/upload\"/>"); 
-		&cgi_print_html_input_submit_reset("Delete an Iceberg");
+		&cgi_print_html_input_submit("Delete an Iceberg");
 
 		# where the javascript sinppet displays its output
 		print "<pre id=\"output\" style=\"max-height:300px;\">";
