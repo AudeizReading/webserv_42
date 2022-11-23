@@ -16,6 +16,14 @@ body {
 	align-items: center;
 }
 
+header {
+    margin: 2em;
+    padding: 2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 h1, h2, h3 {
 	color: #69CAEA;
 	text-transform : uppercase;
@@ -72,7 +80,7 @@ hr {}
 	padding:auto;
 }
 
-.gallery li {
+.gallery li, .form_container li {
   list-style-type: none;
 }
 
@@ -92,6 +100,15 @@ hr {}
 	align-items: center;
 	margin: auto;
 	width: 100%;
+}
+
+.p_container {
+	margin-top: 4em;
+    padding-top: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 form {

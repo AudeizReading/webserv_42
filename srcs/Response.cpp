@@ -86,7 +86,7 @@ void Response::create()
 			}
 			std::cerr << "[CONTINUE] " << _content_path << std::endl;
 		}
-		else if (good && _request->get_method() == "DELETE")
+		else if (good && _request->get_method() == "DELETE" && _content_path.find("./res/error") == std::string::npos)
 		{
 			file.close();
 
@@ -102,6 +102,8 @@ void Response::create()
 			else
 			{
 				std::cerr << _RED << "[Response::create] a problem occurs while trying to delete the resources" << RESET << std::endl;
+				*this = Response_Forbidden(*_request);
+				return ;
 			}
 		}
 		else if (good)

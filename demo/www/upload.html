@@ -8,74 +8,30 @@
 	<script src="https://kit.fontawesome.com/dedab4d2ca.js" crossorigin="anonymous"></script>
 </head>
 <body>
-	<h1>mandatory requests</h1>
-	<div class="form_container">
-	<form id="upload-form" method="POST" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Upload file(s)">
-		<p>
-			<label for="upload_input_type_file">
-				Select a file to upload <br/>    
-				<i class="fa-regular fa-folder-open"></i>
-				<input id="upload_input_type_file" type="file" name="form" accept="image/png, image/jpeg" onchange="previewPicture(this);" multiple required />
-			</label>
-		</p>
-		<p>
-			<input type="submit" name="submit" value="Book an iceberg" />
-			<input type="reset" name="reset" value="Reset" />
-		</p>
-		<h2>POST request</h2>
-	</form>
-	<hr>
-	<form id="delete-form" method="DELETE" action="#" enctype="multipart/form-data" alt="Deletion files(s)">
-		<p>
-			<label for="delfile">
-				Select a file to delete  <br/>   
-				<i class="fa-regular fa-folder-open"></i>
-				<input id="delfile" type="file" name="form" value="R-42" accept="image/png, image/jpeg" multiple required />
-			</label>
-		</p>
-		<p class="hidden">
-			<input class="hidden" type="hidden" name="path_info" value="/upload"/>
-		</p>
-		<p>
-			<input type="submit" name="submit" value="Delete an iceberg" />
-			<input type="reset" name="reset" value="Reset" />
-		</p>
-		<h2>DELETE request</h2>
-		<pre id="output" style="max-height:300px;">
-		</pre>
-	</form>
-	<script>
-	document.getElementById('delete-form').addEventListener('submit', function (event) {
-
-		const nb_files = parseInt(document.getElementById('delfile').files.length, 10);
-
-		let i = 0;
-		while (i < nb_files)
-		{
-			var filename = document.getElementById('delfile').files[i].name;
-			i++;
-			fetch("http://127.0.0.1:4242/upload/" + filename, { method: 'DELETE' }).then(response => response.text());
-		}
-
-		event.preventDefault()
-	})
-	</script>
-	<hr>
-	<form id="gallery-form" method="GET" action="/cgi-bin/apply-for-iceberg.pl?path_info=/upload" enctype="multipart/form-data" alt="Gallery">
-		<p class="hidden">
-			<input type="hidden" name="path_info" value="/upload"/>
-		</p>
-		<p>
-			Want to see the gallery ?
-		</p>
-		<p>
-			<input type="submit" name="submit" value="Get an iceberg" />
-			<input type="reset" name="reset" value="Reset" />
-		</p>
-		<h2>GET request</h2>
-	</form>
+	<header>
+		<h1>mandatory requests</h1>
+	</header>
+	<div class="illustration">
+		<div class="i-large"></div>
+		<div class="i-medium"></div>
+		<div class="i-small"></div>
 	</div>
-	<!---->
+	<div class="form_container">
+		<form id="upload-form" method="POST" action="/cgi-bin/apply-for-iceberg.pl?/upload" enctype="multipart/form-data" alt="Upload file(s)">
+			<h2>UPLOAD request</h2>
+			<p>
+				<label for="upload_input_type_file">
+					Select a file to upload <br/>    
+					<i class="fa-regular fa-folder-open"></i>
+					<input id="upload_input_type_file" type="file" name="form" accept="image/png, image/jpeg" onchange="previewPicture(this);" required />
+				</label>
+			</p>
+			<p>
+				<input type="submit" name="submit" value="Book an iceberg" />
+				<input type="reset" name="reset" value="Reset" />
+			</p>
+		</form>
+	</div>
 	<img src="#" id="img-prev" hidden>
 	<script type="text/javascript" >
     // L'image img#image
@@ -90,17 +46,13 @@
         // "picture" est un objet File
         if (picture) {
             // On change l'URL de l'image
+            image.style.width = "96px";
+			image.style.height = "96px";
             image.src = URL.createObjectURL(picture);
 			image.hidden = false;
         }
     }
-</script>
-	<hr>
-	<div class="illustration">
-		<div class="i-large"></div>
-		<div class="i-medium"></div>
-		<div class="i-small"></div>
-	</div>
+	</script>
 	<p>
 		<a href="../index.html" alt="Are you lost?">Are you lost?</a>
 	</p>
