@@ -145,11 +145,6 @@ bool				CGIManager::exec()
 				return false;
 			}
 			::waitpid(pid, &exit_status, 0); //WNOHANG is the non-block opt for waitpid but does really need it?
-			if (exit_status != 0) // Means a pb happens - only for debugging
-			{
-				std::cerr << "\033[31;1m[CGI]: exit status: " << exit_status << "\nstrerror: " << strerror(exit_status) << "\033[0m\n";
-			}
-
 			CGIEnviron::map_ss	env = this->_environ.getEnv();
 			bool				is_perl_cgi = false;
 
@@ -175,12 +170,11 @@ bool				CGIManager::exec()
 
 void				CGIManager::_launchExec() const
 {
-	CGIEnviron::map_ss	env = this->_environ.getEnv();
-
-	std::string abs_path = env["SCRIPT_NAME"].substr(0, env["SCRIPT_NAME"].find_last_of("/"));
-	std::string script = env["SCRIPT_NAME"].substr(env["SCRIPT_NAME"].find_last_of("/") + 1);
-	std::string boundary = this->_environ.getBoundary();
-	std::string	cgi_exec = env["CGI_EXEC"];
+	CGIEnviron::map_ss	env			= this->_environ.getEnv();
+	std::string			abs_path	= env["SCRIPT_NAME"].substr(0, env["SCRIPT_NAME"].find_last_of("/"));
+	std::string			script		= env["SCRIPT_NAME"].substr(env["SCRIPT_NAME"].find_last_of("/") + 1);
+	std::string			boundary	= this->_environ.getBoundary();
+	std::string			cgi_exec	= env["CGI_EXEC"];
 
 	// if the cgi_exec does not exist or has not got the x rights -> exit
 	if (::access(cgi_exec.c_str(), F_OK) == -1 || ::access(cgi_exec.c_str(), X_OK)  == -1)
@@ -188,8 +182,6 @@ void				CGIManager::_launchExec() const
 		exit(errno);
 	}
 	
-	// Ca marche comme ca avec /usr/bin/perl, il faut bien chdir dans le directory ou se situe le script apl
-	// Reste plus qu'a set ca via une variable que le Server ou autre enverrait au CGI
 	if (::chdir(abs_path.c_str()) == -1)
 	{
 		exit(errno);

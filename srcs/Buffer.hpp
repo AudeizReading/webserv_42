@@ -21,10 +21,13 @@ class Buffer {
 		const char*				get_raw()										const;
 		const char*				get_raw(const size_t size)						const;
 		unsigned char*			get_body(const size_t content_length)			const;
+		std::string				get_body()										const;
 		unsigned char*			get_header()									const;
 		const std::string		get_obf()										const;
 		size_t					get_raw_size()									const;
 		size_t					get_obf_size()									const;
+		unsigned long			get_header_size()								const;
+		unsigned long			get_body_size()									const;
 
 		void					print_raw_to_int(const size_t content_length)	const;
 		void					print_raw()										const;

@@ -45,10 +45,6 @@ void				CGIEnviron::_setHeaderEnv()
 				{
 					this->_boundary = tmp.substr(tmp.find_first_of("=") + 1);
 				}
-		/*		PRINT(http_val);
-				PRINT(http_key);
-				PRINT(tmp);
-				PRINT(this->_boundary);*/
 			}
 		}
 		this->_env.insert(value_type(("HTTP_" + http_key), header_begin->second));
@@ -115,7 +111,7 @@ void				CGIEnviron::_setEnv()
 			{DIR_UPLOAD,			_location.get_cgi_environ().at(DIR_UPLOAD)} // NOTE: not very pretty?
 	};
 
-	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) // -> this is very very ugly I've failed when i've tried with iterator, so as we have no time I take this way it is more faster though I would prefer make it properly
+	for (int i = 0; i != get_arr_2D_width(cgi_env); ++i) 
 	{
 		this->_env.insert(value_type(cgi_env[i][0], cgi_env[i][1]));
 	}

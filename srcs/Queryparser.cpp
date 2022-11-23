@@ -38,7 +38,6 @@ Queryparser::Firstline Queryparser::parse_req_firstline(const std::string &str, 
 		throw std::runtime_error("Bad Request: Too many element on firstline");
 	it += 2;
 
-	// TODO: check http_version and throw ?
 	if (firstline.http_version.rfind("HTTP/", 0) != 0)
 		throw std::runtime_error("Bad Request: Bad HTTP_VERSION");
 

@@ -67,6 +67,16 @@ void				Buffer::print_raw_to_int(const size_t content_length)	const
 	free(buffer);
 }
 
+unsigned long		Buffer::get_body_size() const
+{
+	unsigned long 	start_body = this->_obfuscated.find("\r\n\r\n") + 4;
+	if (start_body != std::string::npos)
+	{
+		return (PIPE_BUF - start_body);
+	}
+	return 0;
+}
+
 unsigned char*		Buffer::get_body(const size_t content_length) const
 {
 	unsigned long 	start_body_obf = this->_obfuscated.find("\n\r\n") + 3;
@@ -97,6 +107,7 @@ unsigned char*		Buffer::get_body(const size_t content_length) const
 unsigned char*		Buffer::get_header() const
 {
 	unsigned long 	start_header_obf = this->_obfuscated.find("\r\n\r\n");
+	std::string		_header = this->_obfuscated.substr(0, start_header_obf);
 
 	if (start_header_obf == std::string::npos || start_header_obf == 0)
 	{
@@ -115,9 +126,26 @@ unsigned char*		Buffer::get_header() const
 	return header;
 }
 
+unsigned long		Buffer::get_header_size() const
+{
+	unsigned long 	sz_header = this->_obfuscated.find("\r\n\r\n");
+	if (sz_header != std::string::npos)
+		return sz_header;
+	return 0;
+}
+
 void				Buffer::print_header() const
 {
-	std::cerr << "[Buffer]: header [\033[32;1m" << this->get_header() << "\033[0m] end header buffer\n";
+	unsigned long 	sz_header = this->_obfuscated.find("\r\n\r\n");
+	unsigned char	*header = this->get_header();
+	std::cerr << "[Buffer]: print_header\n[\033[33;1m";
+	for (unsigned long i = 0; i < sz_header; ++i)
+	{
+		std::cerr << header[i];
+	}
+	std::cerr << "\033[0m]\n";
+	if (header)
+		free(header);
 }
 
 bool				Buffer::has_post_request(const std::string& method) const

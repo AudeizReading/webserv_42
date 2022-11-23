@@ -59,7 +59,22 @@ void Response::create()
 				CGIManager cgi(*_request, *_request->get_server(), *_request->get_server_location());
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
+
 				// parser si entete dans perl?
+				/*size_t	buf_size = (_request->get_buffer()).size();
+				Buffer	buf(_request->get_buffer().c_str(), buf_size);
+
+				//	buf.print_raw(buf_size);
+				unsigned char *body = buf.get_body(buf.get_body_size());
+				std::string	res_body(static_cast<char *>(body), buf.get_body_size());
+				if (body)
+					free(body);
+
+				if (res_body == _plaintext)
+					std::cerr << "Buffer has the good body\n";
+				else
+					std::cerr << "Buffer has not the good body\n";
+				buf.print_header();*/
 				
 				// std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext.substr(0, 1500) << "\033[0m… (limit of 1500char)" << std::endl;
 			}
@@ -92,7 +107,6 @@ void Response::create()
 
 			Location const	loc			= *_request->get_server_location();
 			std::string		dir_upload	= loc.get_cgi_environ().at("DIR_UPLOAD");
-
 			// Blocking the possibility of deleting the upload directory for the sake of the defense
 			if (_content_path != dir_upload && _content_path.find(dir_upload) != std::string::npos && ::remove(_content_path.c_str()) == 0)
 			{
