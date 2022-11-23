@@ -57,7 +57,6 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 		if (!(('a' <= *it && *it <= 'z') || ('A' <= *it && *it <= 'Z') || ('0' <= *it && *it <= '9')
 			|| *it == '-' || *it == '_' || *it == '/' || *it == '.'))
 		{
-			std::cerr << "\033[031mLocation: " << _location << ", car:" << *it << "\n";
 			throw std::runtime_error("Bad Request: Forbidden character");
 		}
 	}
