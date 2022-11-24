@@ -13,7 +13,6 @@
 #pragma once
 
 #include "Request.hpp"
-#include "Buffer.hpp"
 #include <http_error_codes.hpp>
 
 class Response

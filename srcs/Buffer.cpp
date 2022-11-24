@@ -158,7 +158,7 @@ bool				Buffer::has_post_request(const std::string& method) const
 	return false;
 }
 
-bool				Buffer::has_upload_request(Request::map_ss& header, const std::string& method) const
+bool				Buffer::has_upload_request(map_ss& header, const std::string& method) const
 {
 	//Request::map_ss				header = req.get_header();
 	

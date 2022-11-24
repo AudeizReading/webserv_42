@@ -3,10 +3,12 @@
 # include <iostream>
 # include <string>
 # include <cstdlib>
-
-#include "Request.hpp"
+# include <map>
 
 class Buffer {
+	public:
+		typedef std::map<std::string, std::string>			map_ss;
+
 	private:
 		const char				*_raw;
 		std::string				_obfuscated;
@@ -36,6 +38,6 @@ class Buffer {
 		void					print_header()									const;
 
 		bool					has_post_request(const std::string& method)		const;
-		bool					has_upload_request(Request::map_ss& header, const std::string& method) const;
+		bool					has_upload_request(map_ss& header, const std::string& method) const;
 };
 #endif
