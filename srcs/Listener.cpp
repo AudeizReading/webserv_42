@@ -209,7 +209,6 @@ void	Listener::start_listener()
 			 * Also, we can send() before A) or B).
 			 */
 			{
-				std::cout << "READ" << std::endl;
 				// char buffer[PIPE_BUF + 1] = {0};
 				// int size = recv(event_fd, buffer, PIPE_BUF, 0);
 
@@ -225,24 +224,17 @@ void	Listener::start_listener()
 					std::cout << "[listener] Start recv socket#" << event_fd
 						<< " ip: " << search->second.get_addr()
 						<< " host: " << search->second.get_host() << std::endl;
-
-					EV_SET(&change_event, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
-					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
-					{
-						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
-						perror("[listener] -- kevent error");
-					}
 				}
 
-				Request &req = search->second;
+				Request &request = search->second;
 
 				if (size < 0)
 				{
 					std::cout << "[listener] recv error for socket#" << event_fd << std::endl;
-					req.bind_response(new Response_Internal_Server_Error(Request(*this, address)));
+					request.bind_response(new Response_Internal_Server_Error(Request(*this, address)));
 				}
 				else
-					req.append_plaintext(buffer.cbegin(), buffer.cend());
+					request.append_plaintext(buffer.cbegin(), buffer.cend());
 
 				// REGISTER AND RELOAD TIMEOUT
 				EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_ADD | EV_ONESHOT, NOTE_SECONDS, 10, NULL);
@@ -252,12 +244,29 @@ void	Listener::start_listener()
 					perror("[listener] -- kevent error");
 				}
 
-				if (!req.is_answered())
+				if (!request.is_answered() && !request.is_parsed())
 					continue ;
-				else
-				{
+
+				if (request.is_answered()) { // = ERROR
 					std::cout << "[listener] already answered, disable EVFILT_READ for socket#" << event_fd << std::endl;
 					EV_SET(&change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
+					{
+						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+						perror("[listener] -- kevent error");
+					}
+				}
+
+				unsigned long	content_length = request.get_contentLength();
+
+				if (request.is_answered() || (request.is_parsed()
+							&& ! (event.data - size > 0
+							|| request.get_content().length() < content_length))) {
+					if (!request.is_answered())
+						request.bind_response(new Response_Ok(request));
+
+					std::cerr << request << std::endl;
+					EV_SET(&change_event, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 					{
 						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
@@ -267,13 +276,12 @@ void	Listener::start_listener()
 			}
 			else if (event.filter == EVFILT_WRITE)
 			{
-				std::cout << "WRITE" << std::endl;
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
 					std::cout << "\033[32m!UwU! !UwU! !UwU!\033[0m" << std::endl;
 					_requests.erase(event_fd);
-					EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+					EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_DELETE, 0, 0, NULL); //TODO: Fct!
 					kevent(kq, &change_event, 1, NULL, 0, &ktimeout);
 					close(event_fd);
 					continue ;
@@ -281,14 +289,12 @@ void	Listener::start_listener()
 
 				Request &request = search->second;
 				if (!request.is_answered())
+				{
+					std::cout << "\033[32m!UwU! !UwU! !UwU! 2\033[0m" << std::endl;
 					request.bind_response(new Response_Ok(request));
+				}
 
 				Response const& response = *(request.get_response());
-
-				std::cout << "[listener] ok answer at socket#" << event_fd 
-					<< _CYN << "  Request location: " << request.get_location() << RESET << std::endl;
-				response.print_debug();
-				std::cout << "[listener] \033[32msend " << response.get_status() << "\033[0m to socket#" << event_fd << std::endl;
 
 				long already_sent = request.get_char_sent();
 				std::string will_be_send = static_cast<std::string>(response).substr(already_sent);
@@ -298,13 +304,16 @@ void	Listener::start_listener()
 
 				if(size < 0)
 				{
-					std::cout << "Cannot send!" << std::endl;
+					std::cout << "Cannot send, retry!" << std::endl;
 					//_requests.erase(event_fd); close(event_fd); // TODO: REGISTER EVFILT_READ :)
 					continue ;
 				}
 				request.set_char_sent(already_sent + size);
 				if (static_cast<unsigned long>(size) >= will_be_send.length())
 				{
+					response.print_debug();
+					std::cout << "[listener] \033[32msend " << response.get_status() << "\033[0m to socket#" << event_fd
+						<< _CYN << " (Request location: " << request.get_location() << ")" << RESET << std::endl;
 					//delete response;
 					//delete request;
 					std::cout << "[listener] close socket#" << event_fd << std::endl;

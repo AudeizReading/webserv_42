@@ -276,7 +276,7 @@ void Request::parse()
 		_content_start = it - _plaintext.begin();
 
 		std::cerr << "Request parsed: " << _method << " " << _location << std::endl;
-		std::cerr << *this << std::endl;
+		//std::cerr << *this << std::endl;
 		_complete_header = true;
 	}
 	catch(const std::runtime_error& e)
