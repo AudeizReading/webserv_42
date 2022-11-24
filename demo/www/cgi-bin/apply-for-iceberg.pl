@@ -225,7 +225,7 @@ sub cgi_delete_request_javascript
 
 	print "<script>\r\n";
 	print "document.getElementById('delete-form$i').addEventListener('submit', function (event) {\r\n";
-	print "		fetch(\"http://127.0.0.1:4242$path_info/$file\", { method: 'DELETE' }).then(response => response.text()).then(() => {document.getElementById('output').textContent = \"$file has been deleted\";location.reload();});\r\n";
+	print "		fetch(\"$path_info/$file\", { method: 'DELETE' }).then(response => response.text()).then(() => {document.getElementById('output').textContent = \"$file has been deleted\";location.reload();});\r\n";
 	print "	event.preventDefault()\r\n";
 	print "})\r\n";
 	print "	</script>\r\n";
