@@ -28,6 +28,7 @@ h1, h2, h3 {
 	color: #69CAEA;
 	text-transform : uppercase;
 	text-shadow: 3px 3px 3px white;
+	text-align: center;
 }
 
 h2.no_mt {
@@ -87,6 +88,7 @@ a:visited {
 .img_gallery {
 	max-width: 612px;
 	max-height: 612px;
+	width: 90%;
 	border: #86A7B3 2px solid;
 	border-radius: 10%;
 	margin: auto;
