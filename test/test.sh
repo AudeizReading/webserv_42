@@ -65,7 +65,7 @@ test_diff "http://127.0.0.1:4242/.password" \
 test_diff 'http://127.0.0.1:5000/' \
 	"default_to_server2" "../demo/www2/index.html"
 
-test_diff "http://192.168.13.128:4242/upload.html" "URI_get_matching_Location"	"../demo/www/upload.html"
+test_diff "http://127.0.0.1:4242/upload.html" "URI_get_matching_Location"	"../demo/www/upload.html"
 
 test_diff "http://localhost:8080/"	"server_blue"		"../demo/servers/blue/index.html"
 test_diff "http://127.0.0.1:8080/"	"server_green"		"../demo/servers/green/index.html"
