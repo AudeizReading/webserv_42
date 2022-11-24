@@ -88,6 +88,8 @@ test_diff "http://127.0.0.1:4242/cgi-bin/test/show-post.pl" "check_post" "./diff
 
 test_diff "http://127.0.0.1:4242/cgi-bin/show_file_upload.pl" "test_multipart_form-data" "../res/error/404.html" "--form file=@../res/error/404.html"
 
+test_diff 'http://127.0.0.1:5000/' "limit_client_body" "../demo/www2/index.html" "-X POST -H \"Content-Type: plain/text\" --data $post"
+
 pkill -2 webserv
 
 exit 0
