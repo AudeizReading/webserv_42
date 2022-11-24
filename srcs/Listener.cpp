@@ -231,24 +231,33 @@ bool	Listener::_send(int fd, Response* response)
 
 	std::string	will_be_send = *response;
 	long size = 0;
-
+	int retry = 0;
 	do
 	{
+		if (size < 0) size = 0;
 		will_be_send = will_be_send.substr(size);
 		size = send(fd, will_be_send.c_str(), will_be_send.length(), 0);
 		std::cout << "[listener] send size: " << size << " to socket#" << fd << std::endl;
+		if (size < 0) retry++;
 	}
-	while (size > -1 && static_cast<unsigned long>(size) < will_be_send.length());
+	while (retry < 3 && (size < 0 || static_cast<unsigned long>(size) < will_be_send.length()));
 
 	if (size < 0)
-		std::cout << "Cannot send!" << std::endl;
+	{
+		std::cout << "Cannot send! (" << retry << "retries)" << std::endl;
 
-	delete response;
+		_requests.erase(fd); close(fd); // TODO: REGISTER EVFILT_READ :)
+		return (false);
+	}
+	else
+	{
+		delete response;
 
-	std::cout << "[listener] close socket#" << fd << std::endl;
-	_requests.erase(fd);
-	close(fd);
-	return (true);
+		std::cout << "[listener] close socket#" << fd << std::endl;
+		_requests.erase(fd);
+		close(fd);
+		return (true);	
+	}
 }
 
 void	Listener::_bind_request(Request &request)
@@ -457,8 +466,7 @@ void	Listener::start_listener()
 
 				if (_prepare_answer(event_fd, search->second, size, event.data))
 				{
-					std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_READ} event.data: <<" << event.data << ">>\033[0m\n";
-					// Do something after send & close (one time for each request)
+					std::cerr << "\033[32m[start_listener] was sent!\033[0m for socket#" << event_fd << std::endl;
 					continue ;
 				}
 				// REGISTER TIMEOUT
