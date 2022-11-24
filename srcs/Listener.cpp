@@ -38,13 +38,6 @@
 
 #define MAX_REQ_HEADER_BUFFER 24576
 
-unsigned long		get_req_content_length(Request& req)
-{
-	std::string		length = req.get_header()["Content-Length"];
-	unsigned long	size = ToNum<unsigned long>(length);
-	return size;
-}
-
 Listener::Listener(std::string const& listen_addr, int listen_port, int listen_backlog,
 		vector_s::const_iterator servers_first,
 		vector_s::const_iterator servers_last
@@ -95,7 +88,7 @@ Location const*	Listener::_get_matching_Location(Request const& req, Server cons
 // Only does something when request doesn't end with '/'.
 // Checks if requested URL is a directory. If so, redirects the client to the
 // directory by appending a '/' at the end of the request's location, with a 301 redirect.
-bool	Listener::redirect_if_dir_request(Request const& req, int event_fd)
+bool	Listener::_redirect_if_dir_request(Request const& req, int event_fd)
 {
 	if (req.get_location().back() == '/')
 		return false;
@@ -120,7 +113,7 @@ bool	Listener::redirect_if_dir_request(Request const& req, int event_fd)
 	return _send(event_fd, new Response_Redirect_Permanent(req, req.get_location() + '/'));
 }
 
-bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_datas_sz)
+bool	Listener::_prepare_answer(int fd, Request& request, int size, int pending_datas_sz)
 {
 	bool was_sent = false;
 	if (request.is_parsed())
@@ -139,7 +132,7 @@ bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_da
 			else if (!request.get_server_location()->allows_method(request.get_method()))
 				was_sent = _send(fd, new Response_Method_Not_Allowed(request));
 			else
-				was_sent = redirect_if_dir_request(request, fd);
+				was_sent = _redirect_if_dir_request(request, fd);
 		}
 		else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
 			was_sent = _send(fd, new Response_Payload_Too_Large(request));
@@ -150,9 +143,10 @@ bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_da
 	if (was_sent)
 		return (true);
 
-	unsigned long	content_length = get_req_content_length(request);
+	unsigned long	content_length = request.get_contentLength();
 
-	if (pending_datas_sz - size > 0 || request.get_content().length() < content_length)
+	if (pending_datas_sz - size > 0
+		|| request.get_content().length() < request.get_contentLength()) /* TODO: check la deuxieme partie */
 	{
 		return false;
 	}
@@ -165,11 +159,11 @@ bool	Listener::prepare_answer(int fd, Request& request, int size, int pending_da
 
 	//request.do_end();
 
-	answer(fd, request);
+	_answer(fd, request);
 	return (true);
 }
 
-void	Listener::answer(int fd, Request const& request)
+void	Listener::_answer(int fd, Request const& request)
 {
 	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
 	Response								*response;
@@ -178,7 +172,7 @@ void	Listener::answer(int fd, Request const& request)
 	{
 		const Location&		serv_loc = *request.get_server_location();
 		const std::string&	index_file_name = serv_loc.get_index();
-		const std::string	adjusted_URI = request.get_location().substr(serv_loc.get_URI().length()); // This is terrible, I'm sorry
+		const std::string	adjusted_URI = request.get_location().substr(serv_loc.get_URI().length());
 		const std::string	path = serv_loc.get_root()
 			+ (adjusted_URI[0] == '/' ? "" : "/") + adjusted_URI;
 
@@ -460,7 +454,7 @@ void	Listener::start_listener()
 				std::string	buf_s(buffer, size);
 				search->second.append_plaintext(buf_s);
 
-				if (prepare_answer(event_fd, search->second, size, event.data))
+				if (_prepare_answer(event_fd, search->second, size, event.data))
 				{
 					std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_READ} event.data: <<" << event.data << ">>\033[0m\n";
 					// Do something after send & close (one time for each request)

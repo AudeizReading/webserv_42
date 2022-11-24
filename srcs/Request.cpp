@@ -121,6 +121,18 @@ void	Request::append_plaintext(std::string const& buffer)
 		_content = _plaintext.substr(_content_start);
 }
 
+static unsigned long ToNum(std::string str)
+{
+    std::istringstream oStream(str);
+    unsigned long tX = 0;
+    oStream >> tX;
+    return tX;
+}
+
+unsigned long		Request::get_contentLength()
+{
+	return ToNum(get_header()["Content-Length"]);
+}
 
 void	Request::do_end()
 {
