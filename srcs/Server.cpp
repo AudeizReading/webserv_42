@@ -73,12 +73,13 @@ std::map<int, std::string> const&	Server::get_error_pages() const
 
 std::string	Server::get_error_page(std::string const& code) const
 {
+	// TODO: Check le code peut segfault ici ?
 	std::map<int, std::string>::const_iterator	target = _error_pages.find(std::atoi(code.c_str()));
 	return (target == _error_pages.end() ? "" : target->second);
 }
 
 std::string	Server::get_error_page(int code) const
 {
-	std::map<int, std::string>::const_iterator	target = _error_pages.find(code);
+	std::map<int, std::string>::const_iterator	target = _error_pages.find(code); //TODO: FIX SEGFAULT??
 	return (target == _error_pages.end() ? "" : target->second);
 }
