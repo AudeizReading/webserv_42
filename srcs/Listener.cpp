@@ -351,8 +351,7 @@ void	Listener::start_listener()
 
 	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
 
-	EV_SET(&change_event, _fd, EVFILT_READ | EVFILT_TIMER, EV_ADD, NOTE_SECONDS, 0, NULL);
-	//EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 		throw std::runtime_error(strerror(errno));
 
@@ -459,6 +458,13 @@ void	Listener::start_listener()
 					std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_READ} event.data: <<" << event.data << ">>\033[0m\n";
 					// Do something after send & close (one time for each request)
 					continue ;
+				}
+				// REGISTER TIMEOUT
+				EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_ADD | EV_ONESHOT, NOTE_SECONDS, 10, NULL);
+				if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
+				{
+					std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+					perror("[listener] -- kevent error");
 				}
 			}
 			else if (event.filter == EVFILT_TIMER)
