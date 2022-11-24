@@ -82,11 +82,12 @@ a:visited {
 	justify-content: center;
 	align-items: center;
 	margin: auto;
-	padding:auto;
+	padding: 0;
 }
 
 .gallery li, .form_container li {
   list-style-type: none;
+  text-align: center;
 }
 
 .img_gallery {
