@@ -129,9 +129,13 @@ static unsigned long ToNum(std::string str)
     return tX;
 }
 
-unsigned long		Request::get_contentLength()
+unsigned long		Request::get_contentLength() const
 {
-	return ToNum(get_header()["Content-Length"]);
+	try {
+		return ToNum(get_header().at("Content-Length"));
+	} catch (const std::out_of_range& oor) {
+		return 0;
+	}
 }
 
 void	Request::do_end()

@@ -64,7 +64,7 @@ public:
 
 	void			append_plaintext(std::string const& buffer);
 
-	unsigned long	get_contentLength();
+	unsigned long	get_contentLength() const;
 
 	bool			is_complete() const;
 	bool			is_parsed() const;
