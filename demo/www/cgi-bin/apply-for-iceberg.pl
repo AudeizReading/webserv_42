@@ -226,9 +226,26 @@ sub cgi_delete_request_javascript
 	print "<script>\r\n";
 	print "document.getElementById('delete-form$i').addEventListener('submit', function (event) {\r\n";
 	print "		fetch(\"$path_info/$file\", { method: 'DELETE' }).then(response => response.text()).then(() => {document.getElementById('output').textContent = \"$file has been deleted\";location.reload();});\r\n";
-	print "	event.preventDefault()\r\n";
-	print "})\r\n";
-	print "	</script>\r\n";
+	print "		event.preventDefault();\r\n";
+	print "});\r\n";
+	print "</script>\r\n";
+
+}
+
+sub cgi_add_cookie_javascript
+{
+	my ($i, $path_info, $file) = @_;
+
+	print "<script>\r\n";
+	print "document.querySelectorAll('.img_gallery').forEach(function(elem) {\r\n";
+	print "		elem.addEventListener('click', function (event) {\r\n";
+	print "			let expires = new Date(+new Date() + 30*24*60*60*1000).toUTCString();\r\n";
+	print "			document.cookie = `my-iceberg=\${event.target.src}; expires=\${expires}; path=/`;\r\n";
+	print "			window.location = '/';\r\n";
+	print "			event.preventDefault();\r\n";
+	print "		});\r\n";
+	print "});\r\n";
+	print "</script>\r\n";
 
 }
 
@@ -241,7 +258,7 @@ sub cgi_display_files
 	foreach $file (@files)
 	{
 		# ici mettre path /upload/$file pour que ca route derriere le cgi
-		&cgi_print_html_double_elt("li", "<img class=\"img_gallery\" src=\"$path_info/$file\"/>"); 
+		&cgi_print_html_double_elt("li", "<img class=\"img_gallery clickable\" src=\"$path_info/$file\"/>"); 
 
 		print "<form class=\"delete-form\" id=\"delete-form$i\" method=\"DELETE\" action=\"#\" enctype=\"multipart/form-data\" alt=\"Deletion files(s)\">";
 		&cgi_print_html_double_elt("p", "<input type=\"hidden\" name=\"path_info\" filename=\"$path_info/$file\" value=\"/upload\"/>"); 
@@ -255,5 +272,8 @@ sub cgi_display_files
 		&cgi_delete_request_javascript($i, $path_info, $file);
 		++$i;
 	}
+
+	&cgi_add_cookie_javascript($i, $path_info, $file);
+
 	print STDOUT "\t</ul>\r\n";
 }

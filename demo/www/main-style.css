@@ -35,6 +35,10 @@ h2.no_mt {
 	margin-top: 0;
 }
 
+img.clickable {
+	cursor: pointer;
+}
+
 p {
 	margin: 1em;
 	padding: 0.5em;
