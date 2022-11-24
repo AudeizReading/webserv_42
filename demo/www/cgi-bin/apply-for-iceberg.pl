@@ -35,7 +35,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 				print "<script type=\"text/javascript\">
 				function Redirect()
 				{
-					window.location=\"http://127.0.0.1:4242\";
+					window.location=\"/\";
 				}
 				document.write(\"You will be redirected to a new page in 5 seconds\");
 				setTimeout('Redirect()', 5000);
