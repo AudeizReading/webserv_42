@@ -69,7 +69,7 @@ Location const*	Listener::_get_matching_Location(Request const& req, Server cons
 {
 	std::string req_location_URI = req.get_location();
 	
-	std::cerr << BCYN << "Request URI:  " << req_location_URI << RESET << ", "; // DEBUG
+	std::cerr << BCYN << "Request URI: " << req_location_URI << RESET << ": Looking URI: "; // DEBUG
 
 	// Locations are sorted from least to most complete.
 	const Location*	target = &serv.get_locations().front();
@@ -77,9 +77,18 @@ Location const*	Listener::_get_matching_Location(Request const& req, Server cons
 		it != serv.get_locations().end();
 		++it)
 	{
-		std::cerr << _CYN << "Location URI: " << it->get_URI() << RESET << ", "; // DEBUG
-		if (req_location_URI.find(it->get_URI()) != std::string::npos)
+		char c = req_location_URI[it->get_URI().length()];
+		if (req_location_URI.find(it->get_URI()) != std::string::npos && 
+			!(('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9')
+				|| c == '-' || c == '_' || c == '.'))
+		{
+			std::cerr << req_location_URI[it->get_URI().length()] << "   ";
 			target = &*(it);
+			std::cerr << "[[ " << BCYN << it->get_URI() << RESET << " ]]"; // DEBUG
+		}
+		else
+			std::cerr << _CYN << it->get_URI() << RESET; // DEBUG
+		std::cerr << ", "; // DEBUG
 	}
 	std::cerr << std::endl;
 	return target;
