@@ -62,7 +62,7 @@ public:
 
 	void			parse();
 
-	void			append_plaintext(std::string const& buffer);
+	void			append_plaintext(std::string::const_iterator const &begin, std::string::const_iterator const &end);
 
 	unsigned long	get_contentLength() const;
 

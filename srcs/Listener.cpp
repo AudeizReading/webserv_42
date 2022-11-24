@@ -429,15 +429,11 @@ void	Listener::start_listener()
 			 * Also, we can send() before A) or B).
 			 */
 			{
-				char buffer[PIPE_BUF + 1] = {0};
-				int size = recv(event_fd, buffer, PIPE_BUF, 0);
+				// char buffer[PIPE_BUF + 1] = {0};
+				// int size = recv(event_fd, buffer, PIPE_BUF, 0);
 
-				if (size < 0)
-				{
-					std::cout << "[listener] recv error for event#" << event_fd << std::endl;
-					perror("[listener] -- recv error");
-					continue;
-				}
+				std::vector<char> buffer(event.data);
+				int size = recv(event_fd, &buffer[0], buffer.size(), 0);
 
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
@@ -450,8 +446,14 @@ void	Listener::start_listener()
 						<< " host: " << search->second.get_host() << std::endl;
 				}
 
-				std::string	buf_s(buffer, size);
-				search->second.append_plaintext(buf_s);
+				if (size < 0)
+				{
+					std::cout << "[listener] recv error for event#" << event_fd << std::endl;
+					_send(event_fd, new Response_Internal_Server_Error(Request(address))); // TODO: fix this;
+					continue;
+				}
+
+				search->second.append_plaintext(buffer.cbegin(), buffer.cend());
 
 				if (_prepare_answer(event_fd, search->second, size, event.data))
 				{

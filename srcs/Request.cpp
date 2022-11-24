@@ -112,9 +112,9 @@ void Request::parse()
 	}
 }
 
-void	Request::append_plaintext(std::string const& buffer)
+void	Request::append_plaintext(std::string::const_iterator const &begin, std::string::const_iterator const &end)
 {
-	_plaintext += buffer;
+	_plaintext.append(begin, end);
 	if (!_parsed && _plaintext.find("\r\n\r\n") != std::string::npos)
 		parse();
 	if (_parsed)
