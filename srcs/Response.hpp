@@ -15,6 +15,8 @@
 #include "Request.hpp"
 #include <http_error_codes.hpp>
 
+class Request;
+
 class Response
 {
 public:
@@ -50,6 +52,7 @@ public:
 	std::string	get_ctype() const;
 
 	void		create();
+	void		print_debug() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Response& response);

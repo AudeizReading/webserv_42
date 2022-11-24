@@ -23,6 +23,7 @@
 
 #define DEFAULT_CONFIG_FILE				"./demo/www.toml"
 #define DEFAULT_CLIENT_MAX_BODY_SIZE	4194304
+#define MAX_REQ_HEADER_SIZE				24576
 #define CL_MAX_BODYSIZE					DEFAULT_CLIENT_MAX_BODY_SIZE
 
 typedef std::map<std::string, std::string>			t_map_ss;

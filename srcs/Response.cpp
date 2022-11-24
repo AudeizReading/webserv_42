@@ -258,3 +258,16 @@ std::ostream& operator<<(std::ostream& os, const Response& response)
 	os << static_cast<std::string>(response);
 	return (os);
 }
+
+void Response::print_debug() const
+{
+	std::cerr << "\e[30;48;5;245m\n";
+	if (get_ctype().rfind("text/", 0) == 0)
+		if (length() < 1400)
+			std::cerr << *this;
+		else
+			std::cerr << "<response length: " << length() << ">";
+	else
+		std::cerr << "<response: " << get_ctype() << ">";
+	std::cerr << RESET << std::endl;
+}

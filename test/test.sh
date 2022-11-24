@@ -50,6 +50,7 @@ test_diff () {
 		echo "output ok"
 	else
 		echo "error output different :("
+		pkill -2 webserv
 		exit 1
 	fi
 	echo "=============================="

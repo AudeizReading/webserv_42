@@ -22,21 +22,16 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <dirent.h>
 
 #include "webserv.hpp"
 #include "Listener.hpp"
 #include "Response/Response_Ok.hpp"
 #include "Response/Response_4XX.hpp"
-#include "Response/Response_Redirect.hpp"
-#include "Response/Response_Dirlist.hpp"
 
 #include <arpa/inet.h>
 #include <cassert>
 
 #define I_LOVE_ICEBERG 1
-
-#define MAX_REQ_HEADER_BUFFER 24576
 
 Listener::Listener(std::string const& listen_addr, int listen_port, int listen_backlog,
 		vector_s::const_iterator servers_first,
@@ -46,244 +41,9 @@ Listener::Listener(std::string const& listen_addr, int listen_port, int listen_b
 	_servers.assign(servers_first, servers_last);
 }
 
-// Returns the server that matches the request, based on the listen_addr and server_name fields.
-Server const*	Listener::_get_matching_Server(Request const& req) const
+Listener::vector_s const&	Listener::get_servers() const
 {
-	const Request::map_ss::const_iterator find_host = req.get_header().find("Host");
-	std::string	host = (find_host == req.get_header().end() ? "" : find_host->second);
-	if (host.find(':') != std::string::npos)
-		host.erase(host.find(':'));
-
-	// Go through candidate servers, and find the one with the matching server_name
-	Server const	*target = &*_servers.begin(); // If no server_name matches, get the first server
-	for (vector_s::const_iterator it = _servers.begin(); it != _servers.end(); ++it)
-	{
-		if (it->has_server_name(host)) // Should I break here ?
-			target = &*it;
-	}
-	return target;
-}
-
-// TESTME !!!
-Location const*	Listener::_get_matching_Location(Request const& req, Server const& serv) const
-{
-	std::string req_location_URI = req.get_location();
-	
-	std::cerr << BCYN << "Request URI: " << req_location_URI << RESET << ": Looking URI: "; // DEBUG
-
-	// Locations are sorted from least to most complete.
-	const Location*	target = &serv.get_locations().front();
-	for (std::vector<Location>::const_iterator it = serv.get_locations().begin();
-		it != serv.get_locations().end();
-		++it)
-	{
-		char c = req_location_URI[it->get_URI().length()];
-		if (req_location_URI.find(it->get_URI()) != std::string::npos && 
-			!(('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9')
-				|| c == '-' || c == '_' || c == '.'))
-		{
-			std::cerr << req_location_URI[it->get_URI().length()] << "   ";
-			target = &*(it);
-			std::cerr << "[[ " << BCYN << it->get_URI() << RESET << " ]]"; // DEBUG
-		}
-		else
-			std::cerr << _CYN << it->get_URI() << RESET; // DEBUG
-		std::cerr << ", "; // DEBUG
-	}
-	std::cerr << std::endl;
-	return target;
-}
-
-// Only does something when request doesn't end with '/'.
-// Checks if requested URL is a directory. If so, redirects the client to the
-// directory by appending a '/' at the end of the request's location, with a 301 redirect.
-bool	Listener::_redirect_if_dir_request(Request const& req, int event_fd)
-{
-	if (req.get_location().back() == '/')
-		return false;
-
-	Location const&	loc = *req.get_server_location();
-	std::string	URI = req.get_location().substr(loc.get_URI().length());
-
-	// std::cerr << _YEL << "request location: " << req.get_location() << '\n'
-	// 	<< "Matched loc URI: " << loc.get_URI() << '\n'
-	// 	<< "loc root: " << loc.get_root() << '\n'
-	// 	<< "Extracted URI: " << URI << '\n'
-	// 	<< "root + URI: " << loc.get_root() << (URI[0] == '/' ? "" : "/") << URI
-	// 	<< RESET << std::endl;
-
-	std::string	URI_full_path = loc.get_root() + (URI[0] == '/' ? "" : "/") + URI;
-	struct stat	file_stat;
-	std::memset(&file_stat, 0, sizeof(file_stat));
-	stat(URI_full_path.c_str(), &file_stat);
-	if (!S_ISDIR(file_stat.st_mode))
-		return false;
-
-	return _send(event_fd, new Response_Redirect_Permanent(req, req.get_location() + '/'));
-}
-
-bool	Listener::_prepare_answer(int fd, Request& request, int size, int pending_datas_sz)
-{
-	bool was_sent = false;
-	if (request.is_parsed())
-	{
-		if (!request.is_complete()) {
-			if (request.get_method() != "DELETE")
-				was_sent = _send(fd, new Response_Bad_Request(request));
-		}
-		else if (!request.is_bind())
-		{
-			_bind_request(request);
-			if (request.get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
-				was_sent = _send(fd, new Response_Internal_Server_Error(request));
-			else if (request.get_server_location()->has_redirect())
-				was_sent = _send(fd, new Response_Redirect(request));
-			else if (!request.get_server_location()->allows_method(request.get_method()))
-				was_sent = _send(fd, new Response_Method_Not_Allowed(request));
-			else
-				was_sent = _redirect_if_dir_request(request, fd);
-		}
-		else if (request.get_buffer().length() > request.get_server()->get_max_body_size())
-			was_sent = _send(fd, new Response_Payload_Too_Large(request));
-	}
-	else if (request.get_buffer().length() > MAX_REQ_HEADER_BUFFER)
-		was_sent = _send(fd, new Response_Request_Header_Too_Large(request));
-
-	if (was_sent)
-		return (true);
-
-	unsigned long	content_length = request.get_contentLength();
-
-	if (pending_datas_sz - size > 0
-		|| request.get_content().length() < request.get_contentLength()) /* TODO: check la deuxieme partie */
-	{
-		return false;
-	}
- 
-	if (content_length > 0 && request.get_content().length() < content_length)
-		std::cout << "[listener] socket partial#" << fd << std::endl;
-
-	std::cerr << request << std::endl;
-	//return false;
-
-	//request.do_end();
-
-	_answer(fd, request);
-	return (true);
-}
-
-void	Listener::_answer(int fd, Request const& request)
-{
-	std::cout << "[listener] ok answer at socket#" << fd << std::endl;
-	Response								*response;
-	std::cout << _CYN << "Request location: " << request.get_location() << std::endl;
-	if (request.get_location().back() == '/') // Client has requested a directory
-	{
-		const Location&		serv_loc = *request.get_server_location();
-		const std::string&	index_file_name = serv_loc.get_index();
-		const std::string	adjusted_URI = request.get_location().substr(serv_loc.get_URI().length());
-		const std::string	path = serv_loc.get_root()
-			+ (adjusted_URI[0] == '/' ? "" : "/") + adjusted_URI;
-
-		// Check if index file exists
-		std::FILE	*file_index;
-		if (index_file_name.empty())
-			file_index = NULL;
-		else
-			file_index = std::fopen((path + '/' + index_file_name).c_str(), "r");
-		DIR			*dir;
-		if (file_index != NULL) // If index file exists at requested directory
-		{
-			fclose(file_index);
-			response = new Response_Ok(request);
-		}
-
-		// Index doesn't exist but requested directory EXISTS and dir_listing (aka autoindex) is ON
-		else if (serv_loc.allows_dir_listing() == true
-			&& (dir = opendir(path.c_str())) != NULL )
-		{
-			closedir(dir);
-			response = new Response_Dirlist(request, get_dir_list_html(path, request.get_location()));
-		}
-
-		// Index doesn't exist, directory doesn't exist, dir_listing is OFF
-		else if ( (dir = opendir(path.c_str())) == NULL )
-			response = new Response_Not_Found(request);
-
-		// Index doesn't exist, directory exists, and dir_listing (a.k.a. autoindex) is OFF
-		else
-			response = new Response_Forbidden(request);
-	}
-	else // Client hasn't requested a directory, just a normal file
-	{
-		response = new Response_Ok(request);
-	}
-	
-	_send(fd, response);
-}
-
-bool	Listener::_send(int fd, Response* response)
-{
-	std::cerr << "\e[30;48;5;245m\n";
-	if (response->get_ctype().rfind("text/", 0) == 0)
-		// Redirect STDERR to file to get primitive log
-		// Leave as it for log in console
-		if (response->length() < 1400)
-			std::cerr << *response;
-		else
-			std::cerr << "<response length: " << response->length() << ">";
-	else
-		std::cerr << "<response: " << response->get_ctype() << ">";
-	std::cerr << RESET << std::endl;
-
-	std::cout << "[listener] send " << response->get_status() << " to socket#" << fd << std::endl;
-
-	std::string	will_be_send = *response;
-	long size = 0;
-	int retry = 0;
-	do
-	{
-		if (size < 0) size = 0;
-		will_be_send = will_be_send.substr(size);
-		size = send(fd, will_be_send.c_str(), will_be_send.length(), 0);
-		std::cout << "[listener] send size: " << size << " to socket#" << fd << std::endl;
-		if (size < 0) retry++;
-	}
-	while (retry < 3 && (size < 0 || static_cast<unsigned long>(size) < will_be_send.length()));
-
-	if (size < 0)
-	{
-		std::cout << "Cannot send! (" << retry << "retries)" << std::endl;
-
-		_requests.erase(fd); close(fd); // TODO: REGISTER EVFILT_READ :)
-		return (false);
-	}
-	else
-	{
-		delete response;
-
-		std::cout << "[listener] close socket#" << fd << std::endl;
-		_requests.erase(fd);
-		close(fd);
-		return (true);	
-	}
-}
-
-void	Listener::_bind_request(Request &request)
-{
-	const Server	*server = _get_matching_Server(request);
-	if (server != NULL)
-	{
-		std::cerr << "[listener] matched server "
-			<< server->get_addr() << ':' << server->get_port() << ' '
-			<< "with first server_name: " << server->get_server_names()[0] << std::endl;
-		request.set_server(server);
-
-		const Location	*location = _get_matching_Location(request, *server);
-		std::cerr << "[listener] matched location: " << location->get_URI() << std::endl;
-		request.set_server_location(location);
-	}
-	request.do_bind();
+	return _servers;
 }
 
 void	Listener::start_listener()
@@ -311,7 +71,7 @@ void	Listener::start_listener()
 		throw std::runtime_error(strerror(errno));
 
 	// Disable TIME_WAIT
-	struct linger so_linger = { 0, 0 }; // l_onoff = 0 -> OFF, l_linger = 0sec (no timeout because OFF)
+	/*struct linger so_linger = { 0, 0 }; // l_onoff = 0 -> OFF, l_linger = 0sec (no timeout because OFF)
 	if (setsockopt(_fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0)
 		throw std::runtime_error(strerror(errno));
 
@@ -321,7 +81,7 @@ void	Listener::start_listener()
 	timeout.tv_usec = 0;
 
 	if (setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
-		throw std::runtime_error(strerror(errno));
+		throw std::runtime_error(strerror(errno));*/
 
 	/*
 	* En fonction du premier argument de socket, la doc nous guide vers sockaddr_in
@@ -415,6 +175,8 @@ void	Listener::start_listener()
 			{
 				std::cout << "[listener] client has disconnected for event#" << event_fd << std::endl;
 				_requests.erase(event_fd);
+				EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+				kevent(kq, &change_event, 1, NULL, 0, &ktimeout);
 				close(event_fd);
 			}
 			else if (event_fd == _fd) // = Socket connection
@@ -447,6 +209,7 @@ void	Listener::start_listener()
 			 * Also, we can send() before A) or B).
 			 */
 			{
+				std::cout << "READ" << std::endl;
 				// char buffer[PIPE_BUF + 1] = {0};
 				// int size = recv(event_fd, buffer, PIPE_BUF, 0);
 
@@ -456,34 +219,99 @@ void	Listener::start_listener()
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
-					_requests.insert(Listener::pair_ir(event_fd, Request(address)));
+					_requests.insert(Listener::pair_ir(event_fd, Request(*this, address))); // TODO: Fix pointer
 					search = _requests.find(event_fd);
 					search->second.set_s_sloc(&_servers[0], &_servers[0].get_locations()[0]);
 					std::cout << "[listener] Start recv socket#" << event_fd
 						<< " ip: " << search->second.get_addr()
 						<< " host: " << search->second.get_host() << std::endl;
+
+					EV_SET(&change_event, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
+					{
+						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+						perror("[listener] -- kevent error");
+					}
 				}
+
+				Request &req = search->second;
 
 				if (size < 0)
 				{
-					std::cout << "[listener] recv error for event#" << event_fd << std::endl;
-					_send(event_fd, new Response_Internal_Server_Error(Request(address))); // TODO: fix this;
-					continue;
+					std::cout << "[listener] recv error for socket#" << event_fd << std::endl;
+					req.bind_response(new Response_Internal_Server_Error(Request(*this, address)));
 				}
+				else
+					req.append_plaintext(buffer.cbegin(), buffer.cend());
 
-				search->second.append_plaintext(buffer.cbegin(), buffer.cend());
-
-				if (_prepare_answer(event_fd, search->second, size, event.data))
-				{
-					std::cerr << "\033[32m[start_listener] was sent!\033[0m for socket#" << event_fd << std::endl;
-					continue ;
-				}
-				// REGISTER TIMEOUT
+				// REGISTER AND RELOAD TIMEOUT
 				EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_ADD | EV_ONESHOT, NOTE_SECONDS, 10, NULL);
 				if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 				{
 					std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
+				}
+
+				if (!req.is_answered())
+					continue ;
+				else
+				{
+					std::cout << "[listener] already answered, disable EVFILT_READ for socket#" << event_fd << std::endl;
+					EV_SET(&change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
+					{
+						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+						perror("[listener] -- kevent error");
+					}
+				}
+			}
+			else if (event.filter == EVFILT_WRITE)
+			{
+				std::cout << "WRITE" << std::endl;
+				Listener::map_ir::iterator search = _requests.find(event_fd);
+				if (search == _requests.end())
+				{
+					std::cout << "\033[32m!UwU! !UwU! !UwU!\033[0m" << std::endl;
+					_requests.erase(event_fd);
+					EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+					kevent(kq, &change_event, 1, NULL, 0, &ktimeout);
+					close(event_fd);
+					continue ;
+				}
+
+				Request &request = search->second;
+				if (!request.is_answered())
+					request.bind_response(new Response_Ok(request));
+
+				Response const& response = *(request.get_response());
+
+				std::cout << "[listener] ok answer at socket#" << event_fd 
+					<< _CYN << "  Request location: " << request.get_location() << RESET << std::endl;
+				response.print_debug();
+				std::cout << "[listener] \033[32msend " << response.get_status() << "\033[0m to socket#" << event_fd << std::endl;
+
+				long already_sent = request.get_char_sent();
+				std::string will_be_send = static_cast<std::string>(response).substr(already_sent);
+
+				long size = send(event_fd, will_be_send.c_str(), will_be_send.length(), 0);
+				std::cout << "[listener] send size: " << size << "/" << will_be_send.length() << " to socket#" << event_fd << std::endl;
+
+				if(size < 0)
+				{
+					std::cout << "Cannot send!" << std::endl;
+					//_requests.erase(event_fd); close(event_fd); // TODO: REGISTER EVFILT_READ :)
+					continue ;
+				}
+				request.set_char_sent(already_sent + size);
+				if (static_cast<unsigned long>(size) >= will_be_send.length())
+				{
+					//delete response;
+					//delete request;
+					std::cout << "[listener] close socket#" << event_fd << std::endl;
+					_requests.erase(event_fd);
+					EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+					kevent(kq, &change_event, 1, NULL, 0, &ktimeout);
+					close(event_fd);
 				}
 			}
 			else if (event.filter == EVFILT_TIMER)
@@ -491,9 +319,11 @@ void	Listener::start_listener()
 				std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_TIMER} event.data: <<" << event.data << ">>\033[0m\n";
 				if (_requests.find(event_fd) == _requests.end())
 				{
-					std::cout << "[listener] missing event for EVFILT_TIMER socket#" << event_fd << std::endl;
-				}
-				_send(event_fd, new Response_Internal_Server_Gateway_Timeout(_requests.find(event_fd)->second)); // TODO: Timeout
+					std::cout << "[listener] missing request for EVFILT_TIMER socket#" << event_fd << std::endl;
+				} else {
+					std::cerr << "\033[32mTODO TODO TODO TODO\033[0m\n";
+					//request.bind_response(new Response_Internal_Server_Gateway_Timeout(_requests.find(event_fd)->second)); // TODO: Timeout
+				} // TODO: FIX this (request.bind_response au lieu de _send)
 			}
 			else
 			{
