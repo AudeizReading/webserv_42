@@ -16,7 +16,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 
 		$len_read = read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 
-		if (defined($ARGV[0]) || warn "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
+		if (defined($ARGV[0]) || die "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
 		{
 			$boundary = $ARGV[0];
 
