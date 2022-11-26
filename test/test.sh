@@ -61,7 +61,6 @@ test_diff "http://127.0.0.1:4242/?je_suis_inutile=1&mais=je_debug&bien=1" \
 
 test_diff "http://127.0.0.1:4242/.password" \
 	"forbidden_access_on_hidden_files" "../res/error/403.html"
-
 test_diff 'http://127.0.0.1:5000/' \
 	"default_to_server2" "../demo/www2/index.html"
 
@@ -93,6 +92,17 @@ post=$(cat ./diff/show-post.txt)
 test_diff 'http://127.0.0.1:5000/' "limit_client_body_above" "../res/error/413.html" "-X POST -d $post"
 
 test_diff 'http://127.0.0.1:5000/' "limit_client_body_below" "../demo/www2/index.html" "-X POST -d 1234"
+
+
+tmp_data_file="tmp.png"
+cat /dev/urandom | base64 | head -c 420000; echo > $tmp_data_file;
+test_diff '127.0.0.1:4242/cgi-bin/apply-for-iceberg.pl?/upload' "forbidden_upload" "../res/error/403.html" "--data-binary @$tmp_data_file"
+rm -rf $tmp_data_file
+
+if [ $USER = "alellouc" ]; then
+	./siege_webserv.sh -bc50 127.0.0.1 4242 "cgi-bin/apply-for-iceberg.pl?" 20
+	./siege_webserv.sh -bc50 localhost 8081 "fdshfjkds" 20
+fi
 
 pkill -2 webserv
 

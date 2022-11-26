@@ -10,17 +10,17 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_body_begin();
 	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 	&cgi_print_html_double_elt("header", "<h1>Upload result</h1>");
-	if ($ENV{'CONTENT_LENGTH'} > 0 && $ENV{'CONTENT_LENGTH'} < 40000000 || (warn "The content-length is not legit." && exit 1))
+	if ($ENV{'CONTENT_LENGTH'} > 0 && $ENV{'CONTENT_LENGTH'} < 40000000)
 	{
 		binmode STDIN;
 
 		$len_read = read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 
-		if (defined($ARGV[0]) || (warn "It misses the boundary keys!" && exit 1)) # Means that a boundary key is passed to the cgi script
+		if (defined($ARGV[0])) # Means that a boundary key is passed to the cgi script
 		{
 			$boundary = $ARGV[0];
-
-			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || (warn "These datas are not allowed to be hosted on the server." && exit 1))
+			warn $buffer;
+			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/))
 			{
 				my %upload_files = &cgi_parse_body_upload($boundary, "$buffer");
 				&cgi_upload_files(%upload_files);
@@ -41,8 +41,22 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 				setTimeout('Redirect()', 5000);
 				</script>";
 			}
+			else
+			{
+				warn "These datas are not allowed to be hosted on the server.";
+				exit 1;
+			}
 		}
-		$output_mess="STDIN (Methode POST)" ;
+		else
+		{
+			warn "It misses the boundary keys!";
+			exit 1;
+		}
+	}
+	else
+	{
+		warn "The content-length is not legit.";
+		exit 1;
 	}
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
@@ -76,11 +90,8 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 		{
 			if (@FILES > 1)
 			{
-				print STDOUT "\t<div class=\"form_container\"><ul>\r\n";
-				&cgi_print_html_double_elt("li", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
-				&cgi_print_html_double_elt("li", "Book another iceberg? <a href=\"../upload.html\">Click Here:</a>");
-				print STDOUT "\t</ul></div>\r\n";
-			}
+				&cgi_display_useful_links;
+			}	
 			&cgi_display_files($_GET{'path_info'}, @FILES);
 		}
 		else
@@ -88,10 +99,12 @@ elsif ($ENV{'REQUEST_METHOD'} eq "GET")
 			&cgi_print_html_double_elt("p", "You have to upload a pic before! <a href=\"../upload.html\">Click Here:</a>");
 		}
 		closedir(DIRECTORY_FD);
-		print STDOUT "\t<div class=\"form_container\"><ul>\r\n";
-		&cgi_print_html_double_elt("li", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
-		&cgi_print_html_double_elt("li", "Book another iceberg? <a href=\"../upload.html\">Click Here:</a>");
-		print STDOUT "\t</ul></div>\r\n";
+		&cgi_display_useful_links;
+	}
+	else
+	{
+		warn "The access to the page is forbidden";
+		exit 1;
 	}
 	&cgi_print_html_body_end();
 	&cgi_print_html_end();
@@ -141,9 +154,14 @@ sub cgi_upload_files
 
 	foreach $filename (keys %upload_files)
 	{
+		if ($filename =~ "/")
+		{
+			my (@comps) = split(/\//, $filename);
+			$filename=$comps[$#comps];
+		}
 		open(UPLOAD_FILE, ">:raw", "../upload/$filename") || die "$filename couldn't be opened: $!";
 		binmode UPLOAD_FILE;
-		print UPLOAD_FILE $upload_files{$filename} || die "$filename couldn't be written: $!";
+		print UPLOAD_FILE $upload_files{$filename} || (close UPLOAD_FILE && unlink "../upload/$filename" && die "$filename couldn't be written: $!");
 		close UPLOAD_FILE;
 	}
 }
@@ -276,4 +294,12 @@ sub cgi_display_files
 	&cgi_add_cookie_javascript($i, $path_info, $file);
 
 	print STDOUT "\t</ul>\r\n";
+}
+
+sub cgi_display_useful_links
+{
+	print STDOUT "\t<div class=\"form_container\"><ul>\r\n";
+	&cgi_print_html_double_elt("li", "Come back at index.html? <a href=\"../index.html\">Click Here:</a>");
+	&cgi_print_html_double_elt("li", "Book another iceberg? <a href=\"../upload.html\">Click Here:</a>");
+	print STDOUT "\t</ul></div>\r\n";
 }
