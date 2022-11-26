@@ -144,7 +144,7 @@ bool				CGIManager::exec()
 				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " " << e.what() << ": problem with the CGI response\033[0m" << std::endl;
 				return false;
 			}
-			::waitpid(pid, &exit_status, 0); //WNOHANG is the non-block opt for waitpid but does really need it?
+			::waitpid(pid, &exit_status, 0);
 			CGIEnviron::map_ss	env = this->_environ.getEnv();
 			bool				is_perl_cgi = false;
 

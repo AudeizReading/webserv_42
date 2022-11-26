@@ -10,7 +10,7 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_body_begin();
 	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 	&cgi_print_html_double_elt("header", "<h1>Upload result</h1>");
-	if ($ENV{'CONTENT_LENGTH'} > 0)
+	if ($ENV{'CONTENT_LENGTH'} > 0 && $ENV{'CONTENT_LENGTH'} < 40000000)
 	{
 		binmode STDIN;
 
