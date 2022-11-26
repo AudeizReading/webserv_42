@@ -10,17 +10,17 @@ if ($ENV{'REQUEST_METHOD'} eq "POST" )
 	&cgi_print_html_body_begin();
 	%_GET = &cgi_parse_request_string($ENV{'QUERY_STRING'});
 	&cgi_print_html_double_elt("header", "<h1>Upload result</h1>");
-	if ($ENV{'CONTENT_LENGTH'} > 0 && $ENV{'CONTENT_LENGTH'} < 40000000)
+	if ($ENV{'CONTENT_LENGTH'} > 0 && $ENV{'CONTENT_LENGTH'} < 40000000 || (warn "The content-length is not legit." && exit 1))
 	{
 		binmode STDIN;
 
 		$len_read = read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
 
-		if (defined($ARGV[0]) || die "It misses the boundary keys!") # Means that a boundary key is passed to the cgi script
+		if (defined($ARGV[0]) || (warn "It misses the boundary keys!" && exit 1)) # Means that a boundary key is passed to the cgi script
 		{
 			$boundary = $ARGV[0];
 
-			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || die "These datas are not allowed to be hosted on the server.")
+			if (($buffer =~ $boundary && $buffer =~ /(Content-Type\:\ image\/png|jpeg|jpg\ \n)/) || (warn "These datas are not allowed to be hosted on the server." && exit 1))
 			{
 				my %upload_files = &cgi_parse_body_upload($boundary, "$buffer");
 				&cgi_upload_files(%upload_files);
