@@ -148,9 +148,9 @@ bool				CGIManager::exec()
 			CGIEnviron::map_ss	env = this->_environ.getEnv();
 			bool				is_perl_cgi = false;
 
-			if (env["SCRIPT_NAME"].find(".pl") != std::string::npos)
+			if (env["CGI_EXEC"].find("perl") != std::string::npos)
 				is_perl_cgi = true;
-			if ((exit_status == 1 || exit_status == 512) && WIFEXITED(exit_status) && is_perl_cgi)
+			if ((exit_status == 1 || exit_status == 512 || exit_status == 65280) && WIFEXITED(exit_status) && is_perl_cgi)
 				throw std::invalid_argument(strerror(WEXITSTATUS(exit_status)));
 			else if (exit_status != 0 && WIFEXITED(exit_status))
 				throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
