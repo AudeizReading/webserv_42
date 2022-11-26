@@ -28,7 +28,7 @@ _DEFINE_RESPONSE(Response_Payload_Too_Large,				"res/error/413.html", "413 Paylo
 _DEFINE_RESPONSE(Response_Request_Header_Too_Large,			"res/error/431.html",
 															"431 Request Header Fields Too Large",				431)
 _DEFINE_RESPONSE(Response_Internal_Server_Error,			"res/error/500.html", "500 Internal Server Error",	500)
-_DEFINE_RESPONSE(Response_Internal_Server_Gateway_Timeout,	"res/error/504.html", "504 Internal Server Error",	504)
+_DEFINE_RESPONSE(Response_Internal_Server_Gateway_Timeout,	"res/error/504.html", "504 Gateway Timeout",		504)
 
 // ============================================================================================== //
 // ------------------------------------- Manual Definitions ------------------------------------- //
