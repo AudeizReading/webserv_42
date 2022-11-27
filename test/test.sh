@@ -93,9 +93,8 @@ test_diff 'http://127.0.0.1:5000/' "limit_client_body_above" "../res/error/413.h
 
 test_diff 'http://127.0.0.1:5000/' "limit_client_body_below" "../demo/www2/index.html" "-X POST -d 1234"
 
-
 tmp_data_file="tmp.png"
-cat /dev/urandom | base64 | head -c 420000; echo > $tmp_data_file;
+echo $(cat /dev/urandom | base64 | head -c 420000) > $tmp_data_file;
 test_diff '127.0.0.1:4242/cgi-bin/apply-for-iceberg.pl?/upload' "forbidden_upload" "../res/error/403.html" "--data-binary @$tmp_data_file"
 rm -rf $tmp_data_file
 
