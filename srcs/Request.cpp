@@ -321,7 +321,7 @@ unsigned long		Request::get_contentLength() const
 	}
 }
 
-void	Request::do_end()
+/*void	Request::do_end()
 {
 	// ACTUELLEMENT NON UTILISE mais peut etre utile pour le CGI et avoir une map
 	// de chacun des fichiers envoyées en upload
@@ -369,7 +369,7 @@ void	Request::do_end()
 
 		outfile.close();
 	}
-}
+}*/
 
 Queryparser::Firstline Request::_get_first_line() const
 {

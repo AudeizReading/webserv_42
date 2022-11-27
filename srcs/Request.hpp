@@ -89,7 +89,7 @@ public:
 
 	unsigned long	get_contentLength() const;
 
-	void			do_end();
+	//void			do_end();
 
 	bool			is_complete_header() const;
 	bool			is_parsed() const;
