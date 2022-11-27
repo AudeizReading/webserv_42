@@ -493,8 +493,10 @@ void	Request::bind_response(Response const* src)
 {
 	if (src == NULL)
 		return ;
-	_answered = true;
+	if (_response != NULL)
+		delete const_cast<Response *>(_response);
 	_response = src;
+	_answered = true;
 }
 
 void	Request::set_s_sloc(Server const* serv, Location const* sloc)
