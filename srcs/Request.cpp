@@ -68,7 +68,7 @@ void Request::_parse_firstline(const std::string &str, std::string::const_iterat
 	for (std::string::iterator it = _location.begin(); it != _location.end(); ++it)
 	{
 		if (!(('a' <= *it && *it <= 'z') || ('A' <= *it && *it <= 'Z') || ('0' <= *it && *it <= '9')
-			|| *it == '-' || *it == '_' || *it == '/' || *it == '.'))
+			|| *it == '-' || *it == '_' || *it == '/' || *it == '.' || *it == '%'))
 		{
 			throw std::runtime_error("Bad Request: Forbidden character");
 		}
@@ -239,8 +239,7 @@ void	Request::_check_answer()
 	if (is_parsed())
 	{
 		if (!is_complete_header()) {
-			if (get_method() != "DELETE") // TODO: Confirm this
-				bind_response(new Response_Bad_Request(*this));
+			bind_response(new Response_Bad_Request(*this));
 		}
 		else if (!is_binded2server())
 		{
