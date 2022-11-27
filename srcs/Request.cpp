@@ -239,14 +239,14 @@ void	Request::_check_answer()
 	if (is_parsed())
 	{
 		if (!is_complete_header()) {
-			if (get_method() != "DELETE")
+			if (get_method() != "DELETE") // TODO: Confirm this
 				bind_response(new Response_Bad_Request(*this));
 		}
 		else if (!is_binded2server())
 		{
 			_bind_server();
 			_binded2server = true;
-			if (get_server() == NULL) // TODO: On peut vraiment avoir une erreur ici ?
+			if (get_server() == NULL)
 				bind_response(new Response_Internal_Server_Error(*this));
 			else if (get_server_location()->has_redirect())
 				bind_response(new Response_Redirect(*this));
@@ -257,7 +257,7 @@ void	Request::_check_answer()
 			else if (get_location().back() == '/' && _asked_for_dir_list())
 				return ;
 		}
-		else if (get_buffer().length() > get_server()->get_max_body_size())
+		if (get_server() != NULL && get_buffer().length() > get_server()->get_max_body_size())
 			bind_response(new Response_Payload_Too_Large(*this));
 	}
 	else if (get_buffer().length() > MAX_REQ_HEADER_SIZE)

@@ -218,7 +218,7 @@ void	Listener::start_listener()
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
-					_requests.insert(Listener::pair_ir(event_fd, Request(*this, address))); // TODO: Fix pointer
+					_requests.insert(Listener::pair_ir(event_fd, Request(*this, address)));
 					search = _requests.find(event_fd);
 					search->second.set_s_sloc(&_servers[0], &_servers[0].get_locations()[0]);
 					std::cout << "[listener] Start recv socket#" << event_fd
@@ -279,19 +279,16 @@ void	Listener::start_listener()
 				Listener::map_ir::iterator search = _requests.find(event_fd);
 				if (search == _requests.end())
 				{
-					std::cout << "\033[32m!UwU! !UwU! !UwU!\033[0m" << std::endl;
-					_requests.erase(event_fd);
-					EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_DELETE, 0, 0, NULL); //TODO: Fct!
-					kevent(kq, &change_event, 1, NULL, 0, &ktimeout);
-					close(event_fd);
-					continue ;
+					std::cout << "\033[32mUnexpected: Malformed/empty request\033[0m" << std::endl;
+					_requests.insert(Listener::pair_ir(event_fd, Request(*this, address)));
+					search = _requests.find(event_fd);
 				}
 
 				Request &request = search->second;
 				if (!request.is_answered())
 				{
-					std::cout << "\033[32m!UwU! !UwU! !UwU! 2\033[0m" << std::endl;
-					request.bind_response(new Response_Ok(request));
+					std::cout << "\033[32mUnexpected: Malformed/empty request\033[0m" << std::endl;
+					request.bind_response(new Response_Bad_Request(request));
 				}
 
 				Response const& response = *(request.get_response());
