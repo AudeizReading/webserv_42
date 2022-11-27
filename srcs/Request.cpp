@@ -294,13 +294,6 @@ void	Request::append_plaintext(std::string::const_iterator const &begin,
 	if (_parsed)
 		_content = _plaintext.substr(_content_start);
 
-	// TODO: check contentLength
-	/*
- 	unsigned long	content_length = get_contentLength();
-	if (content_length > 0 && get_content().length() < content_length)
-		std::cout << "[listener] Req partial because real size is bigger than contentLength header for socket#" << fd << std::endl;
-	*/
-
 	_check_answer();
 }
 
@@ -335,7 +328,7 @@ unsigned long		Request::get_contentLength() const
 		return ;
 
 	std::cout << "multipart + boundary detected" << std::endl;
-	vector_str					files;  // TODO: finish this?
+	vector_str					files;  // NEXT: finish this?
 
 	std::string					boundary = "--" + type.substr(type.find("boundary=") + 9);
 	if (boundary == "--")
@@ -358,7 +351,7 @@ unsigned long		Request::get_contentLength() const
 			std::cerr << " - " << it2->first << ": " << it2->second << std::endl;
 		str = str.substr(it - str.begin());
 
-		std::ofstream outfile ("test.txt", std::ofstream::binary); // TODO: finish this?
+		std::ofstream outfile ("test.txt", std::ofstream::binary); // NEXT: finish this?
 
 		next_boundary = str.find(boundary);
 		std::string out = str;
