@@ -75,7 +75,7 @@ test_diff "http://127.0.0.1:8080/"	"server_black"		"../demo/servers/black/index.
 test_diff "http://127.0.0.1:4242/cgi-bin/test/try-error-500.pl" "cgi_try-error-500" "../res/error/500.html"
 
 test_diff "http://127.0.0.1:4242/cgi-bin/test/no-header.pl" "cgi_no-header" "./diff/cgi_no-header.txt"
-# TODO: Improve this two test, check also content
+# Improve this two test and check also content ?
 test_diff "http://127.0.0.1:4242/cgi-bin/test/full-header.pl" "cgi_full-header" "./diff/cgi_full-header.txt" "-I"
 test_diff "http://127.0.0.1:4242/cgi-bin/test/partial-header.pl" "cgi_partial-header" "./diff/cgi_partial-header.txt" "-I"
 
