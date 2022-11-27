@@ -302,7 +302,6 @@ void	Listener::start_listener()
 				if(size < 0)
 				{
 					std::cout << "Cannot send, retry!" << std::endl;
-					//_requests.erase(event_fd); close(event_fd); // TODO: REGISTER EVFILT_READ :)
 					continue ;
 				}
 				request.set_char_sent(already_sent + size);
