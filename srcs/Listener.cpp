@@ -197,7 +197,7 @@ void	Listener::start_listener()
 				EV_SET(&change_event, new_socket, EVFILT_READ, EV_ADD, 0, 0, NULL);
 				if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 				{
-					std::cout << "[listener] kevent error for event#" << event_fd << std::endl;
+					std::cout << "[listener] EVFILT_READ add: error for event#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
 				}
 			}
@@ -240,19 +240,19 @@ void	Listener::start_listener()
 				EV_SET(&change_event, event_fd, EVFILT_TIMER, EV_ADD | EV_ONESHOT, NOTE_SECONDS, 10, NULL);
 				if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 				{
-					std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+					std::cout << "[listener] EVFILT_TIMER add: error for socket#" << event_fd << std::endl;
 					perror("[listener] -- kevent error");
 				}
 
 				if (!request.is_answered() && !request.is_parsed())
 					continue ;
 
-				if (request.is_answered()) { // = ERROR
+				if (request.is_answered()) { // answer is ERROR
 					std::cout << "[listener] already answered, disable EVFILT_READ for socket#" << event_fd << std::endl;
 					EV_SET(&change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
 					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 					{
-						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+						std::cout << "[listener] EVFILT_READ delete: error for socket#" << event_fd << std::endl;
 						perror("[listener] -- kevent error");
 					}
 				}
@@ -269,7 +269,7 @@ void	Listener::start_listener()
 					EV_SET(&change_event, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
 					{
-						std::cout << "[listener] kevent error for socket#" << event_fd << std::endl;
+						std::cout << "[listener] EVFILT_WRITE add: error for socket#" << event_fd << std::endl;
 						perror("[listener] -- kevent error");
 					}
 				}
@@ -324,11 +324,23 @@ void	Listener::start_listener()
 				std::cerr << "\033[32m[start_listener]{event.filter == EVFILT_TIMER} event.data: <<" << event.data << ">>\033[0m\n";
 				if (_requests.find(event_fd) == _requests.end())
 				{
-					std::cout << "[listener] missing request for EVFILT_TIMER socket#" << event_fd << std::endl;
+					std::cout << "[listener] \033[32mmissing request\033[0m for EVFILT_TIMER socket#" << event_fd << std::endl;
+					continue ; // we continue because already close.
 				} else {
-					std::cerr << "\033[32mTODO TODO TODO TODO\033[0m\n";
-					//request.bind_response(new Response_Internal_Server_Gateway_Timeout(_requests.find(event_fd)->second)); // TODO: Timeout
-				} // TODO: FIX this (request.bind_response au lieu de _send)
+					Listener::map_ir::iterator search = _requests.find(event_fd);
+
+					Request &request = search->second;
+
+					request.bind_response(new Response_Internal_Server_Gateway_Timeout(request));
+					EV_SET(&change_event, event_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+					kevent(kq, &change_event, 1, NULL, 0, &ktimeout);
+					EV_SET(&change_event, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+					if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
+					{
+						std::cout << "[listener] EVFILT_WRITE add: error for socket#" << event_fd << std::endl;
+						perror("[listener] -- kevent error");
+					}
+				}
 			}
 			else
 			{
