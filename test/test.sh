@@ -49,7 +49,7 @@ test_diff () {
 	if [[ $? == 0 ]]; then
 		echo "output ok"
 	else
-		echo "error output different :("
+		echo "error output different for $2 :("
 		pkill -2 webserv
 		exit 1
 	fi
@@ -64,7 +64,7 @@ test_diff "http://127.0.0.1:4242/.password" \
 test_diff 'http://127.0.0.1:5000/' \
 	"default_to_server2" "../demo/www2/index.html"
 
-test_diff "http://127.0.0.1:4242/upload.html" "URI_get_matching_Location"	"../demo/www/upload.html"
+test_diff "http://127.0.0.1:4242/upload.html" "get_matching_Location_for_URI"	"../demo/www/upload.html"
 
 test_diff "http://localhost:8080/"	"server_blue"		"../demo/servers/blue/index.html"
 test_diff "http://127.0.0.1:8080/"	"server_green"		"../demo/servers/green/index.html"
@@ -86,7 +86,7 @@ test_diff "http://localhost:8081/fdshfjkds" "custom_err_page"	"test_page.html"
 post=$(cat ./diff/show-post.txt)
 test_diff "http://127.0.0.1:4242/cgi-bin/test/show-post.pl" "check_post" "./diff/show-post.txt" "-d $post -X POST"
 
-test_diff "http://127.0.0.1:4242/cgi-bin/show_file_upload.pl" "test_multipart_form-data" "../res/error/404.html" "--form file=@../res/error/404.html"
+test_diff "http://127.0.0.1:4242/cgi-bin/show_file_upload.pl" "check_multipart_form-data" "../res/error/404.html" "--form file=@../res/error/404.html"
 
 post=$(cat ./diff/show-post.txt)
 test_diff 'http://127.0.0.1:5000/' "limit_client_body_above" "../res/error/413.html" "-X POST -d $post"
