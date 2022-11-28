@@ -145,6 +145,7 @@ int	webserv(const char *config_file_path)
 	}
 	delete mutex;
 	delete condvar;
+	delete g_mime_types;
 
 	return (1);
 }

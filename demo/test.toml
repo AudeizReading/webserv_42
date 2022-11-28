@@ -59,6 +59,11 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 	[[http.server]]
 	listen_port = 1234
 		[[http.server.location]]
-		URI = "/www/cgi_bin"
+		URI = "/"
+		root = "./demo/www"
+
+		[[http.server.location]]
+		URI = "cgi-bin"
 		root = "./demo/www/cgi-bin"
-		cgi_file_ext = ".abc"
+		include = ["./demo/cgi_params_php.toml"]
+		cgi_file_ext = "kill"
