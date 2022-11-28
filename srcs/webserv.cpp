@@ -83,8 +83,16 @@ static bool create_dico_mimetypes(TOML::Document config)
 
 	t_map_ss	*new_mime_types = new t_map_ss();
 	for (TOML::Document::iterator it = conf.begin(); it != conf.end(); ++it)
-		// TODO: Parse forbidden char ???
+	{
+		for (std::string::const_iterator ch = it->key().cbegin(); ch != it->key().cend(); ++ch)
+			if (!(('a' <= *ch && *ch <= 'z') || ('A' <= *ch && *ch <= 'Z') || ('0' <= *ch && *ch <= '9')))
+				throw std::runtime_error("[mime_types]: Invalid character for extension " + it->key());
+		for (std::string::const_iterator ch = it->Str().cbegin(); ch != it->Str().cend(); ++ch)
+			if (!(('a' <= *ch && *ch <= 'z') || ('A' <= *ch && *ch <= 'Z') || ('0' <= *ch && *ch <= '9')
+				|| *ch == '-' || *ch == '_' || *ch == '/' || *ch == '.'))
+				throw std::runtime_error("[mime_types]: Invalid character for mime_types value " + it->Str());
 		new_mime_types->insert(std::pair<std::string, std::string>(it->key(), it->Str()));
+	}
 	g_mime_types = new_mime_types;
 	return (true);
 }

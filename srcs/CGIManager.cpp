@@ -129,9 +129,6 @@ bool				CGIManager::exec()
 			{
 				if (_request_data_length > 0)
 				{
-				//	PRINT(_request_data.find(_request_data.c_str()));
-				//	PRINT(_request_data); // Quand je print ca c'est en attente de la suite, la lecture est bloquante
-				//	Si je peux pas recup ca je peux pas parser ce qu'il faut pour recup l'image
 					::close(_cgi_request_fds[0]);
 					::write(_cgi_request_fds[1], _request_data.c_str(), _request_data_length);
 					::close(_cgi_request_fds[1]);
@@ -147,8 +144,16 @@ bool				CGIManager::exec()
 				std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " " << e.what() << ": problem with the CGI response\033[0m" << std::endl;
 				return false;
 			}
-			::waitpid(pid, &exit_status, 0); //WNOHANG is the non-block opt for waitpid but does really need it?
-			if (exit_status != 0 && WIFEXITED(exit_status))
+			::waitpid(pid, &exit_status, 0);
+			CGIEnviron::map_ss	env = this->_environ.getEnv();
+			bool				is_perl_cgi = false;
+
+			if (env["CGI_EXEC"].find("perl") != std::string::npos)
+				is_perl_cgi = true;
+			PRINT(exit_status)
+			if ((exit_status == 1 || exit_status == 256 || exit_status == 512) && WIFEXITED(exit_status) && is_perl_cgi)
+				throw std::invalid_argument(strerror(WEXITSTATUS(exit_status)));
+			else if (exit_status != 0 && WIFEXITED(exit_status))
 				throw std::runtime_error(strerror(WEXITSTATUS(exit_status)));
 			else if (WIFSIGNALED(exit_status))
 				throw std::runtime_error(strerror(WTERMSIG(exit_status)));
@@ -166,25 +171,36 @@ bool				CGIManager::exec()
 
 void				CGIManager::_launchExec() const
 {
-	// do not forget to check the PATH rights (only exec has to be set)
-	// what about arguments for the script perl what are they? -> they are the filename to be upload if I have understand well
+	CGIEnviron::map_ss	env			= this->_environ.getEnv();
+	std::string			abs_path	= env["SCRIPT_NAME"].substr(0, env["SCRIPT_NAME"].find_last_of("/"));
+	std::string			script		= env["SCRIPT_NAME"].substr(env["SCRIPT_NAME"].find_last_of("/") + 1);
+	std::string			boundary	= this->_environ.getBoundary();
+	std::string			cgi_exec	= env["CGI_EXEC"];
 
-	CGIEnviron::map_ss	env = this->_environ.getEnv();
-
-	std::string abs_path = env["SCRIPT_NAME"].substr(0, env["SCRIPT_NAME"].find_last_of("/"));
-	std::string script = env["SCRIPT_NAME"].substr(env["SCRIPT_NAME"].find_last_of("/") + 1);
+	// if the cgi_exec does not exist or has not got the x rights -> exit
+	if (::access(cgi_exec.c_str(), F_OK) == -1 || ::access(cgi_exec.c_str(), X_OK)  == -1)
+	{
+		exit(errno);
+	}
 	
 	if (::chdir(abs_path.c_str()) == -1)
 	{
 		exit(errno);
 	}
-	// Ca marche comme ca avec /usr/bin/perl, il faut bien chdir dans le directory ou se situe le script apl
-	// Reste plus qu'a set ca via une variable que le Server ou autre enverrait au CGI
-	if (::execl("/usr/bin/perl", "/usr/bin/perl", script.c_str(), NULL) == -1)
-	//if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), NULL) == -1)
-//	if (::execl(env["SCRIPT_NAME"].c_str(), env["SCRIPT_NAME"].c_str(), env["PATH_INFO"].c_str(), NULL) == -1)
+
+	if (boundary.size() > 0) // if there are a multipart Content Type so pass the boundary by argv as it remains unavailable for those that should not get this info by env.
 	{
-		exit(errno);
+		if (::execl(cgi_exec.c_str(), cgi_exec.c_str(), script.c_str(), boundary.c_str(), NULL) == -1)
+		{
+			exit(errno);
+		}
+	}
+	else
+	{
+		if (::execl(cgi_exec.c_str(), cgi_exec.c_str(), script.c_str(), NULL) == -1)
+		{
+			exit(errno);
+		}
 	}
 	std::cerr << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << " Cette phrase ne doit jamais etre visible\033[0m" << std::endl;
 }

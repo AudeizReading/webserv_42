@@ -41,19 +41,19 @@ class CGIManager {
 		CGIManager(const CGIManager &src);
 		CGIManager& operator=(const CGIManager &src);
 
-		void		_close_fds();
-		bool		_pipe();
-		void		_launchExec() const;
-		bool		_getCGIResponse();
+		void			_close_fds();
+		bool			_pipe();
+		void			_launchExec() const;
+		bool			_getCGIResponse();
 
 	public:
 		CGIManager(const Request& req, const Server& serv, const Location& location);
 		~CGIManager(void);
 
-		std::string	getPlainText() const;
+		std::string		getPlainText() const;
 
-		static void	signal_pipe_handler(int signo);
+		static void		signal_pipe_handler(int signo);
 
-		bool		exec();
+		bool			exec();
 		
 };

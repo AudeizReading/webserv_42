@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <sys/stat.h>
+#include <sys/param.h>
 
 #include <toml_parser.hpp>
 
@@ -23,7 +24,11 @@
 #include "Response.hpp"
 
 #define DEFAULT_PORT	5000
-#define LISTEN_BACKLOG	512 // The maximum length for the queue of pending connections.
+#define LISTEN_BACKLOG	2048 // The maximum length for the queue of pending connections.
+
+class Server;
+class Request;
+class Response;
 
 class Listener
 {
@@ -41,20 +46,12 @@ private:
 	vector_s				_servers;
 	map_ir					_requests;
 
-	bool				prepare_answer(int fd, Request& request, int size);
-	void				answer(int fd, Request const& request);
-	bool				_send(int fd, Response* response);
-	void				_bind_request(Request &request);
-
-	Server const*		_get_matching_Server(Request const& req) const;
-	Location const*		_get_matching_Location(Request const& req, Server const& serv) const;
-
-	bool				redirect_if_dir_request(Request const& req, int event_fd);
-
 public:
 	Listener(std::string const& listen_addr, int listen_port, int listen_backlog, vector_s::const_iterator servers_first, vector_s::const_iterator servers_last);
 
-	void	start_listener();
+	void				start_listener();
+
+	vector_s const&		get_servers() const;
 
 	~Listener();
 };

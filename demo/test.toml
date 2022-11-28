@@ -20,7 +20,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		root = "./demo/www"						# Mandatory parameter.
 		index = "index.htdml"					# Optional. Defaults to "index.html".
 		dir_listing = true						# Optional. Defaults to false.
-		# include = ["fast_cgi.toml"]
+		include = ["demo/cgi_params.toml"]
 
 		[[http.server.location]]
 		URI = "/img/"
@@ -58,4 +58,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 	[[http.server]]
 	listen_port = 1234
-	server_name = [""]
+		[[http.server.location]]
+		URI = "/www/cgi_bin"
+		root = "./demo/www/cgi-bin"
+		cgi_file_ext = ".abc"

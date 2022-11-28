@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/10/16 20:25:30 by gphilipp         ###   ########.fr        #
+#    Updated: 2022/11/16 14:21:50 by alellouc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,6 +23,7 @@ SRC =	srcs/main.cpp \
 		srcs/Response/Response_Dirlist.cpp \
 		srcs/utils.cpp \
 		srcs/CGIManager.cpp \
+		srcs/Buffer.cpp \
 		srcs/Request.cpp \
 		srcs/webserv.cpp \
 		srcs/Location.cpp \
@@ -47,6 +48,7 @@ HDEP1 = srcs/Response.hpp \
 		srcs/Request.hpp \
 		srcs/Location.hpp \
 		srcs/CGIManager.hpp \
+		srcs/Buffer.hpp \
 
  # <!-- pre='./' path='includes/' match='*.hpp' pos='1' template='		{0} \' -->
 HDEP =	$(HDEP1) \

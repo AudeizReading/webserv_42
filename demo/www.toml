@@ -76,6 +76,11 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		redirect = "https://perdu.com/"
 
 		[[http.server.location]]
+		URI = "/upload/"
+		root = "./demo/www/upload"
+		dir_listing = true
+
+		[[http.server.location]]
 		URI = "/img"							# Points to /var/www/img, see NGINX doc
 		root = "./demo/www/img"
 		index = "issberg.png"
@@ -99,6 +104,7 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 	[[http.server]]
 	listen_port = 5000
+	client_max_body_size = 2000
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/www2"

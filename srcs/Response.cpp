@@ -29,7 +29,11 @@ Response::Response(Request const& request): _request(&request)
 
 void Response::create()
 {
-	std::string					ext;
+	std::string			ext;
+	const std::string	cgi_file_ext = _request->get_server_location()->get_cgi_file_ext();
+
+	if (cgi_file_ext == "kill")
+		throw std::runtime_error("test exception");
 
 	_init();
 
@@ -51,17 +55,47 @@ void Response::create()
 		/*
 		 * NOTE: I commented out the CGI part because I didn't want to touch it yet.
 		 */
-		else if (good && ext == "pl") { // TODO: is cgi extension of application
+		else if (good && ext == cgi_file_ext) {
 			// CGI Handling
 			try 
 			{
 				CGIManager cgi(*_request, *_request->get_server(), *_request->get_server_location());
 				cgi.exec();
 				_plaintext = cgi.getPlainText();
+
+				// parser si entete dans perl?
+				/*size_t	buf_size = (_request->get_buffer()).size();
+				Buffer	buf(_request->get_buffer().c_str(), buf_size);
+
+				//	buf.print_raw(buf_size);
+				unsigned char *body = buf.get_body(buf.get_body_size());
+				std::string	res_body(static_cast<char *>(body), buf.get_body_size());
+				if (body)
+					free(body);
+
+				if (res_body == _plaintext)
+					std::cerr << "Buffer has the good body\n";
+				else
+					std::cerr << "Buffer has not the good body\n";
+				buf.print_header();*/
 				
 				// std::cout << "\033[31;1m[CGI]: " << __FILE__ << " " << __LINE__ << ": _plaintext (response of CGI): " << _plaintext.substr(0, 1500) << "\033[0m… (limit of 1500char)" << std::endl;
 			}
-			catch(const std::exception& e)
+			catch (const std::invalid_argument& e)
+			{
+				std::cerr << "[CGI] " << e.what() << std::endl;
+				std::cerr << "[STOP] " << _content_path << std::endl;
+				*this = Response_Forbidden(*_request);
+				return ;
+			}
+			catch (const std::runtime_error& e)
+			{
+				std::cerr << "[CGI] " << e.what() << std::endl;
+				std::cerr << "[STOP] " << _content_path << std::endl;
+				*this = Response_Internal_Server_Error(*_request);
+				return ;
+			}
+			catch (const std::exception& e)
 			{
 				std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
@@ -69,6 +103,25 @@ void Response::create()
 				return ;
 			}
 			std::cerr << "[CONTINUE] " << _content_path << std::endl;
+		}
+		else if (good && _request->get_method() == "DELETE" && _content_path.find("./res/error") == std::string::npos)
+		{
+			file.close();
+
+			Location const	loc			= *_request->get_server_location();
+			std::string		dir_upload	= loc.get_cgi_environ().at("DIR_UPLOAD");
+			// Blocking the possibility of deleting the upload directory for the sake of the defense
+			if (_content_path != dir_upload && _content_path.find(dir_upload) != std::string::npos && ::remove(_content_path.c_str()) == 0)
+			{
+				_content_type = "text/plain";
+				std::cout << "\033[32m[Response::create] the resource " << _content_path  << " has been deleted correctly from " << dir_upload << "." << RESET << std::endl;
+			}
+			else
+			{
+				std::cerr << _RED << "[Response::create] a problem occurs while trying to delete the resources" << RESET << std::endl;
+				*this = Response_Forbidden(*_request);
+				return ;
+			}
 		}
 		else if (good)
 		{
@@ -83,19 +136,21 @@ void Response::create()
 		}
 		else
 		{
+
 			*this = Response_Not_Found(*_request);
 			return ;
 		}
 	}
 
-	time_t						ctime = time(NULL);
-	tm							*t = gmtime(&ctime);
-	std::stringstream			date;
-	// TODO: full date support
-	date << "Wed, 28 Sep " << t->tm_year << " "
-		<< t->tm_hour << ":" << t->tm_min << ":" << t->tm_sec << " GMT";
+	const time_t	ctime = time(NULL);
+	struct tm		t;
+	char			date[30];
 
-	_header.insert(Queryparser::pair_ss("Date", date.str()));
+	if (gmtime_r(&ctime, &t) == NULL)
+		throw std::runtime_error("unable to get or convert current time");
+	std::strftime(date, 30, "%a, %d %b %Y %H:%M:%S GMT", &t);
+
+	_header.insert(Queryparser::pair_ss("Date", date));
 	_header.insert(Queryparser::pair_ss("Server", _request->get_server()->get_name()));
 	_header.insert(Queryparser::pair_ss("Cache-Control", "no-cache"));
 	_header.insert(Queryparser::pair_ss("Content-Type", _content_type));
@@ -205,4 +260,17 @@ std::ostream& operator<<(std::ostream& os, const Response& response)
 {
 	os << static_cast<std::string>(response);
 	return (os);
+}
+
+void Response::print_debug() const
+{
+	std::cerr << "\e[30;48;5;245m\n";
+	if (get_ctype().rfind("text/", 0) == 0)
+		if (length() < 1400)
+			std::cerr << *this;
+		else
+			std::cerr << "<response length: " << length() << ">";
+	else
+		std::cerr << "<response: " << get_ctype() << ">";
+	std::cerr << RESET << std::endl;
 }
