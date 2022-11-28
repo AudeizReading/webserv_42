@@ -65,7 +65,9 @@ void signal_handler(int signal) // TESTME: Would sigaction be better ?
 	}
 	catch (std::exception const& e)
 	{
-		std::cerr << _RED << "fatal: webserv terminated because " << e.what() << RESET << std::endl;
+		std::stringstream	err;
+		err << _RED << "fatal: webserv terminated because " << e.what() << RESET << std::endl;
+		std::cerr << err.str();
 		pthread_cond_signal(condvar);
 	}
 	return (0);

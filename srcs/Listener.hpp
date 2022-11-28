@@ -19,6 +19,8 @@
 
 #include <toml_parser.hpp>
 
+#include <sstream>
+
 #include "Server.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
@@ -45,11 +47,25 @@ private:
 	int						_listen_backlog;
 	vector_s				_servers;
 	map_ir					_requests;
+	std::stringstream		_out;
+
+	void					outflush();
 
 public:
 	Listener(std::string const& listen_addr, int listen_port, int listen_backlog, vector_s::const_iterator servers_first, vector_s::const_iterator servers_last);
 
 	void				start_listener();
+
+	Listener(Listener const &src) { *this = src; }
+	Listener& operator=(Listener const &src) {
+		_fd = src._fd;
+		_addr = src._addr;
+		_port = src._port;
+		_listen_backlog = src._listen_backlog;
+		_servers = src._servers;
+		_requests = src._requests;
+		return *this;
+	}
 
 	vector_s const&		get_servers() const;
 
