@@ -52,9 +52,6 @@ class Location
 		std::string const&	get_cgi_file_ext() const;
 		map_strstr  const&	get_cgi_environ() const;
 
-		// FIXME: obsolete
-		std::string			get_path() const;
-
 	private:
 		std::string		_URI;	// Must start with a '/'
 		std::string		_root;	// Must not end with a '/'
@@ -68,5 +65,4 @@ class Location
 		int8_t			_allow_POST;	// bool to save space. Combined, they
 		int8_t			_allow_DELETE;	// take the space of a single bool.
 		int8_t			_allow_HEAD;
-		// NOTE: Include some CGI stuff in there ?
 };

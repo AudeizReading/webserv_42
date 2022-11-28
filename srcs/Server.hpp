@@ -36,7 +36,6 @@ private:
 	vector_str							_server_names;
 	std::vector<Location>				_locations;
 	std::map<int, std::string>			_error_pages;
-	// TODO: CGI
 
 public:
 	// Not using a reference on locations is intentional. That SHOULD let us use copy elision.
