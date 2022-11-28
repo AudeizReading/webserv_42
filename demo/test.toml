@@ -18,26 +18,31 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		[[http.server.location]]
 		URI = "/"								# Mandatory parameter.
 		root = "./demo/www"						# Mandatory parameter.
-		index = "index.htdml"					# Optional. Defaults to "index.html".
+		index = "index.html"					# Optional. Defaults to "index.html".
 		dir_listing = true						# Optional. Defaults to false.
 		include = ["demo/cgi_params.toml"]
 
 		[[http.server.location]]
 		URI = "/img/"
 		root = "./demo/www/img"
-		index = "issberg.pn"
-		dir_listing = true
+		index = "issberg.png"
+		# dir_listing = true
 
 		[[http.server.location]]
 		URI = "foo/bar/fizz"
 		root = "./demo/www"
-		index = "index.hml"
+		index = "index.html"
 
 		[[http.server.location]]
 		URI = "www"
 		root = "./demo/www"
 		index = ""
 		dir_listing = true
+
+		[[http.server.location]]
+		URI = "upload"
+		root = "./demo/www"
+		index = "upload.html"
 
 	[[http.server]]
 	listen_port = 4242
@@ -53,17 +58,27 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 	[[http.server]]
 	listen_port = 2121
-	# listen_addr = "127.0.0.1"
-	server_name = [""]
+		[[http.server.location]]
+		URI = "/"
+		root = "./demo/www2/"
+		[[http.server.location]]
+		URI = "/test"
+		root = "./demo/www2/test"
+		index = "test.html"
 
 	[[http.server]]
 	listen_port = 1234
-		[[http.server.location]]
-		URI = "/"
-		root = "./demo/www"
+		# [[http.server.location]]
+		# URI = "/"
+		# root = "./demo/www"
 
 		[[http.server.location]]
 		URI = "cgi-bin"
 		root = "./demo/www/cgi-bin"
-		include = ["./demo/cgi_params_php.toml"]
-		cgi_file_ext = "php"
+		include = ["./demo/cgi_params.toml"]
+		cgi_file_ext = "pl"
+		# [[http.server.location]]
+		# URI = "cgi-bin"
+		# root = "./demo/www/cgi-bin"
+		# include = ["./demo/cgi_params_php.toml"]
+		# cgi_file_ext = "php"

@@ -23,7 +23,8 @@
 static bool	_location_URI_comp(Location const& a, Location const& b)
 {
 	return (std::count(a.get_URI().begin(), a.get_URI().end(), '/')
-		< std::count(b.get_URI().begin(), b.get_URI().end(), '/'));
+		< std::count(b.get_URI().begin(), b.get_URI().end(), '/')
+		|| a.get_URI() == "/");
 }
 
 static
@@ -85,7 +86,7 @@ std::vector<Location>	_get_locations_from_server(TOML::Value::array_type const& 
 		}
 	}
 	// Sort locations from smallest path to biggest, by counting the number of '/'
-	std::sort(locations.begin(), locations.end(), _location_URI_comp);
+	std::stable_sort(locations.begin(), locations.end(), _location_URI_comp);
 	return locations;
 }
 

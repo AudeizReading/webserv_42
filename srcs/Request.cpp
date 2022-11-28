@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -129,6 +130,7 @@ Location const*	Request::_get_matching_Location(Server const& serv) const
 	std::string req_location_URI = get_location();
 	
 	std::cerr << BCYN << "Request URI: " << req_location_URI << RESET << ": Looking URI: "; // DEBUG
+	req_location_URI += '/'; // Hacky patch for broken upload, upload.html thing with gphilipp
 
 	// Locations are sorted from least to most complete.
 	const Location*	target = &serv.get_locations().front();
@@ -136,10 +138,10 @@ Location const*	Request::_get_matching_Location(Server const& serv) const
 		it != serv.get_locations().end();
 		++it)
 	{
-		char c = req_location_URI[it->get_URI().length()];
-		if (req_location_URI.find(it->get_URI()) != std::string::npos && 
+		// char c = req_location_URI[it->get_URI().length()];
+		if (req_location_URI.find(it->get_URI() + '/') != std::string::npos/*  && 
 			!(('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9')
-				|| c == '-' || c == '_' || c == '.'))
+				|| c == '-' || c == '_' || c == '.') */)
 		{
 			std::cerr << req_location_URI[it->get_URI().length()] << "   ";
 			target = &*(it);

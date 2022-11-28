@@ -82,6 +82,21 @@ static TOML::Value::group_type	_get_default_cgi_environ_group()
 	return cgi_environ;
 }
 
+static TOML::Value	_get_default_root_location()
+{
+	TOML::Value new_group = TOML::make_group("");	// Group has no key because it's in an array
+	new_group.group_addValue( TOML::make_string("URI", "/") );
+	new_group.group_addValue( TOML::make_string("root", "./demo/www") );
+	new_group.group_addValue( _get_default_cgi_environ_group() );
+
+	return new_group;
+}
+
+static bool	_is_root_location(TOML::Value const& loc)
+{
+	return loc.at("URI").Str() == "/";
+}
+
 // Goes through each server block in the HTTP group, and adds a default "location"
 // to a server when none is defined.
 static void	_insert_default_locations(TOML::Value& http)
@@ -91,15 +106,22 @@ static void	_insert_default_locations(TOML::Value& http)
 		it != serv_array.end();
 		++it)
 	{
-		if (!it->has("location"))
+		if (!it->has("location"))	// Current server has no "location" array
 		{
-			TOML::Value new_group = TOML::make_group("");	// Group has no key because it's in an array
-			new_group.group_addValue( TOML::make_string("URI", "/") );
-			new_group.group_addValue( TOML::make_string("root", "./demo/www") );
-			new_group.group_addValue( _get_default_cgi_environ_group() );
-
 			it->group_addValue( TOML::make_array("location", TOML::T_GROUP) );
-			(*it)["location"].groupArray_addValue(new_group);
+			(*it)["location"].groupArray_addValue( _get_default_root_location() );
+		}
+		else
+		{
+			TOML::Value::array_type::iterator root_loc = std::find_if(it->at("location").Array().begin(),
+				it->at("location").Array().end(),
+				_is_root_location);
+			bool	has_root_location = (root_loc != it->at("location").Array().end());
+			if (!has_root_location)
+			{
+				std::cout << "Does not have root loc" << std::endl;
+				(*it)["location"].groupArray_addValue( _get_default_root_location() );
+			}
 		}
 	}
 }
