@@ -32,9 +32,6 @@ void Response::create()
 	std::string			ext;
 	const std::string	cgi_file_ext = _request->get_server_location()->get_cgi_file_ext();
 
-	if (cgi_file_ext == "kill")
-		throw std::runtime_error("test exception");
-
 	_init();
 
 	_content_type = "text/html";

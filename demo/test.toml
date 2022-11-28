@@ -66,4 +66,4 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 		URI = "cgi-bin"
 		root = "./demo/www/cgi-bin"
 		include = ["./demo/cgi_params_php.toml"]
-		cgi_file_ext = "kill"
+		cgi_file_ext = "php"

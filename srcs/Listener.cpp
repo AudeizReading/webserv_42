@@ -54,7 +54,7 @@ void	Listener::start_listener()
 	* protocol toujours 0
 	*/
 	_fd = socket(PF_INET, SOCK_STREAM, 0); 
-	std::cout << "[listener] create socket#" << _fd << std::endl;
+	// std::cout << "[listener] create socket#" << _fd << std::endl;
 	if (_fd < 0)
 		throw std::runtime_error(strerror(errno));
 	fcntl(_fd, F_SETFL, O_NONBLOCK);
@@ -102,14 +102,14 @@ void	Listener::start_listener()
 	address.sin_port = htons(_port);
 	address.sin_addr.s_addr = inet_addr(_addr.c_str());
 
-	std::cout << "[listener] bind socket#" << _fd << " to " << _addr << ':' <<_port << std::endl;
+	// std::cout << "[listener] bind socket#" << _fd << " to " << _addr << ':' <<_port << std::endl;
 	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0)
 		throw std::runtime_error(strerror(errno));
 
 	// if (_port == 1234)
 	// 	throw std::runtime_error("DEBUG: TEST EXCEPTION THROW");
 
-	std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
+	// std::cout << "[listener] listen socket#" << _fd << " (max " << _listen_backlog << ")" << std::endl;
 	if (listen(_fd, _listen_backlog) < 0)
 	{
 		/*
@@ -117,7 +117,7 @@ void	Listener::start_listener()
 		 * with an indication of ECONNREFUSED. Alternatively, if the underlying protocol supports
 		 * retransmission, the request may be ignored so that retries may succeed.
 		 */
-		std::cout << "[listener] Cannot listen, please retry" << std::endl;
+		// std::cout << "[listener] Cannot listen, please retry" << std::endl;
 		throw std::runtime_error(strerror(errno));
 	}
 
@@ -130,7 +130,7 @@ void	Listener::start_listener()
 	ktimeout.tv_sec = 10;
 	ktimeout.tv_nsec = 0;
 
-	std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
+	// std::cout << "[listener] register kevent for socket#" << _fd << std::endl;
 
 	EV_SET(&change_event, _fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
 	if (kevent(kq, &change_event, 1, NULL, 0, &ktimeout) < 0)
@@ -357,7 +357,7 @@ Listener::~Listener()
 {
 	if (_fd == INT_MIN) // Listener hasn't been started
 		return ;
-	std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
+	// std::cout << "[listener] shutdown and close socket#" << _fd << std::endl;
 	shutdown(_fd, SHUT_RDWR);
 	_requests.clear();
 	if (close(_fd) < 0)

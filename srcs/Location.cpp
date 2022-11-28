@@ -115,8 +115,3 @@ Location::map_strstr const&	Location::get_cgi_environ() const
 {
 	return _cgi_environ;
 }
-
-std::string		Location::get_path() const
-{
-	return _root + _URI;
-}

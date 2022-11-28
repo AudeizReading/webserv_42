@@ -124,7 +124,6 @@ Server const*	Request::_get_matching_Server() const
 	return target;
 }
 
-// TESTME !!!
 Location const*	Request::_get_matching_Location(Server const& serv) const
 {
 	std::string req_location_URI = get_location();

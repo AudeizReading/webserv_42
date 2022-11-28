@@ -32,8 +32,6 @@ extern const t_map_ss	*g_mime_types;
 
 int				webserv(const char *config_file_path);
 
-// TODO: To avoid longer compilation times in here, make an ifdef to check if TOML
-// has already been included?
 TOML::Document	parse_config_file(const char *path);
 void			include_directive(TOML::Value& target, TOML::Value include);
 void			check_mandatory_directives(TOML::Document const& doc);

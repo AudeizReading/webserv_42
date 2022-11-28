@@ -133,12 +133,12 @@ int	webserv(const char *config_file_path)
 			;
 	}
 
-	std::cout << CYNB << "All threads are initialized. Awakening them for Listener start." << RESET << std::endl;
+	std::cout << CYNB << "All threads are initialized. Starting webserv..." << RESET << std::endl;
 	pthread_cond_broadcast(condvar);	// Notify all threads, so they start their Listener
 	pthread_mutex_lock(mutex);
 	pthread_cond_wait(condvar, mutex);	// Sleeps indefinitely until a thread throws an exception.
 
-	std::cout << REDB << "Killing threads" << RESET << std::endl;
+	std::cout << REDB << "Webserv shutting down..." << RESET << std::endl;
 	for (std::vector<pthread_t>::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
 		pthread_kill(*it, SIGINT);
