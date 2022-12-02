@@ -6,7 +6,7 @@
 #    By: gphilipp <gphilipp@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/13 15:31:28 by gphilipp          #+#    #+#              #
-#    Updated: 2022/11/16 14:21:50 by alellouc         ###   ########.fr        #
+#    Updated: 2022/12/02 14:37:08 by gphilipp         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -81,9 +81,9 @@ LDLIBS = -I$(TOML_PARSER) -Iincludes
 
 CONF_FILE = demo/www.toml
 
-ifeq ($(shell ./hooks/submodules > /dev/null; echo $$?), 1)
-LIBS = toml
-endif
+# ifeq ($(shell ./hooks/submodules > /dev/null; echo $$?), 1)
+# LIBS = toml
+# endif
 
 ifdef TR
 SMFLAGS = --remote
@@ -131,8 +131,8 @@ sanitize: $(NAME)_sanitize
 clean:
 	rm -rf $(OBJ)
 
-test:
-	@./test/test.sh
+# test:
+#	@./test/test.sh
 
 fclean: clean
 	rm -f $(NAME)
