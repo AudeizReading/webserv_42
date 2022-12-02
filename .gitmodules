@@ -1,3 +1,0 @@
-[submodule "lib/toml_parser"]
-	path = lib/toml_parser
-	url = git@github.com:pbremondFR/toml_parser.git
