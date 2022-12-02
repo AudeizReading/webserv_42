@@ -111,28 +111,28 @@ include = ["demo/mime_types.toml"]		# All include directives are optional. Put w
 
 	[[http.server]]
 	name = "blue"
-	listen_port = 8080
+	listen_port = 8082
 	server_name = ["localhost"]
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/blue"
 	[[http.server]]
 	name = "green"
-	listen_port = 8080
+	listen_port = 8082
 	server_name = ["127.0.0.1"]
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/green"
 	[[http.server]]
 	name = "red"
-	listen_port = 8080
+	listen_port = 8082
 	server_name = ["0.0.0.0"]
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/red"
 	[[http.server]]
 	name = "black"
-	listen_port = 8080
+	listen_port = 8082
 		[[http.server.location]]
 		URI = "/"
 		root = "./demo/servers/black"
