@@ -80,26 +80,25 @@ void Response::create()
 			}
 			catch (const std::invalid_argument& e)
 			{
-				std::cerr << "[CGI] " << e.what() << std::endl;
+				// std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
 				*this = Response_Forbidden(*_request);
 				return ;
 			}
 			catch (const std::runtime_error& e)
 			{
-				std::cerr << "[CGI] " << e.what() << std::endl;
+				// std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
 				*this = Response_Internal_Server_Error(*_request);
 				return ;
 			}
 			catch (const std::exception& e)
 			{
-				std::cerr << "[CGI] " << e.what() << std::endl;
+				// std::cerr << "[CGI] " << e.what() << std::endl;
 				std::cerr << "[STOP] " << _content_path << std::endl;
 				*this = Response_Internal_Server_Error(*_request);
 				return ;
 			}
-			std::cerr << "[CONTINUE] " << _content_path << std::endl;
 		}
 		else if (good && _request->get_method() == "DELETE" && _content_path.find("./res/error") == std::string::npos)
 		{
