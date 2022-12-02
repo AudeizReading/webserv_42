@@ -150,7 +150,6 @@ bool				CGIManager::exec()
 
 			if (env["CGI_EXEC"].find("perl") != std::string::npos)
 				is_perl_cgi = true;
-			PRINT(exit_status)
 			if ((exit_status == 1 || exit_status == 256 || exit_status == 512) && WIFEXITED(exit_status) && is_perl_cgi)
 				throw std::invalid_argument(strerror(WEXITSTATUS(exit_status)));
 			else if (exit_status != 0 && WIFEXITED(exit_status))
